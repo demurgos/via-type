@@ -14,7 +14,7 @@ Expressive extensible schemas.
 
 ````bash
 npm install
-gulp build.node
+gulp all:build
 ````
 
 ## API ##
