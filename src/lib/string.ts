@@ -1,5 +1,10 @@
 import * as _ from "lodash";
-import {KryoError, UnexpectedTypeError} from "./helpers/kryo-error";
+import {LowerCaseError} from "./errors/case-error";
+import {MaxLengthError} from "./errors/max-length-error";
+import {MinLengthError} from "./errors/min-length-error";
+import {TrimError} from "./errors/not-trimmed-error";
+import {PatternError} from "./errors/pattern-error";
+import {IncidentTypeError} from "./errors/unexpected-type-error";
 import {
   SerializableTypeAsync,
   SerializableTypeSync,
@@ -61,7 +66,7 @@ function writeSync(format: "json-doc" | "bson-doc", val: string): string {
 
 function testErrorSync(val: any, options: StringOptions) {
   if (!(typeof val === "string")) {
-    return new UnexpectedTypeError(typeof val, "string");
+    return new IncidentTypeError("string", val);
   }
 
   if (options.lowerCase) {
@@ -238,83 +243,5 @@ export class StringType implements SerializableTypeSync<string, "bson-doc", stri
 
   async squashAsync(diff1: [string, string] | null, diff2: [string, string] | null): Promise<[string, string] | null> {
     return squashSync(diff1, diff2);
-  }
-}
-
-export class StringTypeError<D> extends KryoError<D> {
-}
-
-export interface LowerCaseErrorData {
-  string: string;
-}
-
-export class LowerCaseError extends StringTypeError<LowerCaseErrorData> {
-  constructor(string: string) {
-    super(
-      "CaseError",
-      {string: string},
-      "Expected string to be lowercase"
-    );
-  }
-}
-
-export interface TrimErrorData {
-  string: string;
-}
-
-export class TrimError extends StringTypeError<TrimErrorData> {
-  constructor(string: string) {
-    super(
-      "TrimError",
-      {string: string},
-      "Expected string to be trimmed"
-    );
-  }
-}
-
-export interface PatternErrorData {
-  string: string;
-  pattern: RegExp;
-}
-
-export class PatternError extends StringTypeError<PatternErrorData> {
-  constructor(string: string, pattern: RegExp) {
-    super(
-      "PatternError",
-      {string: string, pattern: pattern},
-      `Expected string to follow pattern ${pattern}`
-    );
-  }
-}
-
-export interface MinLengthErrorData {
-  string: string;
-  minLength: number;
-}
-
-// tslint:disable-next-line:max-classes-per-file
-export class MinLengthError extends StringTypeError<MinLengthErrorData> {
-  constructor(string: string, minLength: number) {
-    super(
-      "MinLengthError",
-      {string: string, minLength: minLength},
-      `Expected string length (${string.length}) to be greater than or equal to ${minLength}`
-    );
-  }
-}
-
-export interface MaxLengthErrorData {
-  string: string;
-  maxLength: number;
-}
-
-// tslint:disable-next-line:max-classes-per-file
-export class MaxLengthError extends StringTypeError<MaxLengthErrorData> {
-  constructor(string: string, maxLength: number) {
-    super(
-      "MaxLengthError",
-      {string: string, maxLength: maxLength},
-      `Expected string length (${string.length}) to be less than or equal to ${maxLength}`
-    );
   }
 }

@@ -1,4 +1,3 @@
-import {KryoError} from "./helpers/kryo-error";
 import {
   SerializableTypeAsync,
   SerializableTypeSync,
@@ -136,21 +135,5 @@ export class IntegerType implements
 
   async reverseDiffAsync(diff: number | null): Promise<number | null> {
     return reverseDiffSync(diff);
-  }
-}
-
-export class IntegerTypeError<D> extends KryoError<D> {}
-
-export interface IntegerErrorData {
-  value: any;
-}
-
-export class IntegerError extends IntegerTypeError<IntegerErrorData> {
-  constructor (value: number) {
-    super (
-      "NumericError",
-      {value: value},
-      "Value is not a number"
-    );
   }
 }

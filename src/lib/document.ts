@@ -1,5 +1,9 @@
 import * as _ from "lodash";
-import {KryoError, TodoError} from "./helpers/kryo-error";
+import {ExtraKeysError} from "./errors/extra-keys-error";
+import {ForbiddenNullError} from "./errors/forbidden-null-error";
+import {InvalidPropertiesError} from "./errors/invalid-properties-error";
+import {MissingKeysError} from "./errors/missing-keys-error";
+import {NotImplementedError} from "./errors/not-implemented-error";
 import {
   Dictionary,
   Document,
@@ -130,7 +134,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async readTrustedAsync(format: "json-doc" | "bson-doc", val: Document): Promise<Document> {
-    throw new TodoError("Document:readTrustedAsync");
+    throw new NotImplementedError("Document:readTrustedAsync");
   }
 
   readSync(format: "json-doc", val: Document): Document;
@@ -140,7 +144,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async readAsync(format: "json-doc" | "bson-doc", val: Document): Promise<Document> {
-    throw new TodoError("Document:readAsync");
+    throw new NotImplementedError("Document:readAsync");
   }
 
   writeSync(format: "json-doc", val: Document): Document;
@@ -150,7 +154,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async writeAsync(format: "json-doc" | "bson-doc", val: Document): Promise<Document> {
-    throw new TodoError("Document:writeAsync");
+    throw new NotImplementedError("Document:writeAsync");
   }
 
   testErrorSync(val: Document): Error | null {
@@ -158,7 +162,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async testErrorAsync(val: Document): Promise<Error | null> {
-    throw new TodoError("Document:testErrorAsync");
+    throw new NotImplementedError("Document:testErrorAsync");
   }
 
   testSync(val: Document): boolean {
@@ -166,7 +170,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async testAsync(val: Document): Promise<boolean> {
-    throw new TodoError("Document:testAsync");
+    throw new NotImplementedError("Document:testAsync");
   }
 
   equalsSync(val1: Document, val2: Document): boolean {
@@ -174,7 +178,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async equalsAsync(val1: Document, val2: Document): Promise<boolean> {
-    throw new TodoError("Document:equalsAsync");
+    throw new NotImplementedError("Document:equalsAsync");
   }
 
   cloneSync(val: Document): Document {
@@ -182,7 +186,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async cloneAsync(val: Document): Promise<Document> {
-    throw new TodoError("Document:cloneAsync");
+    throw new NotImplementedError("Document:cloneAsync");
   }
 
   diffSync(oldVal: Document, newVal: Document): DocumentDiff | null {
@@ -190,7 +194,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async diffAsync(oldVal: Document, newVal: Document): Promise<DocumentDiff | null> {
-    throw new TodoError("Document:diffAsync");
+    throw new NotImplementedError("Document:diffAsync");
   }
 
   patchSync(oldVal: Document, diff: DocumentDiff | null): Document {
@@ -198,7 +202,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async patchAsync(oldVal: Document, diff: DocumentDiff | null): Promise<Document> {
-    throw new TodoError("Document:patchAsync");
+    throw new NotImplementedError("Document:patchAsync");
   }
 
   reverseDiffSync(diff: DocumentDiff | null): DocumentDiff | null {
@@ -206,7 +210,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async reverseDiffAsync(diff: DocumentDiff | null): Promise<DocumentDiff | null> {
-    throw new TodoError("Document:reverseDiffAsync");
+    throw new NotImplementedError("Document:reverseDiffAsync");
   }
 
   iterateSync(value: Document): IteratorResult<any> {
@@ -214,7 +218,7 @@ export class DocumentType implements SerializableTypeSync<Document, "bson-doc", 
   }
 
   async iterateAsync(value: Document): Promise<IteratorResult<Promise<any>>> {
-    throw new TodoError("Document:iterateAsync");
+    throw new NotImplementedError("Document:iterateAsync");
   }
 }
 
@@ -346,7 +350,7 @@ function testErrorSync(val: Document, options: CompleteDocumentOptions<TypeSync<
   }
 
   if (errors !== null) {
-    return new InvalidProperties(errors);
+    return new InvalidPropertiesError(errors);
   }
 
   return null;
@@ -483,64 +487,4 @@ function reverseDiffSync(diff: DocumentDiff | null,
     reversed.update[key] = options.properties[key].type.reverseDiffSync(diff.update[key]);
   }
   return reversed;
-}
-
-export class DocumentTypeError<D> extends KryoError<D> {
-}
-
-export interface MissingKeysErrorData {
-  missingKeys: string[];
-}
-
-export class MissingKeysError extends DocumentTypeError<MissingKeysErrorData> {
-  constructor(missingKeys: string[]) {
-    super(
-      "missing-keys",
-      {missingKeys: missingKeys},
-      `The following keys are missing: ${JSON.stringify(missingKeys)}`
-    );
-  }
-}
-
-export interface ExtraKeysErrorData {
-  extraKeys: string[];
-}
-
-export class ExtraKeysError extends DocumentTypeError<ExtraKeysErrorData> {
-  constructor(extraKeys: string[]) {
-    super(
-      "extra-keys",
-      {extraKeys: extraKeys},
-      `The following keys are extraneous: ${JSON.stringify(extraKeys)}`
-    );
-  }
-}
-
-export interface ForbiddenNullErrorData {
-  key: string;
-}
-
-export class ForbiddenNullError extends DocumentTypeError<ForbiddenNullErrorData> {
-  constructor(key: string) {
-    super(
-      "forbidden-null",
-      {key: key},
-      `The value \`null\` is forbidden for the key ${key}`
-    );
-  }
-}
-
-export interface InvalidPropertiesData {
-  errors: Dictionary<Error>;
-}
-
-// tslint:disable-next-line:max-classes-per-file
-export class InvalidProperties extends DocumentTypeError<InvalidPropertiesData> {
-  constructor(errors: Dictionary<Error>) {
-    super(
-      "invalid-properties",
-      {errors: errors},
-      `The following properties are invalid: ${JSON.stringify(errors)}`
-    );
-  }
 }

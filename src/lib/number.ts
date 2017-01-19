@@ -1,4 +1,5 @@
-import {KryoError, UnexpectedTypeError} from "./helpers/kryo-error";
+import {NumericError} from "./errors/finite-number-error";
+import {IncidentTypeError} from "./errors/unexpected-type-error";
 import {
   SerializableTypeAsync,
   SerializableTypeSync,
@@ -12,7 +13,7 @@ export interface NumberOptions {}
 
 function readSync(format: "json-doc" | "bson-doc", val: any, options?: NumberOptions): number {
   if (!(typeof val === "number")) {
-    throw new UnexpectedTypeError(typeof val, "number");
+    throw new IncidentTypeError("number", val);
   }
   if (!isFinite(val)) {
     throw new NumericError(val);
@@ -30,7 +31,7 @@ function writeSync(format: "json-doc" | "bson-doc", val: number, options?: Numbe
 
 function testErrorSync (val: any, options?: NumberOptions): Error | null {
   if (!(typeof val === "number")) {
-    return new UnexpectedTypeError(typeof val, "number");
+    return new IncidentTypeError("number", val);
   }
   if (!isFinite(val)) {
     return new NumericError(val);
@@ -159,21 +160,5 @@ export class NumberType implements
 
   async reverseDiffAsync(diff: [number, number] | null, options?: NumberOptions): Promise<[number, number] | null> {
     return reverseDiffSync(diff, options);
-  }
-}
-
-export class NumberTypeError<D> extends KryoError<D> {}
-
-export interface NumericErrorData {
-  value: any;
-}
-
-export class NumericError extends NumberTypeError<NumericErrorData> {
-  constructor (value: any) {
-    super (
-      "NumericError",
-      {value: value},
-      "Value is not a number"
-    );
   }
 }

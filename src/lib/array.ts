@@ -1,6 +1,9 @@
 import * as Bluebird from "bluebird";
 import * as _ from "lodash";
-import {KryoError, TodoError, UnexpectedTypeError} from "./helpers/kryo-error";
+import {InvalidItemsError} from "./errors/invalid-items-error";
+import {MaxLengthError} from "./errors/max-length-error";
+import {NotImplementedError} from "./errors/not-implemented-error";
+import {IncidentTypeError} from "./errors/unexpected-type-error";
 import {
   NumericDictionary,
   SerializableTypeAsync,
@@ -30,37 +33,6 @@ const defaultOptions: ArrayOptions<TypeBase> = {
   maxLength: null,
   itemType: null
 };
-
-export interface MaxLengthErrorData {
-  array: any[];
-  maxLength: number;
-}
-
-export class MaxLengthError extends KryoError<MaxLengthErrorData> {
-  constructor(array: any[], maxLength: number) {
-    //noinspection TypeScriptValidateTypes
-    super(
-      "max-length",
-      {array: array, maxLength: maxLength},
-      "Error with maxlength"
-    );
-  }
-}
-
-export interface InvalidItemsErrorData {
-  items: NumericDictionary<Error>;
-}
-
-export class InvalidItemsError extends KryoError<InvalidItemsErrorData> {
-  constructor(errors: NumericDictionary<Error>) {
-    //noinspection TypeScriptValidateTypes
-    super(
-      "invalid-items",
-      {items: errors},
-      "There are some invalid items"
-    );
-  }
-}
 
 // Serializable
 function writeSync<I, S>(format: "json-doc",
@@ -135,7 +107,7 @@ function readSync<I, S>(format: "bson-doc",
                         options: ArrayOptions<SerializableTypeSync<I, "bson-doc", S>>): I[];
 function readSync<I, S>(format: any, val: any, options: any): any {
   if (!Array.isArray(val)) {
-    throw new KryoError("Not an array");
+    throw new IncidentTypeError("array", val);
   }
   return _.map(
     val,
@@ -153,7 +125,7 @@ async function readAsync<I, S>(format: "bson-doc",
                                options: ArrayOptions<SerializableTypeSync<I, "bson-doc", S>>): Promise<I[]>;
 async function readAsync<I, S>(format: any, val: any, options: any): Promise<any> {
   if (!Array.isArray(val)) {
-    throw new KryoError("Not an array");
+    throw new IncidentTypeError("array", val);
   }
   return Promise.all(
     _.map(
@@ -250,7 +222,7 @@ export class ArrayType<I> implements SerializableTypeSync<I[], "bson-doc", any[]
     }
     const itemType: TypeSync<any> = <any> this.options.itemType;
     if (!_.isArray(val)) {
-      return new UnexpectedTypeError(typeof val, "array");
+      return new IncidentTypeError("array", val);
     }
     if (this.options.maxLength !== null && val.length > this.options.maxLength) {
       return new MaxLengthError(val, this.options.maxLength);
@@ -289,7 +261,7 @@ export class ArrayType<I> implements SerializableTypeSync<I[], "bson-doc", any[]
     const itemType: TypeAsync<any> = <any> this.options.itemType;
 
     if (!Array.isArray(val)) {
-      return new UnexpectedTypeError(typeof val, "array");
+      return new IncidentTypeError("array", val);
     }
 
     if (this.options.maxLength !== null && val.length > this.options.maxLength) {
@@ -449,11 +421,11 @@ export class ArrayType<I> implements SerializableTypeSync<I[], "bson-doc", any[]
 
   //noinspection TypeScriptUnresolvedVariable
   iterateSync(value: any[]): IteratorResult<I> {
-    throw new TodoError("Array:iterateAsync");
+    throw new NotImplementedError("Array:iterateAsync");
   }
 
   //noinspection TypeScriptUnresolvedVariable
   async iterateAsync(value: any[]): Promise<IteratorResult<PromiseLike<I>>> {
-    throw new TodoError("Array:iterateAsync");
+    throw new NotImplementedError("Array:iterateAsync");
   }
 }

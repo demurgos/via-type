@@ -1,5 +1,7 @@
 import * as _ from "lodash";
-import {KryoError, UnsupportedFormatError} from "./helpers/kryo-error";
+import {InvalidTimestampError} from "./errors/invalid-timestamp-error";
+import {KryoError} from "./errors/kryo-error";
+import {UnsupportedFormatError} from "./errors/unsupported-format-error";
 import {
   SerializableTypeAsync,
   SerializableTypeSync,
@@ -220,15 +222,5 @@ export class DateType implements
 
   async squashAsync(diff1: number | null, diff2: number | null, options?: DateOptions): Promise<number | null> {
     return squashSync(diff1, diff2, options);
-  }
-}
-
-export interface InvalidTimestampErrorData {
-  date: Date;
-}
-
-export class InvalidTimestampError extends KryoError<InvalidTimestampErrorData> {
-  constructor(date: Date) {
-    super("invalid-timestamp", {date: date}, "Invalid timestamp");
   }
 }

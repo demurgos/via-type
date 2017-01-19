@@ -1,4 +1,4 @@
-import {KryoError, UnexpectedTypeError} from "./helpers/kryo-error";
+import {IncidentTypeError} from "./errors/unexpected-type-error";
 import {
   SerializableTypeAsync,
   SerializableTypeSync,
@@ -24,7 +24,7 @@ function writeSync(format: "json-doc" | "bson-doc", val: boolean): boolean {
 
 function testErrorSync (val: boolean): Error | null {
   if (typeof val !== "boolean") {
-    return new UnexpectedTypeError(typeof val, "boolean");
+    return new IncidentTypeError("boolean", val);
   }
   return null;
 }
