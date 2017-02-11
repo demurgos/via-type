@@ -1,4 +1,6 @@
 import * as _ from "lodash";
+import {ucs2} from "punycode";
+import {nfc as unormNfc} from "unorm";
 import {LowerCaseError} from "./errors/case-error";
 import {MaxLengthError} from "./errors/max-length-error";
 import {MinLengthError} from "./errors/min-length-error";
@@ -15,6 +17,32 @@ import {
 export const NAME: string = "string";
 
 export interface StringOptions {
+  /**
+   * Use codepoints instead of codeunits when checking the length.
+   * Javascript's string are lists of 16-bit code units instead of unicode codepoints so
+   * codepoints outside of the Basic Multilingual Plane (BMP) are encoded as surrogate pairs.
+   * It leads to `"𝄞".length === 2` even if the `MUSICAL SYMBOL G CLEF` is a single codepoint.
+   * If you enable unicodeSupplementaryPlanes, the string will be decoded as an array of
+   * codepoints first and treated as a string with length 1. This is acts similarly to the `u`
+   * flag for regular expressions.
+   *
+   * Here is a concrete example:
+   * ```
+   * new StringType({unicodeSupplementaryPlanes: true, maxLength: 1}).test("𝄞"); // true
+   * new StringType({unicodeSupplementaryPlanes: false, maxLength: 1}).test("𝄞"); // false
+   * ```
+   */
+  unicodeSupplementaryPlanes?: boolean;
+
+  /**
+   * Ensure NFC normalization when reading strings.
+   *
+   * References:
+   * - http://unicode.org/faq/normalization.html
+   * - http://unicode.org/reports/tr15/
+   */
+  unicodeNormalization?: boolean;
+
   regex?: RegExp | null;
   lowerCase?: boolean;
   trimmed?: boolean;
@@ -23,6 +51,8 @@ export interface StringOptions {
 }
 
 export interface CompleteStringOptions extends StringOptions {
+  unicodeSupplementaryPlanes: boolean;
+  unicodeNormalization: boolean;
   regex: RegExp | null;
   lowerCase: boolean;
   trimmed: boolean;
@@ -31,6 +61,8 @@ export interface CompleteStringOptions extends StringOptions {
 }
 
 const DEFAULT_OPTIONS: CompleteStringOptions = {
+  unicodeSupplementaryPlanes: false,
+  unicodeNormalization: false,
   regex: null,
   lowerCase: false,
   trimmed: false,
@@ -41,6 +73,10 @@ const DEFAULT_OPTIONS: CompleteStringOptions = {
 function readSync(format: "json-doc" | "bson-doc", val: any, options: StringOptions): string {
   let valStr: string = String(val);
 
+  if (options.unicodeNormalization) {
+    valStr = unormNfc(valStr);
+  }
+
   if (options.lowerCase) {
     valStr = valStr.toLowerCase();
   }
@@ -49,7 +85,7 @@ function readSync(format: "json-doc" | "bson-doc", val: any, options: StringOpti
     valStr = _.trim(valStr);
   }
 
-  const error: Error | null = testErrorSync(val, options);
+  const error: Error | null = testErrorSync(valStr, options);
   if (error !== null) {
     throw error;
   }
@@ -81,20 +117,23 @@ function testErrorSync(val: any, options: StringOptions) {
     }
   }
 
+  const symbols: string | number[] = options.unicodeSupplementaryPlanes ? ucs2.decode(val) : val;
+  const strLen: number = symbols.length;
+
+  const minLength: number | null | undefined = options.minLength;
+  if (typeof minLength === "number" && strLen < minLength) {
+    return new MinLengthError(symbols, minLength);
+  }
+
+  const maxLength: number | null | undefined = options.maxLength;
+  if (typeof maxLength === "number" && strLen > maxLength) {
+    return new MaxLengthError(symbols, maxLength);
+  }
+
   if (options.regex instanceof RegExp) {
     if (!options.regex.test(val)) {
       return new PatternError(val, options.regex);
     }
-  }
-
-  const minLength: number | null | undefined = options.minLength;
-  if (typeof minLength === "number" && val.length < minLength) {
-    return new MinLengthError(val, minLength);
-  }
-
-  const maxLength: number | null | undefined = options.maxLength;
-  if (typeof maxLength === "number" && val.length > maxLength) {
-    return new MaxLengthError(val, maxLength);
   }
 
   return null;

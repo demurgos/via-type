@@ -28,9 +28,12 @@
   "license": "MIT",
   "dependencies": {
     "incident": "^1.1.1",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "punycode": "^2.1.0",
+    "unorm": "^1.4.1"
   },
   "devDependencies": {
+    "@types/unorm": "^1.3.27",
     "chai": "^3.5.0",
     "demurgos-web-build-tools": "0.13.0-beta.5",
     "gulp": "github:gulpjs/gulp#4.0",
