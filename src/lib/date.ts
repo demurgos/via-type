@@ -85,7 +85,7 @@ function diffSync (oldVal: Date, newVal: Date, options?: DateOptions): number | 
 }
 
 function patchSync (oldVal: Date, diff: number | null, options?: DateOptions): Date {
-  return new Date(oldVal.getTime() + diff);
+  return new Date(oldVal.getTime() + (diff === null ? 0 : diff));
 }
 
 function reverseDiffSync (diff: number | null, options?: DateOptions): number | null {
