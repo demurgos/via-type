@@ -1,11 +1,12 @@
 import {ucs2} from "punycode";
 import {nfc as unormNfc} from "unorm";
 import {LowerCaseError} from "./errors/case-error";
-import {MaxLengthError} from "./errors/max-length-error";
-import {MinLengthError} from "./errors/min-length-error";
+import {MaxCodepointLengthError} from "./errors/max-codepoint-length-error";
+import {MinCodepointLengthError} from "./errors/min-codepoint-length-error";
 import {TrimError} from "./errors/not-trimmed-error";
 import {PatternError} from "./errors/pattern-error";
 import {IncidentTypeError} from "./errors/unexpected-type-error";
+import {checkedUcs2Decode} from "./helpers/checked-ucs2-decode";
 import {
   SerializableTypeAsync,
   SerializableTypeSync,
@@ -13,26 +14,15 @@ import {
   VersionedTypeSync
 } from "./interfaces";
 
-export const NAME: string = "string";
+export const NAME: string = "codepoint-string";
 
-export interface StringOptions {
-  /**
-   * Use codepoints instead of codeunits when checking the length.
-   * Javascript's string are lists of 16-bit code units instead of unicode codepoints so
-   * codepoints outside of the Basic Multilingual Plane (BMP) are encoded as surrogate pairs.
-   * It leads to `"𝄞".length === 2` even if the `MUSICAL SYMBOL G CLEF` is a single codepoint.
-   * If you enable unicodeSupplementaryPlanes, the string will be decoded as an array of
-   * codepoints first and treated as a string with length 1. This is acts similarly to the `u`
-   * flag for regular expressions.
-   *
-   * Here is a concrete example:
-   * ```
-   * new StringType({unicodeSupplementaryPlanes: true, maxLength: 1}).test("𝄞"); // true
-   * new StringType({unicodeSupplementaryPlanes: false, maxLength: 1}).test("𝄞"); // false
-   * ```
-   */
-  unicodeSupplementaryPlanes?: boolean;
+export enum Normalization {
+  None,
+  Nfc
+}
 
+// TODO: There should be a way to have code-point length and unicode RegExp, without blocking unmatched halves
+export interface CodepointStringOptions {
   /**
    * Ensure NFC normalization when reading strings.
    *
@@ -40,10 +30,13 @@ export interface StringOptions {
    * - http://unicode.org/faq/normalization.html
    * - http://unicode.org/reports/tr15/
    */
-  unicodeNormalization?: boolean;
+  normalization?: Normalization;
+
+  enforceUnicodeRegExp?: boolean;
 
   // TODO(demurgos): Rename to `pattern`
   regex?: RegExp | null;
+
   lowerCase?: boolean;
 
   /**
@@ -70,34 +63,28 @@ export interface StringOptions {
   maxLength?: number | null;
 }
 
-export interface CompleteStringOptions extends StringOptions {
-  /**
-   * @see [[StringOptions.unicodeSupplementaryPlanes]]
-   */
-  unicodeSupplementaryPlanes: boolean;
+export interface CompleteCodepointStringOptions extends CodepointStringOptions {
+  normalization: Normalization;
+
+  enforceUnicodeRegExp: boolean;
 
   /**
-   * @see [[StringOptions.unicodeNormalization]]
-   */
-  unicodeNormalization: boolean;
-
-  /**
-   * @see [[StringOptions.regex]]
+   * @see [[Ucs2StringOptions.regex]]
    */
   regex: RegExp | null;
   lowerCase: boolean;
 
   /**
-   * @see [[StringOptions.trimmed]]
+   * @see [[Ucs2StringOptions.trimmed]]
    */
   trimmed: boolean;
   minLength: number | null;
   maxLength: number | null;
 }
 
-const DEFAULT_OPTIONS: CompleteStringOptions = {
-  unicodeSupplementaryPlanes: false,
-  unicodeNormalization: false,
+const DEFAULT_OPTIONS: CompleteCodepointStringOptions = {
+  normalization: Normalization.Nfc,
+  enforceUnicodeRegExp: true,
   regex: null,
   lowerCase: false,
   trimmed: false,
@@ -105,11 +92,15 @@ const DEFAULT_OPTIONS: CompleteStringOptions = {
   maxLength: null
 };
 
-function readSync(format: "json-doc" | "bson-doc", val: any, options: StringOptions): string {
+function readSync(format: "json-doc" | "bson-doc", val: any, options: CodepointStringOptions): string {
   let valStr: string = String(val);
 
-  if (options.unicodeNormalization) {
-    valStr = unormNfc(valStr);
+  switch (options.normalization) {
+    case Normalization.Nfc:
+      valStr = unormNfc(valStr);
+      break;
+    case Normalization.None:
+      break;
   }
 
   if (options.lowerCase) {
@@ -120,7 +111,7 @@ function readSync(format: "json-doc" | "bson-doc", val: any, options: StringOpti
     valStr = valStr.trim();
   }
 
-  const error: Error | null = testErrorSync(valStr, options);
+  const error: Error | null = testErrorSync(valStr, options, true);
   if (error !== null) {
     throw error;
   }
@@ -135,9 +126,16 @@ function writeSync(format: "json-doc" | "bson-doc", val: string): string {
   return val;
 }
 
-function testErrorSync(val: any, options: StringOptions) {
+// TODO: Check normalization
+function testErrorSync(val: any, options: CodepointStringOptions, trustNormalization: boolean = false) {
   if (!(typeof val === "string")) {
     return new IncidentTypeError("string", val);
+  }
+
+  if (!trustNormalization) {
+    if (val !== unormNfc(val)) {
+      return new Error("Wrong normalization");
+    }
   }
 
   if (options.lowerCase) {
@@ -152,20 +150,28 @@ function testErrorSync(val: any, options: StringOptions) {
     }
   }
 
-  const symbols: string | number[] = options.unicodeSupplementaryPlanes ? ucs2.decode(val) : val;
-  const strLen: number = symbols.length;
+  let cpLen: number;
+  try {
+    cpLen = checkedUcs2Decode(val).length;
+  } catch (err) {
+    return err;
+  }
 
   const minLength: number | null | undefined = options.minLength;
-  if (typeof minLength === "number" && strLen < minLength) {
-    return new MinLengthError(symbols, minLength);
+  if (typeof minLength === "number" && cpLen < minLength) {
+    return new MinCodepointLengthError(val, minLength);
   }
 
   const maxLength: number | null | undefined = options.maxLength;
-  if (typeof maxLength === "number" && strLen > maxLength) {
-    return new MaxLengthError(symbols, maxLength);
+  if (typeof maxLength === "number" && cpLen > maxLength) {
+    return new MaxCodepointLengthError(val, maxLength);
   }
 
   if (options.regex instanceof RegExp) {
+    if (!options.regex.unicode && options.enforceUnicodeRegExp) {
+      throw new Error("Enforced unicode RegExp");
+    }
+
     if (!options.regex.test(val)) {
       return new PatternError(val, options.regex);
     }
@@ -174,7 +180,7 @@ function testErrorSync(val: any, options: StringOptions) {
   return null;
 }
 
-function testSync(val: string, options: StringOptions): boolean {
+function testSync(val: string, options: CodepointStringOptions): boolean {
   return testErrorSync(val, options) === null;
 }
 
@@ -206,7 +212,7 @@ function squashSync(diff1: [string, string] | null, diff2: [string, string] | nu
   }
 }
 
-export class StringType implements SerializableTypeSync<string, "bson-doc", string>,
+export class CodepointStringType implements SerializableTypeSync<string, "bson-doc", string>,
   VersionedTypeSync<string, string, [string, string]>,
   SerializableTypeAsync<string, "bson-doc", string>,
   VersionedTypeAsync<string, string, [string, string]> {
@@ -219,23 +225,22 @@ export class StringType implements SerializableTypeSync<string, "bson-doc", stri
   type: string = NAME;
   types: string[] = [NAME];
 
-  options: CompleteStringOptions;
+  options: CompleteCodepointStringOptions;
 
-  constructor(options?: StringOptions) {
+  constructor(options?: CodepointStringOptions) {
     this.options = {...DEFAULT_OPTIONS, ...options};
   }
 
-  toJSON(): null { // TODO: return options
-    return null;
+  // TODO: Check how RegExp are handled
+  toJSON(): { type: "codepoint-string" } & CompleteCodepointStringOptions {
+    return {...this.options, type: "codepoint-string"};
   }
 
   readTrustedSync(format: "json-doc" | "bson-doc", val: any): string {
     return readTrustedSync(format, val);
   }
 
-  async readTrustedAsync(format: "json-doc", val: string): Promise<string>;
-  async readTrustedAsync(format: "bson-doc", val: string): Promise<string>;
-  async readTrustedAsync(format: any, val: any): Promise<any> {
+  async readTrustedAsync(format: "bson-doc" | "json-doc", val: string): Promise<string> {
     return readTrustedSync(format, val);
   }
 
