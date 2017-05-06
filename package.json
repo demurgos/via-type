@@ -44,6 +44,6 @@
     "gulp": "github:gulpjs/gulp#4.0",
     "pre-commit": "^1.2.2",
     "qs": "^6.4.0",
-    "typescript": "^2.3.0"
+    "typescript": "^2.3.2"
   }
 }

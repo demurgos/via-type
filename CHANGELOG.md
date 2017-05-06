@@ -1,5 +1,7 @@
 # Next
 
+- **[Feature]** Implement `LiteralType`
+- **[Feature]** Implement `UnionType`
 - **[Feature]** Add the `rename` option to `DocumentType`. This allows to rename
   the keys of the document similarly to the values of `SimpleEnumType`.
 - **[Patch]** Fix the constraints for `SerializableType` generics.
