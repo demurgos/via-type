@@ -82,12 +82,12 @@ export interface DiffSetsResult<T> {
 }
 
 function diffSets<T>(reference: Iterable<T>, values: Iterable<T>): DiffSetsResult<T> {
-  const referenceSet: Set<T> = new Set(reference);
-  const valuesSet: Set<T> = new Set(values);
-  const all: Set<T> = new Set([...referenceSet, ...valuesSet]);
-  const commonKeys: Set<T> = new Set();
-  const missingKeys: Set<T> = new Set();
-  const extraKeys: Set<T> = new Set();
+  const referenceSet: Set<T> = new Set<T>(reference);
+  const valuesSet: Set<T> = new Set<T>(values);
+  const all: Set<T> = new Set<T>([...referenceSet, ...valuesSet]);
+  const commonKeys: Set<T> = new Set<T>();
+  const missingKeys: Set<T> = new Set<T>();
+  const extraKeys: Set<T> = new Set<T>();
 
   for (const key of all) {
     if (!valuesSet.has(key)) {
@@ -131,8 +131,8 @@ export class DocumentType<T extends {}>
     this.ignoreExtraKeys = options.ignoreExtraKeys || false;
     this.properties = options.properties;
     this.rename = options.rename;
-    this.keys = new Map();
-    this.outKeys = new Map();
+    this.keys = new Map<string, string>();
+    this.outKeys = new Map<string, string>();
 
     for (const key in this.properties) {
       const renamed: string = this.rename === undefined ? key : rename(key, this.rename);

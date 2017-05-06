@@ -19,12 +19,13 @@ const libTarget = Object.assign(
   buildTools.config.LIB_TARGET,
   {
     name: "lib-es2015",
-    typeRoots: ["custom-typings", "../typings/globals", "../typings/modules", "../node_modules/@types"],
+    scripts: ["lib/**/*.ts", "!lib/**/*.es5.ts"],
+    typeRoots: ["../typings/modules", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
         target: "es2015",
-        lib: ["es2015", "dom"]
+        lib: ["es2015"]
       },
       typescript: typescript,
       tsconfigJson: ["lib/tsconfig.json"]
@@ -38,12 +39,13 @@ const es5Target = Object.assign(
   buildTools.config.LIB_TARGET,
   {
     name: "lib-es5",
-    typeRoots: ["custom-typings", "../typings/globals", "../typings/modules", "../node_modules/@types"],
+    scripts: ["lib/**/*.ts", "!lib/**/*.es2015.ts"],
+    typeRoots: ["../typings/modules", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
-        target: "es5",
-        lib: ["es2015", "dom"]
+        target: "es2015",
+        lib: ["es2015"]
       },
       typescript: typescript,
       tsconfigJson: ["lib/es5.tsconfig.json"]
@@ -57,12 +59,13 @@ const libTestTarget = Object.assign(
   buildTools.config.LIB_TEST_TARGET,
   {
     name: "lib-test",
-    scripts: ["test/**/*.ts", "lib/**/*.ts"],
-    typeRoots: ["custom-typings", "../typings/globals", "../typings/modules", "../node_modules/@types"],
+    scripts: ["test/**/*.ts", "lib/**/*.ts", "!lib/**/*.es5.ts"],
+    typeRoots: ["../typings/modules", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
-        target: "es2015"
+        target: "es2015",
+        lib: ["es2015"]
       },
       typescript: typescript,
       tsconfigJson: ["test/tsconfig.json"]
