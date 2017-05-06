@@ -7,16 +7,16 @@ export interface Type<T> {
   toJSON(): any;
 }
 
-export interface SerializableType<T, FormatName extends string, Output, Input extends Output> extends Type<T> {
+export interface SerializableType<T, FormatName extends string, Input, Output extends Input> extends Type<T> {
   readTrusted (format: FormatName, serialized: Output): T;
   read (format: FormatName, serialized: Input): T;
   write (format: FormatName, val: T): Output;
 }
 
-export interface VersionedType<T, Output, Input extends Output, Diff>
-  extends SerializableType<T, "json", Output, Input> {
+export interface VersionedType<T, Input, Output extends Input, Diff>
+  extends SerializableType<T, "json", Input, Output> {
   /**
-   * Returns null if both values are equivalent, otherwise a diff representing the change from
+   * Returns undefined if both values are equivalent, otherwise a diff representing the change from
    * oldVal to newVal.
    *
    * @param oldVal The old value

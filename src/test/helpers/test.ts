@@ -60,8 +60,8 @@ export function testValidValueSync(type: Type<any>, item: ValidTypedValue) {
   });
 }
 
-export function testBsonSerialization<T, Output, Input extends Output>(
-  type: SerializableType<T, "bson", Output, Input>,
+export function testBsonSerialization<T, Input, Output extends Input>(
+  type: SerializableType<T, "bson", Input, Output>,
   typedValue: ValidTypedValue
 ): void {
   let actualSerialized: Buffer;
@@ -90,14 +90,14 @@ export function testBsonSerialization<T, Output, Input extends Output>(
 
   it(`\`t.read("bson", t.write("bson", val))\` should be valid and equal to \`val\``, function () {
     const deserialized: Output = new BSON().deserialize(actualSerialized).wrapper;
-    const imported: T = type.read("bson", <Input> deserialized);
+    const imported: T = type.read("bson", deserialized);
     assert.isTrue(type.test(imported));
     assert.isTrue(type.equals(imported, typedValue.value));
   });
 }
 
-export function testJsonSerialization<T, Output, Input extends Output>(
-  type: SerializableType<T, "json", Output, Input>,
+export function testJsonSerialization<T, Input, Output extends Input>(
+  type: SerializableType<T, "json", Input, Output>,
   typedValue: ValidTypedValue
 ): void {
   let actualSerialized: string;
@@ -126,14 +126,14 @@ export function testJsonSerialization<T, Output, Input extends Output>(
 
   it(`\`t.read("json", t.write("json", val))\` should be valid and equal to \`val\``, function () {
     const deserialized: Output = JSON.parse(actualSerialized);
-    const imported: T = type.read("json", <Input> deserialized);
+    const imported: T = type.read("json", deserialized);
     assert.isTrue(type.test(imported));
     assert.isTrue(type.equals(imported, typedValue.value));
   });
 }
 
-export function testQsSerialization<T, Output, Input extends Output>(
-  type: SerializableType<T, "qs", Output, Input>,
+export function testQsSerialization<T, Input, Output extends Input>(
+  type: SerializableType<T, "qs", Input, Output>,
   typedValue: ValidTypedValue
 ): void {
   let actualSerialized: string;
@@ -162,7 +162,7 @@ export function testQsSerialization<T, Output, Input extends Output>(
 
   it(`\`t.read("qs", t.write("qs", val))\` should be valid and equal to \`val\``, function () {
     const deserialized: Output = qs.parse(actualSerialized).wrapper;
-    const imported: T = type.read("qs", <Input> deserialized);
+    const imported: T = type.read("qs", deserialized);
     assert.isTrue(type.test(imported));
     assert.isTrue(type.equals(imported, typedValue.value));
   });

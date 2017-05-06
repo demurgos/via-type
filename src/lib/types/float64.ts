@@ -32,8 +32,8 @@ export interface Options {
 
 export class Float64Type
   implements VersionedType<T, json.Input, json.Output, Diff>,
-    SerializableType<T, "bson", bson.Output, bson.Input>,
-    SerializableType<T, "qs", qs.Output, qs.Input> {
+    SerializableType<T, "bson", bson.Input, bson.Output>,
+    SerializableType<T, "qs", qs.Input, qs.Output> {
   static fromJSON(options: json.Type): Float64Type {
     return new Float64Type(options);
   }

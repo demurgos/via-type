@@ -24,8 +24,8 @@ export type Diff = undefined;
 
 export class NullType
   implements VersionedType<T, json.Input, json.Output, Diff>,
-    SerializableType<T, "bson", bson.Output, bson.Input>,
-    SerializableType<T, "qs", qs.Output, qs.Input> {
+    SerializableType<T, "bson", bson.Input, bson.Output>,
+    SerializableType<T, "qs", qs.Input, qs.Output> {
   readonly name: Name = name;
 
   toJSON(): json.Type {

@@ -60,8 +60,8 @@ export interface Options<E extends number> {
  */
 export class SimpleEnumType<E extends number>
   implements VersionedType<E, json.Input, json.Output, Diff>,
-    SerializableType<E, "bson", bson.Output, bson.Input>,
-    SerializableType<E, "qs", qs.Output, qs.Input> {
+    SerializableType<E, "bson", bson.Input, bson.Output>,
+    SerializableType<E, "qs", qs.Input, qs.Output> {
   static fromJSON(): SimpleEnumType<any> {
     throw NotImplementedError.create("SimpleEnumType.fromJSON");
   }

@@ -29,9 +29,9 @@ export interface Options<T, Output, Input extends Output, Diff> {
 }
 
 export class ArrayType<T>
-  implements VersionedType<T[], json.Output, json.Input, Diff>,
-    SerializableType<T[], "bson", bson.Output, bson.Input>,
-    SerializableType<T[], "qs", qs.Output, qs.Input> {
+  implements VersionedType<T[], json.Input, json.Output, Diff>,
+    SerializableType<T[], "bson", bson.Input, bson.Output>,
+    SerializableType<T[], "qs", qs.Input, qs.Output> {
   readonly name: Name = name;
   readonly itemType: VersionedType<T, any, any, any>;
   readonly maxLength: number;
