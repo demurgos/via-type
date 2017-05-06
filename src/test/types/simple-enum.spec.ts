@@ -16,48 +16,48 @@ describe("SimpleEnum", function () {
       name: "Color.Red",
       value: Color.Red,
       valid: true,
-      serialized: {
-        json: {canonical: "Red"}
+      output: {
+        json: "Red"
       }
     },
     {
       name: "Color.Green",
       value: Color.Green,
       valid: true,
-      serialized: {
-        json: {canonical: "Green"}
+      output: {
+        json: "Green"
       }
     },
     {
       name: "Color.Blue",
       value: Color.Blue,
       valid: true,
-      serialized: {
-        json: {canonical: "Blue"}
+      output: {
+        json: "Blue"
       }
     },
     {
       name: "0",
       value: 0,
       valid: true,
-      serialized: {
-        json: {canonical: "Red"}
+      output: {
+        json: "Red"
       }
     },
     {
       name: "1",
       value: 1,
       valid: true,
-      serialized: {
-        json: {canonical: "Green"}
+      output: {
+        json: "Green"
       }
     },
     {
       name: "2",
       value: 2,
       valid: true,
-      serialized: {
-        json: {canonical: "Blue"}
+      output: {
+        json: "Blue"
       }
     },
 
@@ -81,7 +81,7 @@ describe("SimpleEnum", function () {
   runTests(type, items);
 });
 
-describe("SimpleEnum#rename", function () {
+describe("SimpleEnum: rename", function () {
   enum Node {
     Expression,
     BinaryOperator,
@@ -95,48 +95,60 @@ describe("SimpleEnum#rename", function () {
       name: "Node.Expression",
       value: Node.Expression,
       valid: true,
-      serialized: {
-        json: {canonical: "expression"}
+      output: {
+        bson: "expression",
+        json: "expression",
+        qs: "expression"
       }
     },
     {
       name: "Node.BinaryOperator",
       value: Node.BinaryOperator,
       valid: true,
-      serialized: {
-        json: {canonical: "binary-operator"}
+      output: {
+        bson: "binary-operator",
+        json: "binary-operator",
+        qs: "binary-operator"
       }
     },
     {
       name: "Node.BlockStatement",
       value: Node.BlockStatement,
       valid: true,
-      serialized: {
-        json: {canonical: "block-statement"}
+      output: {
+        bson: "block-statement",
+        json: "block-statement",
+        qs: "block-statement"
       }
     },
     {
       name: "0",
       value: 0,
       valid: true,
-      serialized: {
-        json: {canonical: "expression"}
+      output: {
+        bson: "expression",
+        json: "expression",
+        qs: "expression"
       }
     },
     {
       name: "1",
       value: 1,
       valid: true,
-      serialized: {
-        json: {canonical: "binary-operator"}
+      output: {
+        bson: "binary-operator",
+        json: "binary-operator",
+        qs: "binary-operator"
       }
     },
     {
       name: "2",
       value: 2,
       valid: true,
-      serialized: {
-        json: {canonical: "block-statement"}
+      output: {
+        bson: "block-statement",
+        json: "block-statement",
+        qs: "block-statement"
       }
     }
   ];

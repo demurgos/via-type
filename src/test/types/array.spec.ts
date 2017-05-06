@@ -12,22 +12,22 @@ describe("ArrayType", function () {
     {
       value: [],
       valid: true,
-      serialized: {
-        json: {canonical: []}
+      output: {
+        json: []
       }
     },
     {
       value: [1],
       valid: true,
-      serialized: {
-        json: {canonical: [1]}
+      output: {
+        json: [1]
       }
     },
     {
       value: [2, 3],
       valid: true,
-      serialized: {
-        json: {canonical: [2, 3]}
+      output: {
+        json: [2, 3]
       }
     },
     {

@@ -1,9 +1,10 @@
+import {CaseStyle} from "../../lib/helpers/rename";
 import {DateType} from "../../lib/types/date";
 import {DocumentType} from "../../lib/types/document";
 import {Int32Type} from "../../lib/types/int32";
 import {runTests, TypedValue} from "../helpers/test";
 
-describe("DocumentType", function () {
+describe("Document", function () {
   const documentType: DocumentType<any> = new DocumentType({
     ignoreExtraKeys: true,
     properties: {
@@ -40,8 +41,8 @@ describe("DocumentType", function () {
         }
       },
       valid: true,
-      serialized: {
-        json: {canonical: {dateProp: "1970-01-01T00:00:00.000Z", optIntProp: 50, nestedDoc: {id: 10}}}
+      output: {
+        json: {dateProp: "1970-01-01T00:00:00.000Z", optIntProp: 50, nestedDoc: {id: 10}}
       }
     },
 
@@ -63,4 +64,58 @@ describe("DocumentType", function () {
   ];
 
   runTests(documentType, items);
+});
+
+describe("Document: rename", function () {
+  interface Rect {
+    xMin: number;
+    xMax: number;
+    yMin: number;
+    yMax: number;
+  }
+
+  const type: DocumentType<Rect> = new DocumentType<Rect>({
+    properties: {
+      xMin: {type: new Int32Type()},
+      xMax: {type: new Int32Type()},
+      yMin: {type: new Int32Type()},
+      yMax: {type: new Int32Type()}
+    },
+    rename: CaseStyle.KebabCase
+  });
+
+  const items: TypedValue[] = [
+    {
+      name: "Rect {xMin: 0, xMax: 10, yMin: 20, yMax: 30}",
+      value: <Rect> {
+        xMin: 0,
+        xMax: 10,
+        yMin: 20,
+        yMax: 30
+      },
+      valid: true,
+      output: {
+        bson: {
+          "x-min": 0,
+          "x-max": 10,
+          "y-min": 20,
+          "y-max": 30
+        },
+        json: {
+          "x-min": 0,
+          "x-max": 10,
+          "y-min": 20,
+          "y-max": 30
+        },
+        qs: {
+          "x-min": "0",
+          "x-max": "10",
+          "y-min": "20",
+          "y-max": "30"
+        }
+      }
+    }
+  ];
+
+  runTests(type, items);
 });
