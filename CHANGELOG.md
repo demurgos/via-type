@@ -2,6 +2,9 @@
 
 - **[Feature]** Implement `LiteralType`
 - **[Feature]** Implement `UnionType`
+- **[Feature]** Implement `TaggedUnionType`. This is a subclass of UnionType to simplify
+  the definition of unions of documents with a "tag property". The tag property acts as
+  a discriminant and allows to retrieve the type of the whole document.
 - **[Feature]** Add the `rename` option to `DocumentType`. This allows to rename
   the keys of the document similarly to the values of `SimpleEnumType`.
 - **[Patch]** Fix the constraints for `SerializableType` generics.

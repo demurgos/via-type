@@ -3,11 +3,11 @@ import {DocumentType} from "../../lib/types/document";
 import {Int32Type} from "../../lib/types/int32";
 import {LiteralType} from "../../lib/types/literal";
 import {SimpleEnumType} from "../../lib/types/simple-enum";
-import {UnionType} from "../../lib/types/union";
+import {TaggedUnionType} from "../../lib/types/tagged-union";
 import {runTests, TypedValue} from "../helpers/test";
 
-describe("Union", function () {
-  describe("Union<Shape>", function () {
+describe("TaggedUnion", function () {
+  describe("TaggedUnion<Shape>", function () {
     enum ShapeType {
       Rectangle,
       Circle
@@ -54,44 +54,9 @@ describe("Union", function () {
     });
 
     type Shape = Rectangle | Circle;
-    const shapeType: UnionType<Shape> = new UnionType<Shape>({
+    const shapeType: TaggedUnionType<Shape> = new TaggedUnionType<Shape>({
       variants: [rectangleType, circleType],
-      readMatcher: (format: string, val: any) => {
-        if (typeof val !== "object" || val === null) {
-          return undefined;
-        }
-        switch (val.type) {
-          case "circle":
-            return circleType;
-          case "rectangle":
-            return rectangleType;
-          default:
-            return undefined;
-        }
-      },
-      matcher: (val: Shape) => {
-        if (typeof val !== "object" || val === null) {
-          return undefined;
-        }
-        switch (val.type) {
-          case ShapeType.Circle:
-            return circleType;
-          case ShapeType.Rectangle:
-            return rectangleType;
-          default:
-            return undefined;
-        }
-      },
-      trustedMatcher: (val: Shape) => {
-        switch (val.type) {
-          case ShapeType.Circle:
-            return circleType;
-          case ShapeType.Rectangle:
-            return rectangleType;
-          default:
-            return undefined as never;
-        }
-      }
+      tag: "type"
     });
 
     const items: TypedValue[] = [

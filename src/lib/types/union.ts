@@ -36,12 +36,18 @@ export type ReadMatcher<T, Output, Input extends Output, Diff> = (
   variants: VersionedType<T, Output, Input, Diff>[]
 ) => VersionedType<T, Output, Input, Diff> | undefined;
 
+export type ReadTrustedMatcher<T, Output, Input extends Output, Diff> = (
+  format: "bson" | "json" | "qs",
+  value: T,
+  variants: VersionedType<T, Output, Input, Diff>[]
+) => VersionedType<T, Output, Input, Diff>;
+
 export interface Options<T, Output, Input extends Output, Diff> {
   variants: VersionedType<T, Output, Input, Diff>[];
   matcher: Matcher<T, Output, Input, Diff>;
   trustedMatcher?: TrustedMatcher<T, Output, Input, Diff>;
   readMatcher: ReadMatcher<T, Output, Input, Diff>;
-  readTrustedMatcher?: ReadMatcher<T, Output, Input, Diff>;
+  readTrustedMatcher?: ReadTrustedMatcher<T, Output, Input, Diff>;
 }
 
 export class UnionType<T>
@@ -52,15 +58,15 @@ export class UnionType<T>
   readonly variants: VersionedType<T, any, any, Diff>[];
   readonly matcher: Matcher<T, any, any, Diff>;
   readonly trustedMatcher: TrustedMatcher<T, any, any, Diff>;
-  readonly readTrustedMatcher: ReadMatcher<T, any, any, Diff>;
   readonly readMatcher: ReadMatcher<T, any, any, Diff>;
+  readonly readTrustedMatcher: ReadTrustedMatcher<T, any, any, Diff>;
 
   constructor(options: Options<T, any, any, any>) {
     this.variants = options.variants;
     this.matcher = options.matcher;
     this.trustedMatcher = options.trustedMatcher || this.matcher as TrustedMatcher<T, any, any, Diff>;
     this.readMatcher = options.readMatcher;
-    this.readTrustedMatcher = options.readTrustedMatcher || this.readMatcher;
+    this.readTrustedMatcher = options.readTrustedMatcher || this.readMatcher as ReadTrustedMatcher<T, any, any, Diff>;
   }
 
   toJSON(): json.Type {
@@ -72,7 +78,7 @@ export class UnionType<T>
   readTrusted(format: "qs", val: qs.Output): T;
   readTrusted(format: "bson" | "json" | "qs", input: any): T {
     // TODO(demurgos): Check if the format is supported instead of casting to `any`
-    return this.readTrustedMatcher(format, input, this.variants)!.readTrusted(<any> format, input);
+    return this.readTrustedMatcher(format, input, this.variants).readTrusted(<any> format, input);
   }
 
   read(format: "bson" | "json" | "qs", input: any): T {
