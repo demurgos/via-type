@@ -12,6 +12,7 @@ export {Int32Type} from "./types/int32";
 export {LiteralType} from "./types/literal";
 export {NullType} from "./types/null";
 export {SimpleEnumType} from "./types/simple-enum";
+export {TaggedUnionType} from "./types/tagged-union";
 export {TypedUnionType} from "./types/typed-union";
 export {Ucs2StringType} from "./types/ucs2-string";
 export {UnionType} from "./types/union";
@@ -26,6 +27,7 @@ import * as int32  from "./types/int32";
 import * as literal  from "./types/literal";
 import * as _null  from "./types/null";
 import * as simpleEnum  from "./types/simple-enum";
+import * as taggedUnion  from "./types/tagged-union";
 import * as typedUnion  from "./types/typed-union";
 import * as ucs2String  from "./types/ucs2-string";
 import * as union  from "./types/union";
@@ -40,6 +42,7 @@ export {
   literal,
   _null as null,
   simpleEnum,
+  taggedUnion,
   typedUnion,
   ucs2String,
   union

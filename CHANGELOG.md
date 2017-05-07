@@ -1,3 +1,7 @@
+# Next
+
+- **[Patch]** Export `TaggedUnionType`
+
 # 0.5.0-alpha.4
 
 - **[Feature]** Implement `LiteralType`
