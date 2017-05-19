@@ -199,11 +199,8 @@ export class DocumentType<T extends {}>
   }
 
   testError(val: T): Error | undefined {
-    if (typeof val !== "object") {
+    if (typeof val !== "object" || val === null) {
       return WrongTypeError.create("object", val);
-    }
-    if (val === null) {
-      return WrongTypeError.create("!null", val);
     }
     const keysDiff: DiffSetsResult<string> = diffSets(this.keys.keys(), Object.keys(val));
     const missingRequiredKeys: string[] = [...keysDiff.missingKeys].filter((key: string): boolean => {

@@ -139,6 +139,9 @@ export function testQsSerialization<T, Input, Output extends Input>(
   let actualSerialized: string;
 
   if (typedValue.output !== undefined && "qs" in typedValue.output) {
+    if (typedValue.output["qs"] === "ignore") {
+      return;
+    }
     const output: Output = typedValue.output["qs"];
     const expectedSerialized: string = qs.stringify({wrapper: output});
     it(`\`.write(format: "qs", val)\` should return the wrapped value \`${expectedSerialized}\``, function () {
