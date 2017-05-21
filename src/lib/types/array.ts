@@ -75,12 +75,12 @@ export class ArrayType<T>
           throw WrongTypeError.create("array", input);
         }
         // TODO(demurgos): Check if the format is supported instead of casting to `any`
-        result = input.map((item: any): T => this.itemType.readTrusted(<any> format, item));
+        result = input.map((item: any): T => this.itemType.read(<any> format, item));
         break;
       case "qs":
         if (Array.isArray(input)) {
           // TODO(demurgos): Check if the format is supported instead of casting to `any`
-          result = input.map((item: any): T => this.itemType.readTrusted(<any> format, item));
+          result = input.map((item: any): T => this.itemType.read(<any> format, item));
         } else if (input === undefined) {
           result = [];
         } else {
