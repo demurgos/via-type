@@ -32,13 +32,13 @@ export type TrustedMatcher<T, Output, Input extends Output, Diff> = (
 
 export type ReadMatcher<T, Output, Input extends Output, Diff> = (
   format: "bson" | "json" | "qs",
-  value: T,
+  value: any,
   variants: VersionedType<T, Output, Input, Diff>[],
 ) => VersionedType<T, Output, Input, Diff> | undefined;
 
 export type ReadTrustedMatcher<T, Output, Input extends Output, Diff> = (
   format: "bson" | "json" | "qs",
-  value: T,
+  value: any, // Union of the outputs
   variants: VersionedType<T, Output, Input, Diff>[],
 ) => VersionedType<T, Output, Input, Diff>;
 

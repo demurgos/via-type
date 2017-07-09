@@ -1,7 +1,8 @@
 # Next
 
 - **[Feature]** Implement `BufferType`
-- **[Patch]** `ArrayType#read` now uses `itemType.read` (instead of `.readTrusted`).
+- **[Fix]** `ArrayType#read` now uses `itemType.read` (instead of `.readTrusted`).
+- **[Fix]** Do not type value for `readMatcher` and `readMatcher`, used by the general `UnionType`.
 
 # 0.5.0-alpha.6
 
