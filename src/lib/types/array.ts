@@ -23,8 +23,8 @@ export namespace qs {
 }
 export type Diff = any;
 
-export interface Options<T, Output, Input extends Output, Diff> {
-  itemType: VersionedType<T, Output, Input, Diff>;
+export interface Options<T, Input, Output extends Input, Diff> {
+  itemType: VersionedType<T, Input, Output, Diff>;
   maxLength: number;
 }
 

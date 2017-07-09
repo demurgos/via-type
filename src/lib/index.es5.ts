@@ -4,6 +4,7 @@ export {Type, SerializableType, VersionedType} from "./interfaces";
 
 export {ArrayType} from "./types/array";
 export {BooleanType} from "./types/boolean";
+export {BufferType} from "./types/buffer";
 export {CodepointStringType} from "./types/codepoint-string";
 export {DateType} from "./types/date";
 export {DocumentType} from "./types/document";
@@ -20,6 +21,7 @@ export {UnionType} from "./types/union";
 
 import * as array from "./types/array";
 import * as boolean from "./types/boolean";
+import * as buffer from "./types/buffer";
 import * as codepointString  from "./types/codepoint-string";
 import * as date  from "./types/date";
 import * as document  from "./types/document";
@@ -36,6 +38,7 @@ import * as union  from "./types/union";
 export {
   array,
   boolean,
+  buffer,
   codepointString,
   date,
   document,
