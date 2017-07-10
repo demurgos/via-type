@@ -12,6 +12,7 @@ describe("Union", function () {
       Rectangle,
       Circle,
     }
+
     const shapeTypeType: SimpleEnumType<ShapeType> = new SimpleEnumType({
       enum: ShapeType,
       rename: CaseStyle.KebabCase,
@@ -22,6 +23,7 @@ describe("Union", function () {
       width: number;
       height: number;
     }
+
     const rectangleType: DocumentType<Rectangle> = new DocumentType<Rectangle>({
       properties: {
         type: {
@@ -40,6 +42,7 @@ describe("Union", function () {
       type: ShapeType.Circle;
       radius: number;
     }
+
     const circleType: DocumentType<Circle> = new DocumentType<Circle>({
       properties: {
         type: {

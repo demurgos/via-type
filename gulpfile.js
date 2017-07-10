@@ -20,7 +20,7 @@ const libTarget = Object.assign(
   {
     name: "lib-es2015",
     scripts: ["lib/**/*.ts", "!lib/**/*.es5.ts"],
-    typeRoots: ["../typings/modules", "../node_modules/@types"],
+    typeRoots: ["custom-typings", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
@@ -40,7 +40,7 @@ const es5Target = Object.assign(
   {
     name: "lib-es5",
     scripts: ["lib/**/*.ts", "!lib/**/*.es2015.ts"],
-    typeRoots: ["../typings/modules", "../node_modules/@types"],
+    typeRoots: ["custom-typings", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
@@ -60,7 +60,7 @@ const libTestTarget = Object.assign(
   {
     name: "lib-test",
     scripts: ["test/**/*.ts", "lib/**/*.ts", "!lib/**/*.es5.ts"],
-    typeRoots: ["../typings/modules", "../node_modules/@types"],
+    typeRoots: ["custom-typings", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
