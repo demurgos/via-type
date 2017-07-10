@@ -1,4 +1,4 @@
-# Next
+# 0.5.0-alpha.7 (2017-07-10)
 
 - **[Feature]** Implement `BufferType`
 - **[Fix]** `ArrayType#read` now uses `itemType.read` (instead of `.readTrusted`).
