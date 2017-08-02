@@ -13,12 +13,12 @@ const projectOptions = Object.assign(
   }
 );
 
-// `lib` target
-const libTarget = Object.assign(
+// `lib-cjs` target
+const libCjsTarget = Object.assign(
   {},
   buildTools.config.LIB_TARGET,
   {
-    name: "lib-es2015",
+    name: "lib-cjs",
     scripts: ["lib/**/*.ts", "!lib/**/*.es5.ts"],
     typeRoots: ["custom-typings", "../node_modules/@types"],
     typescript: {
@@ -33,22 +33,23 @@ const libTarget = Object.assign(
   }
 );
 
-// `lib-es5` target
-const es5Target = Object.assign(
+// `lib-es` target
+const libEsTarget = Object.assign(
   {},
   buildTools.config.LIB_TARGET,
   {
-    name: "lib-es5",
-    scripts: ["lib/**/*.ts", "!lib/**/*.es2015.ts"],
+    name: "lib-es",
+    scripts: ["lib/**/*.ts", "!lib/**/*.es5.ts"],
     typeRoots: ["custom-typings", "../node_modules/@types"],
     typescript: {
       compilerOptions: {
         skipLibCheck: true,
+        module: "es2015",
         target: "es2015",
         lib: ["es2015"]
       },
       typescript: typescript,
-      tsconfigJson: ["lib/es5.tsconfig.json"]
+      tsconfigJson: ["lib/tsconfig.json"]
     }
   }
 );
@@ -80,10 +81,10 @@ const libTestTarget = Object.assign(
 );
 
 buildTools.projectTasks.registerAll(gulp, projectOptions);
-buildTools.targetGenerators.node.generateTarget(gulp, projectOptions, libTarget);
-buildTools.targetGenerators.node.generateTarget(gulp, projectOptions, es5Target);
+buildTools.targetGenerators.node.generateTarget(gulp, projectOptions, libCjsTarget);
+buildTools.targetGenerators.node.generateTarget(gulp, projectOptions, libEsTarget);
 buildTools.targetGenerators.test.generateTarget(gulp, projectOptions, libTestTarget);
 
-gulp.task("all:tsconfig.json", gulp.parallel("lib-es2015:tsconfig.json", "lib-test:tsconfig.json"));
-gulp.task("all:build", gulp.parallel("lib-es2015:build", "lib-es5:build"));
-gulp.task("all:dist", gulp.parallel("lib-es2015:dist", "lib-es5:dist"));
+gulp.task("all:tsconfig.json", gulp.parallel("lib-es:tsconfig.json", "lib-test:tsconfig.json"));
+gulp.task("all:build", gulp.parallel("lib-cjs:build", "lib-es:build"));
+gulp.task("all:dist", gulp.parallel("lib-cjs:dist", "lib-es:dist"));

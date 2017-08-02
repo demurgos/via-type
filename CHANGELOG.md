@@ -1,3 +1,8 @@
+# Next
+
+- **[Breaking]** Replace `"browser"` with ES5 CommonJS modules by `"module""` with ES6 modules in `package.json`
+- **[Breaking]** Drop library support of ES5, use a shim or transpiler if needed.
+
 # 0.5.0-alpha.9 (2017-07-14)
 
 - **[Fix]** Treat `{foo: undefined}` as `{}` if `foo` is an optional document property.
