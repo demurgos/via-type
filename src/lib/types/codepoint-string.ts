@@ -1,14 +1,22 @@
 import {Incident} from "incident";
-import {nfc as unormNfc} from "unorm";
 import {LowerCaseError} from "../errors/lower-case";
 import {MaxCodepointsError} from "../errors/max-codepoints";
 import {MinCodepointsError} from "../errors/min-codepoints";
+import {MissingDependencyError} from "../errors/missing-dependency";
 import {NotTrimmedError} from "../errors/not-trimmed";
 import {PatternNotMatchedError} from "../errors/pattern-not-matched";
 import {UnknownFormatError} from "../errors/unknown-format";
 import {WrongTypeError} from "../errors/wrong-type";
 import {checkedUcs2Decode} from "../helpers/checked-ucs2-decode";
 import {SerializableType, VersionedType} from "../interfaces";
+
+let unormNfc: ((str: string) => string) | undefined = undefined;
+try {
+  /* tslint:disable-next-line:no-var-requires */
+  unormNfc = require("unorm").nfc;
+} catch (err) {
+  // Ignore dependency not found error.
+}
 
 export enum Normalization {
   None,
@@ -25,6 +33,7 @@ export namespace bson {
 export namespace json {
   export type Input = string;
   export type Output = string;
+
   export interface Type {
     name: Name;
     normalization: "none" | "nfc";
@@ -44,6 +53,7 @@ export namespace qs {
   export type Output = string;
 }
 export type Diff = [string, string];
+
 export interface Options {
   /**
    * Ensure NFC normalization when reading strings.
@@ -177,6 +187,9 @@ export class CodepointStringType
 
     switch (this.normalization) {
       case Normalization.Nfc:
+        if (unormNfc === undefined) {
+          throw MissingDependencyError.create("unorm", "Required to normalize unicode strings to NFC.");
+        }
         if (val !== unormNfc(val)) {
           return Incident("UnicodeNormalization", "Not NFC-Normalized");
         }

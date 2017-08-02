@@ -1,5 +1,6 @@
-import {Binary} from "bson";
+import {Binary as BinaryType} from "bson";
 import {MaxArrayLengthError} from "../errors/max-array-length";
+import {MissingDependencyError} from "../errors/missing-dependency";
 import {NotImplementedError} from "../errors/not-implemented";
 import {UnknownFormatError} from "../errors/unknown-format";
 import {WrongTypeError} from "../errors/wrong-type";
@@ -8,8 +9,8 @@ import {SerializableType, VersionedType} from "../interfaces";
 export type Name = "buffer";
 export const name: Name = "buffer";
 export namespace bson {
-  export type Input = Binary | Buffer | Uint8Array;
-  export type Output = Binary;
+  export type Input = BinaryType | Buffer | Uint8Array;
+  export type Output = BinaryType;
 }
 export namespace json {
   export type Input = string;
@@ -27,8 +28,18 @@ export interface Options {
   maxLength: number;
 }
 
-function isBinary(val: any): val is Binary {
+function isBinary(val: any): val is BinaryType {
   return val._bsontype === "Binary";
+}
+
+/* tslint:disable-next-line:variable-name */
+let Binary: {new(b: Uint8Array): BinaryType} | undefined = undefined;
+try {
+  // TODO: Fix BSON type definitions
+  /* tslint:disable-next-line:no-var-requires */
+  Binary = require("bson").Binary;
+} catch (err) {
+  // Ignore dependency not found error.
 }
 
 export class BufferType
@@ -106,8 +117,10 @@ export class BufferType
   write(format: "bson" | "json" | "qs", val: Uint8Array): any {
     switch (format) {
       case "bson":
-        // TODO: Fix BSON type definitions
-        return new (Binary as {new(b: Uint8Array): Binary})(Buffer.from(val as any));
+        if (Binary === undefined) {
+          throw MissingDependencyError.create("bson", "Required to write buffers to BSON.");
+        }
+        return new Binary(Buffer.from(val as any));
       case "json":
       case "qs":
         const result: string[] = new Array(val.length);
