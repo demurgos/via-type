@@ -102,6 +102,7 @@ export class BooleanType
    * @returns `true` if there is a difference, `undefined` otherwise
    */
   diff(oldVal: T, newVal: T): Diff | undefined {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return (oldVal !== newVal) || undefined;
   }
 
@@ -114,6 +115,7 @@ export class BooleanType
   }
 
   squash(diff1: Diff | undefined, diff2: Diff | undefined): Diff | undefined {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return (diff1 !== diff2) && undefined;
   }
 }

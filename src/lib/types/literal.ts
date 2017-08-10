@@ -72,7 +72,7 @@ export class LiteralType<T>
 
   testError(val: T): Error | undefined {
     const error: Error | undefined = this.type.testError(val);
-    if (error) {
+    if (error !== undefined) {
       return error;
     }
     if (!this.type.equals(val, this.value)) {

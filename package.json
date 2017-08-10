@@ -38,12 +38,16 @@
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
+    "@types/node": "^8.0.20",
     "@types/qs": "^6.2.31",
     "chai": "^3.5.0",
-    "demurgos-web-build-tools": "^0.14.3",
+    "demurgos-web-build-tools": "^0.15.0-beta.2",
     "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-cli": "^1.4.0",
     "pre-commit": "^1.2.2",
     "qs": "^6.4.0",
-    "typescript": "^2.3.2"
+    "ts-node": "^3.3.0",
+    "typedoc": "^0.8.0",
+    "typescript": "^2.4.2"
   }
 }

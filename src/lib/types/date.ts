@@ -122,14 +122,17 @@ export class DateType
   }
 
   diff(oldVal: T, newVal: T): Diff | undefined {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return newVal.getTime() - oldVal.getTime() || undefined;
   }
 
   patch(oldVal: T, diff: Diff | undefined): T {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return new Date(oldVal.getTime() + (diff || 0));
   }
 
   reverseDiff(diff: Diff | undefined): Diff | undefined {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return diff && -diff;
   }
 

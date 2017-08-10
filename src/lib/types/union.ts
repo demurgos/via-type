@@ -64,8 +64,10 @@ export class UnionType<T>
   constructor(options: Options<T, any, any, any>) {
     this.variants = options.variants;
     this.matcher = options.matcher;
+    /* tslint:disable-next-line:strict-boolean-expressions */
     this.trustedMatcher = options.trustedMatcher || this.matcher as TrustedMatcher<T, any, any, Diff>;
     this.readMatcher = options.readMatcher;
+    /* tslint:disable-next-line:strict-boolean-expressions */
     this.readTrustedMatcher = options.readTrustedMatcher || this.readMatcher as ReadTrustedMatcher<T, any, any, Diff>;
   }
 

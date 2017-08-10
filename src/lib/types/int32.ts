@@ -130,6 +130,7 @@ export class Int32Type
   }
 
   reverseDiff(diff: Diff | undefined): Diff | undefined {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return diff && -diff;
   }
 

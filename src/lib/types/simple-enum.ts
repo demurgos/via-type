@@ -166,6 +166,7 @@ export class SimpleEnumType<E extends number>
   }
 
   reverseDiff(diff: Diff | undefined): Diff | undefined {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     return diff && -diff;
   }
 
