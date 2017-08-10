@@ -1,10 +1,10 @@
 import {ArrayType} from "../../lib/types/array";
-import {Int32Type} from "../../lib/types/int32";
+import {IntegerType} from "../../lib/types/integer";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("ArrayType", function () {
   const integersArray: ArrayType<number> = new ArrayType({
-    itemType: new Int32Type(),
+    itemType: new IntegerType(),
     maxLength: 2,
   });
 

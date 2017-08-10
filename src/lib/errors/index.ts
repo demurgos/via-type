@@ -2,7 +2,6 @@ export {ExtraKeysError} from "./extra-keys";
 export {FiniteNumberError} from "./finite-number";
 export {InvalidArrayItemError} from "./invalid-array-item";
 export {InvalidIntegerError} from "./invalid-integer";
-export {InvalidInt32Error} from "./invalid-int32";
 export {InvalidPropertyError} from "./invalid-property";
 export {InvalidTimestampError} from "./invalid-timestamp";
 export {LowerCaseError} from "./lower-case";

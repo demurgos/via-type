@@ -1,6 +1,6 @@
 import {CaseStyle} from "../../lib/helpers/rename";
 import {DocumentType} from "../../lib/types/document";
-import {Int32Type} from "../../lib/types/int32";
+import {IntegerType} from "../../lib/types/integer";
 import {LiteralType} from "../../lib/types/literal";
 import {SimpleEnumType} from "../../lib/types/simple-enum";
 import {TaggedUnionType} from "../../lib/types/tagged-union";
@@ -30,8 +30,8 @@ describe("TaggedUnion", function () {
             value: ShapeType.Rectangle,
           }),
         },
-        width: {type: new Int32Type()},
-        height: {type: new Int32Type()},
+        width: {type: new IntegerType()},
+        height: {type: new IntegerType()},
       },
       rename: CaseStyle.KebabCase,
     });
@@ -48,7 +48,7 @@ describe("TaggedUnion", function () {
             value: ShapeType.Circle,
           }),
         },
-        radius: {type: new Int32Type()},
+        radius: {type: new IntegerType()},
       },
       rename: CaseStyle.KebabCase,
     });

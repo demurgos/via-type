@@ -1,7 +1,7 @@
 import {CaseStyle} from "../../lib/helpers/rename";
 import {DateType} from "../../lib/types/date";
 import {DocumentType} from "../../lib/types/document";
-import {Int32Type} from "../../lib/types/int32";
+import {IntegerType} from "../../lib/types/integer";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("Document", function () {
@@ -14,7 +14,7 @@ describe("Document", function () {
       },
       optIntProp: {
         optional: true,
-        type: new Int32Type(),
+        type: new IntegerType(),
       },
       nestedDoc: {
         optional: true,
@@ -23,7 +23,7 @@ describe("Document", function () {
           properties: {
             id: {
               optional: true,
-              type: new Int32Type(),
+              type: new IntegerType(),
             },
           },
         }),
@@ -89,10 +89,10 @@ describe("Document: rename", function () {
 
   const type: DocumentType<Rect> = new DocumentType<Rect>({
     properties: {
-      xMin: {type: new Int32Type()},
-      xMax: {type: new Int32Type()},
-      yMin: {type: new Int32Type()},
-      yMax: {type: new Int32Type()},
+      xMin: {type: new IntegerType()},
+      xMax: {type: new IntegerType()},
+      yMin: {type: new IntegerType()},
+      yMax: {type: new IntegerType()},
     },
     rename: CaseStyle.KebabCase,
   });

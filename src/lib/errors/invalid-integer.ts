@@ -5,14 +5,15 @@ export namespace InvalidIntegerError {
   export const name: Name = "InvalidInteger";
   export interface Data {
     value: any;
+    source?: any;
   }
   export type Cause = undefined;
   export type Type = Incident<Name, Data, Cause>;
-  export function format({value}: Data): string {
-    return `Invalid integer: ${value}`;
+  export function format({value, source}: Data): string {
+    return `Invalid integer: ${value}` + (source === undefined ? "" : `, from ${source}`);
   }
-  export function create(value: number): Type {
-    return Incident(name, {value}, format);
+  export function create(value: number, source?: any): Type {
+    return Incident(name, {value, source}, format);
   }
 }
 

@@ -1,10 +1,11 @@
-import {InvalidInt32Error} from "../errors/invalid-int32";
+import {Incident} from "incident";
+import {InvalidIntegerError} from "../errors/invalid-integer";
 import {UnknownFormatError} from "../errors/unknown-format";
 import {WrongTypeError} from "../errors/wrong-type";
 import {SerializableType, VersionedType} from "../interfaces";
 
-export type Name = "int32";
-export const name: Name = "int32";
+export type Name = "int";
+export const name: Name = "int";
 export type T = number;
 export namespace bson {
   export type Input = number;
@@ -15,6 +16,8 @@ export namespace json {
   export type Output = number;
   export interface Type {
     name: Name;
+    min: number;
+    max: number;
   }
 }
 export namespace qs {
@@ -23,22 +26,49 @@ export namespace qs {
 }
 export type Diff = number;
 
-export class Int32Type
+/**
+ * Options for the `int` type.
+ */
+export interface Options {
+  /**
+   * Inclusive minimum value.
+   */
+  min?: number;
+
+  /**
+   * Inclusive maximum value.
+   */
+  max?: number;
+}
+
+export const DEFAULT_MIN: number = Number.MIN_SAFE_INTEGER - 1;
+export const DEFAULT_MAX: number = Number.MAX_SAFE_INTEGER;
+
+export class IntegerType
   implements VersionedType<T, json.Input, json.Output, Diff>,
     SerializableType<T, "bson", bson.Input, bson.Output>,
     SerializableType<T, "qs", qs.Input, qs.Output> {
 
   readonly name: Name = name;
+  readonly min: number;
+  readonly max: number;
 
-  constructor() {
+  constructor(options?: Options) {
+    if (options === undefined) {
+      this.min = DEFAULT_MIN;
+      this.max = DEFAULT_MAX;
+      return;
+    }
+    this.min = options.min !== undefined ? options.min : DEFAULT_MIN;
+    this.max = options.max !== undefined ? options.max : DEFAULT_MAX;
   }
 
-  static fromJSON(options: json.Type): Int32Type {
-    return new Int32Type();
+  static fromJSON(options: json.Type): IntegerType {
+    return new IntegerType(options);
   }
 
   toJSON(): json.Type {
-    return {name: name};
+    return {name: name, min: this.min, max: this.max};
   }
 
   readTrusted(format: "bson", val: bson.Output): T;
@@ -76,10 +106,11 @@ export class Int32Type
       default:
         throw UnknownFormatError.create(format);
     }
-
-    if ((val | 0) !== val) {
-      throw InvalidInt32Error.create(val, input);
+    const err: Error | undefined = this.testError(val);
+    if (err !== undefined) {
+      throw err;
     }
+
     return val;
   }
 
@@ -103,14 +134,17 @@ export class Int32Type
     if (typeof val !== "number") {
       return WrongTypeError.create("number", val);
     }
-    if ((val | 0) !== val) {
-      return InvalidInt32Error.create(val);
+    if (Math.round(val) !== val) {
+      return InvalidIntegerError.create(val);
+    }
+    if (val < this.min || val > this.max) {
+      return new Incident("Range", {value: val, min: this.min, max: this.max}, "Integer not in range");
     }
     return undefined;
   }
 
   test(val: T): boolean {
-    return typeof val === "number" && (val | 0) === val;
+    return typeof val === "number" && val >= this.min && val <= this.max && Math.round(val) === val;
   }
 
   equals(val1: T, val2: T): boolean {
@@ -144,4 +178,4 @@ export class Int32Type
   }
 }
 
-export {Int32Type as Type};
+export {IntegerType as Type};

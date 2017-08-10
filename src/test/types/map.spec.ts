@@ -1,11 +1,11 @@
-import {Int32Type} from "../../lib/types/int32";
+import {IntegerType} from "../../lib/types/integer";
 import {MapType} from "../../lib/types/map";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("Map", function () {
   const mapType: MapType<number, number> = new MapType({
-    keyType: new Int32Type(),
-    valueType: new Int32Type(),
+    keyType: new IntegerType(),
+    valueType: new IntegerType(),
     maxSize: 5,
   });
 
