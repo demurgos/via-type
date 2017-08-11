@@ -3,6 +3,8 @@
 - **[Breaking]** Replace `"browser"` with ES5 CommonJS modules by `"module""` with ES6 modules in `package.json`
 - **[Breaking]** Drop library support of ES5, use a shim or transpiler if needed.
 - **[Breaking]** Mark `unorm` and `bson` as optional dependencies.
+- **[Breaking]** Drop support for ES modules in favor of deep package imports.
+- **[Feature]** Provide experimental deep-require support.
 - **[Internal]** Convert gulpfile to Typescript.
 - **[Internal]** Add `yarn.lock` to better support Yarn.
 - **[Internal]** Refactor library to prepare support for deep package imports

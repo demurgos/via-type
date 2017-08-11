@@ -1,5 +1,3 @@
-// This file assumes that the environment supports ES2015 (ES6)
-
 export {Type, SerializableType, VersionedType} from "./_interfaces";
 
 export {ArrayType} from "./array";

@@ -4,7 +4,6 @@
   "description": "Serialization for documents.",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
-  "module": "dist/lib-es/index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/demurgos/kryo.git"
@@ -41,7 +40,7 @@
     "@types/node": "^8.0.20",
     "@types/qs": "^6.2.31",
     "chai": "^3.5.0",
-    "demurgos-web-build-tools": "^0.15.0-beta.2",
+    "demurgos-web-build-tools": "^0.15.0-beta.3",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-cli": "^1.4.0",
     "pre-commit": "^1.2.2",
