@@ -15,8 +15,8 @@
     "start": "npm test",
     "prepublishOnly": "npm test",
     ":lint": "gulp :lint",
-    "typedoc": "typedoc --includeDeclarations --out docs/api --module commonjs --target es2015 --exclude '**/*.spec.ts' --mode modules --name Kryo --readme README.md src/lib/",
-    "gh-pages": "rm -rf build/gh-pages/ && typedoc --includeDeclarations --out build/gh-pages/ --module commonjs --target es2015 --exclude '**/*.spec.ts' --mode modules --name Kryo --readme README.md src/lib/ && touch build/gh-pages/.nojekyll && cp -r build/gh-pages/. dist/gh-pages/"
+    "typedoc": "npm run gulp lib:dist && cd dist/lib && typedoc --includeDeclarations --out docs --module commonjs --target es2015 --mode modules --name Kryo --readme README.md .",
+    "gh-pages": "npm run gulp lib:dist && rm -rf build/gh-pages/ && cd dist/lib && typedoc --includeDeclarations --out ../../build/gh-pages/ --module commonjs --target es2015 --mode modules --name Kryo --readme README.md . && cd ../.. && touch build/gh-pages/.nojekyll && cp -r build/gh-pages/. dist/gh-pages/"
   },
   "pre-commit": {
     "run": [
