@@ -1,5 +1,5 @@
-import {CaseStyle} from "../../lib/helpers/rename";
-import {SimpleEnumType} from "../../lib/types/simple-enum";
+import {CaseStyle} from "../../lib/_helpers/rename";
+import {SimpleEnumType} from "../../lib/simple-enum";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("SimpleEnum", function () {

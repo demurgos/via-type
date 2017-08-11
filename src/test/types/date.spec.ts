@@ -1,4 +1,4 @@
-import {DateType} from "../../lib/types/date";
+import {DateType} from "../../lib/date";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("DateType", function () {

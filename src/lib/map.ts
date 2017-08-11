@@ -1,8 +1,8 @@
 import {Incident} from "incident";
-import {NotImplementedError} from "../errors/not-implemented";
-import {UnknownFormatError} from "../errors/unknown-format";
-import {WrongTypeError} from "../errors/wrong-type";
-import {SerializableType, VersionedType} from "../interfaces";
+import {NotImplementedError} from "./_errors/not-implemented";
+import {UnknownFormatError} from "./_errors/unknown-format";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {SerializableType, VersionedType} from "./_interfaces";
 
 export type Name = "map";
 export const name: Name = "map";

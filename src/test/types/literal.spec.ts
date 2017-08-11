@@ -1,6 +1,6 @@
-import {LiteralType} from "../../lib/types/literal";
-import {SimpleEnumType} from "../../lib/types/simple-enum";
-import {Ucs2StringType} from "../../lib/types/ucs2-string";
+import {LiteralType} from "../../lib/literal";
+import {SimpleEnumType} from "../../lib/simple-enum";
+import {Ucs2StringType} from "../../lib/ucs2-string";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("Literal", function () {

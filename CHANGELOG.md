@@ -5,6 +5,8 @@
 - **[Breaking]** Mark `unorm` and `bson` as optional dependencies.
 - **[Internal]** Convert gulpfile to Typescript.
 - **[Internal]** Add `yarn.lock` to better support Yarn.
+- **[Internal]** Refactor library to prepare support for deep package imports
+  (`import {IntegerType} from "kryo/integer"`)
 
 # 0.5.0-alpha.9 (2017-07-14)
 

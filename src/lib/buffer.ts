@@ -1,10 +1,10 @@
 import {Binary as BinaryType} from "bson";
-import {MaxArrayLengthError} from "../errors/max-array-length";
-import {MissingDependencyError} from "../errors/missing-dependency";
-import {NotImplementedError} from "../errors/not-implemented";
-import {UnknownFormatError} from "../errors/unknown-format";
-import {WrongTypeError} from "../errors/wrong-type";
-import {SerializableType, VersionedType} from "../interfaces";
+import {MaxArrayLengthError} from "./_errors/max-array-length";
+import {MissingDependencyError} from "./_errors/missing-dependency";
+import {NotImplementedError} from "./_errors/not-implemented";
+import {UnknownFormatError} from "./_errors/unknown-format";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {SerializableType, VersionedType} from "./_interfaces";
 
 export type Name = "buffer";
 export const name: Name = "buffer";

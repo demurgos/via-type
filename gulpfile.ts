@@ -8,43 +8,43 @@ const project: buildTools.Project = {
   root: __dirname,
 };
 
-// `lib-cjs` target
-const libCjsTarget: buildTools.NodeTarget = {
+const libProject: buildTools.Project = {...project, srcDir: "src/lib"};
+
+// `lib` target (commonJs)
+const libTarget: buildTools.NodeTarget = {
   ...buildTools.LIB_TARGET,
-  name: "lib-cjs",
-  scripts: ["lib/**/*.ts"],
+  name: "lib",
+  scripts: ["**/*.ts"],
   typescript: {
     compilerOptions: {
       skipLibCheck: true,
     },
     typescript: typescript,
-    tsconfigJson: ["lib/tsconfig.json"],
+    tsconfigJson: ["tsconfig.json"],
   },
 };
 
 // `lib-es` target
-const libEsTarget: buildTools.NodeTarget = Object.assign(
-  {},
-  buildTools.LIB_TARGET,
-  {
-    name: "lib-es",
-    scripts: ["lib/**/*.ts", "!lib/**/*.es5.ts"],
-    typescript: {
-      compilerOptions: {
-        skipLibCheck: true,
-        module: "es2015",
-      },
-      typescript: typescript,
-      tsconfigJson: ["lib/es.tsconfig.json"],
+const libEsTarget: buildTools.NodeTarget = {
+  ...buildTools.LIB_TARGET,
+  name: "lib-es",
+  scripts: ["**/*.ts"],
+  targetDir: "lib-es",
+  typescript: {
+    compilerOptions: {
+      skipLibCheck: true,
+      module: "es2015",
     },
+    typescript: typescript,
+    tsconfigJson: ["es.tsconfig.json"],
   },
-);
+};
 
 // `lib-test` target
 const libTestTarget: buildTools.TestTarget = {
   ...buildTools.LIB_TEST_TARGET,
-  name: "lib-test",
-  scripts: ["test/**/*.ts", "lib/**/*.ts", "!lib/**/*.es5.ts"],
+  name: "test",
+  scripts: ["test/**/*.ts", "lib/**/*.ts"],
   typescript: {
     compilerOptions: {
       skipLibCheck: true,
@@ -55,13 +55,13 @@ const libTestTarget: buildTools.TestTarget = {
 };
 
 buildTools.projectTasks.registerAll(gulp, project);
-buildTools.targetGenerators.node.generateTarget(gulp, project, libCjsTarget);
-buildTools.targetGenerators.node.generateTarget(gulp, project, libEsTarget);
+buildTools.targetGenerators.node.generateTarget(gulp, libProject, libTarget);
+buildTools.targetGenerators.node.generateTarget(gulp, libProject, libEsTarget);
 buildTools.targetGenerators.test.generateTarget(gulp, project, libTestTarget);
 
 gulp.task(
   "all:tsconfig.json",
-  gulp.parallel("lib-cjs:tsconfig.json", "lib-es:tsconfig.json", "lib-test:tsconfig.json")
+  gulp.parallel("lib:tsconfig.json", "lib-es:tsconfig.json", "test:tsconfig.json")
 );
-gulp.task("all:build", gulp.parallel("lib-cjs:build", "lib-es:build"));
-gulp.task("all:dist", gulp.parallel("lib-cjs:dist", "lib-es:dist"));
+gulp.task("all:build", gulp.parallel("lib:build", "lib-es:build"));
+gulp.task("all:dist", gulp.parallel("lib:dist", "lib-es:dist"));

@@ -1,12 +1,12 @@
 import {Incident} from "incident";
-import {LowerCaseError} from "../errors/lower-case";
-import {MaxUcs2StringLengthError} from "../errors/max-ucs2-string-length";
-import {MinUcs2StringLengthError} from "../errors/min-ucs2-string-length";
-import {NotTrimmedError} from "../errors/not-trimmed";
-import {PatternNotMatchedError} from "../errors/pattern-not-matched";
-import {UnknownFormatError} from "../errors/unknown-format";
-import {WrongTypeError} from "../errors/wrong-type";
-import {SerializableType, VersionedType} from "../interfaces";
+import {LowerCaseError} from "./_errors/lower-case";
+import {MaxUcs2StringLengthError} from "./_errors/max-ucs2-string-length";
+import {MinUcs2StringLengthError} from "./_errors/min-ucs2-string-length";
+import {NotTrimmedError} from "./_errors/not-trimmed";
+import {PatternNotMatchedError} from "./_errors/pattern-not-matched";
+import {UnknownFormatError} from "./_errors/unknown-format";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {SerializableType, VersionedType} from "./_interfaces";
 
 export type Name = "ucs2-string";
 export const name: Name = "ucs2-string";

@@ -1,5 +1,5 @@
-import {ArrayType} from "../../lib/types/array";
-import {IntegerType} from "../../lib/types/integer";
+import {ArrayType} from "../../lib/array";
+import {IntegerType} from "../../lib/integer";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("ArrayType", function () {

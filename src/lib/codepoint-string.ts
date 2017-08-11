@@ -1,14 +1,14 @@
 import {Incident} from "incident";
-import {LowerCaseError} from "../errors/lower-case";
-import {MaxCodepointsError} from "../errors/max-codepoints";
-import {MinCodepointsError} from "../errors/min-codepoints";
-import {MissingDependencyError} from "../errors/missing-dependency";
-import {NotTrimmedError} from "../errors/not-trimmed";
-import {PatternNotMatchedError} from "../errors/pattern-not-matched";
-import {UnknownFormatError} from "../errors/unknown-format";
-import {WrongTypeError} from "../errors/wrong-type";
-import {checkedUcs2Decode} from "../helpers/checked-ucs2-decode";
-import {SerializableType, VersionedType} from "../interfaces";
+import {LowerCaseError} from "./_errors/lower-case";
+import {MaxCodepointsError} from "./_errors/max-codepoints";
+import {MinCodepointsError} from "./_errors/min-codepoints";
+import {MissingDependencyError} from "./_errors/missing-dependency";
+import {NotTrimmedError} from "./_errors/not-trimmed";
+import {PatternNotMatchedError} from "./_errors/pattern-not-matched";
+import {UnknownFormatError} from "./_errors/unknown-format";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {checkedUcs2Decode} from "./_helpers/checked-ucs2-decode";
+import {SerializableType, VersionedType} from "./_interfaces";
 
 let unormNfc: ((str: string) => string) | undefined = undefined;
 try {

@@ -1,5 +1,5 @@
 import {assert} from "chai";
-import {Ucs2StringType} from "../../lib/types/ucs2-string";
+import {Ucs2StringType} from "../../lib/ucs2-string";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("Ucs2StringType", function () {

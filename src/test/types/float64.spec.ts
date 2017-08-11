@@ -1,4 +1,4 @@
-import {Float64Type} from "../../lib/types/float64";
+import {Float64Type} from "../../lib/float64";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("Float64Type", function () {

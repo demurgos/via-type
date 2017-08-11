@@ -1,5 +1,5 @@
 import {Incident} from "incident";
-import {Type as KryoType} from "../interfaces";
+import {Type as KryoType} from "../_interfaces";
 
 export namespace NotSyncTypeError {
   export type Name = "NotSyncType";

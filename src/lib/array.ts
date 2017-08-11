@@ -1,9 +1,9 @@
-import {InvalidArrayItemError} from "../errors/invalid-array-item";
-import {MaxArrayLengthError} from "../errors/max-array-length";
-import {NotImplementedError} from "../errors/not-implemented";
-import {UnknownFormatError} from "../errors/unknown-format";
-import {WrongTypeError} from "../errors/wrong-type";
-import {SerializableType, VersionedType} from "../interfaces";
+import {InvalidArrayItemError} from "./_errors/invalid-array-item";
+import {MaxArrayLengthError} from "./_errors/max-array-length";
+import {NotImplementedError} from "./_errors/not-implemented";
+import {UnknownFormatError} from "./_errors/unknown-format";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {SerializableType, VersionedType} from "./_interfaces";
 
 export type Name = "array";
 export const name: Name = "array";

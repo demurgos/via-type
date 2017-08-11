@@ -1,4 +1,4 @@
-import {BooleanType} from "../../lib/types/boolean";
+import {BooleanType} from "../../lib/boolean";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("BooleanType", function () {

@@ -1,6 +1,6 @@
 import {assert} from "chai";
-import {$Sint8} from "../../lib/builtins/integer";
-import {IntegerType} from "../../lib/types/integer";
+import {$Sint8} from "../../lib/_builtins/integer";
+import {IntegerType} from "../../lib/integer";
 import {runTests, TypedValue} from "../helpers/test";
 
 describe("IntegerType", function () {

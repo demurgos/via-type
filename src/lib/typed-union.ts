@@ -1,6 +1,6 @@
 import {Incident} from "incident";
-import {NotImplementedError} from "../errors/not-implemented";
-import {VersionedType} from "../interfaces";
+import {NotImplementedError} from "./_errors/not-implemented";
+import {VersionedType} from "./_interfaces";
 
 export type Name = "typed-union";
 export const name: Name = "typed-union";

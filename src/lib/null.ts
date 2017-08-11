@@ -1,62 +1,57 @@
-import {UnknownFormatError} from "../errors/unknown-format";
-import {WrongTypeError} from "../errors/wrong-type";
-import {SerializableType, VersionedType} from "../interfaces";
+import {UnknownFormatError} from "./_errors/unknown-format";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {SerializableType, VersionedType} from "./_interfaces";
 
-export type Name = "boolean";
-export const name: Name = "boolean";
-export type T = boolean;
+export type Name = "null";
+export const name: Name = "null";
+export type T = null;
 export namespace bson {
-  export type Input = boolean;
-  export type Output = boolean;
+  export type Input = null;
+  export type Output = null;
 }
 export namespace json {
-  export type Input = boolean;
-  export type Output = boolean;
+  export type Input = null;
+  export type Output = null;
+  export interface Type {
+    name: Name;
+  }
 }
 export namespace qs {
-  export type Input = "true" | "false";
-  export type Output = "true" | "false";
+  export type Input = "";
+  export type Output = "";
 }
-export type Diff = boolean;
+export type Diff = undefined;
 
-export class BooleanType
+export class NullType
   implements VersionedType<T, json.Input, json.Output, Diff>,
     SerializableType<T, "bson", bson.Input, bson.Output>,
     SerializableType<T, "qs", qs.Input, qs.Output> {
   readonly name: Name = name;
 
-  toJSON(): undefined {
-    return undefined;
+  toJSON(): json.Type {
+    return {name: name};
   }
 
   readTrusted(format: "bson", val: bson.Output): T;
   readTrusted(format: "json", val: json.Output): T;
   readTrusted(format: "qs", val: qs.Output): T;
   readTrusted(format: "bson" | "json" | "qs", input: any): T {
-    switch (format) {
-      case "bson":
-      case "json":
-        return input;
-      case "qs":
-        return input === "true";
-      default:
-        return undefined as never;
-    }
+    return null;
   }
 
   read(format: "bson" | "json" | "qs", input: any): T {
     switch (format) {
       case "bson":
       case "json":
-        if (typeof input !== "boolean") {
-          throw WrongTypeError.create("boolean", input);
+        if (input !== null) {
+          throw WrongTypeError.create("null", input);
         }
-        return input;
+        return null;
       case "qs":
-        if (!(input === "true" || input === "false")) {
-          throw WrongTypeError.create("\"true\" | \"false\"", input);
+        if (input !== "") {
+          throw WrongTypeError.create("\"\"", input);
         }
-        return input === "true";
+        return null;
       default:
         throw UnknownFormatError.create(format);
     }
@@ -69,23 +64,23 @@ export class BooleanType
     switch (format) {
       case "bson":
       case "json":
-        return val;
+        return null;
       case "qs":
-        return val ? "true" : "false";
+        return "";
       default:
         return undefined as never;
     }
   }
 
   testError(val: T): Error | undefined {
-    if (typeof val !== "boolean") {
-      return WrongTypeError.create("boolean", val);
+    if (val !== "null") {
+      return WrongTypeError.create("null", val);
     }
     return undefined;
   }
 
   test(val: T): val is T {
-    return this.testError(val) === undefined;
+    return val === null;
   }
 
   equals(val1: T, val2: T): boolean {
@@ -102,22 +97,20 @@ export class BooleanType
    * @returns `true` if there is a difference, `undefined` otherwise
    */
   diff(oldVal: T, newVal: T): Diff | undefined {
-    /* tslint:disable-next-line:strict-boolean-expressions */
-    return (oldVal !== newVal) || undefined;
+    return undefined;
   }
 
   patch(oldVal: T, diff: Diff | undefined): T {
-    return oldVal === (diff === undefined);
+    return null;
   }
 
   reverseDiff(diff: Diff | undefined): Diff | undefined {
-    return diff;
+    return undefined;
   }
 
   squash(diff1: Diff | undefined, diff2: Diff | undefined): Diff | undefined {
-    /* tslint:disable-next-line:strict-boolean-expressions */
-    return (diff1 !== diff2) && undefined;
+    return undefined;
   }
 }
 
-export {BooleanType as Type};
+export {NullType as Type};

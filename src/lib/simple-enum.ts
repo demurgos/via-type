@@ -1,8 +1,8 @@
 import {Incident} from "incident";
-import {NotImplementedError} from "../errors/not-implemented";
-import {WrongTypeError} from "../errors/wrong-type";
-import {CaseStyle, rename} from "../helpers/rename";
-import {SerializableType, VersionedType} from "../interfaces";
+import {NotImplementedError} from "./_errors/not-implemented";
+import {WrongTypeError} from "./_errors/wrong-type";
+import {CaseStyle, rename} from "./_helpers/rename";
+import {SerializableType, VersionedType} from "./_interfaces";
 
 export type SimpleEnum<EnumConstructor> = {
   [K in keyof EnumConstructor]: EnumConstructor[K];

@@ -1,4 +1,4 @@
-import {IntegerType} from "../types/integer";
+import {IntegerType} from "../integer";
 
 // for (let i = 1; i <= 54; i++) {
 //   const n = Math.pow(2, i - 1);
