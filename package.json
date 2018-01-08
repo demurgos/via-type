@@ -41,7 +41,7 @@
     "@types/chai": "^4.0.10",
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^2.2.45",
-    "@types/node": "^8.5.2",
+    "@types/node": "^9.3.0",
     "@types/qs": "^6.5.1",
     "chai": "^4.1.2",
     "codecov": "^3.0.0",
