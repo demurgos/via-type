@@ -58,7 +58,7 @@ const test: buildTools.MochaTarget = {
   project,
   name: "test",
   srcDir: "src",
-  outModules: buildTools.OutModules.Both,
+  outModules: buildTools.OutModules.Js,
   scripts: ["test/**/*.ts", "lib/**/*.ts"],
   customTypingsDir: "src/custom-typings",
   tscOptions: {

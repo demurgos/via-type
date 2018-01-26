@@ -38,22 +38,22 @@
     "unorm": "^1.4.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.0.10",
+    "@types/chai": "^4.1.2",
     "@types/minimist": "^1.2.0",
-    "@types/mocha": "^2.2.45",
-    "@types/node": "^8.5.2",
+    "@types/mocha": "^2.2.47",
+    "@types/node": "^9.4.0",
     "@types/qs": "^6.5.1",
     "chai": "^4.1.2",
     "codecov": "^3.0.0",
     "gulp": "^4.0.0",
-    "gulp-cli": "^2.0.0",
+    "gulp-cli": "^2.0.1",
     "minimist": "^1.2.0",
     "pre-commit": "^1.2.2",
     "qs": "^6.5.1",
     "ts-node": "^4.1.0",
-    "turbo-gulp": "^0.16.0",
+    "turbo-gulp": "^0.16.1",
     "typedoc": "^0.9.0",
-    "typescript": "2.7.0-dev.20180110"
+    "typescript": "^2.7.0-rc"
   },
   "nyc": {
     "include": [
@@ -63,5 +63,8 @@
       "text",
       "html"
     ]
+  },
+  "@std/esm": {
+    "esm": "cjs"
   }
 }
