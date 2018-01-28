@@ -1,5 +1,7 @@
 # Next
 
+- **[Breaking change]** Remove index module, you need to import specific modules with deep imports
+  such as `import { DocumentType } from "kryo/types/document"`.
 - **[Breaking change]** Rename `int32` export to `integer`
 - **[Breaking change]** Rename `typed-enum` to `white-list`
 - **[Breaking change]** Move serialization functions out of types, use first-class serializer

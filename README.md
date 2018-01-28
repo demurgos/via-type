@@ -44,40 +44,40 @@ You can import all the types from the main module, but it is recommended to impo
 their module (to allow better dead-code elimination):
 
 ```typescript
-import {Ucs2StringType} from "kryo"; // Import from the main module
-import {DateType} from "kryo/boolean"; // Import from the `boolean` module
+import { Ucs2StringType } from "kryo/types/ucs2-string";
+import { DateType } from "kryo/types/date";
 
 // Use the type constructor to create a specialized string
-const $identifier: Ucs2StringType = new Ucs2StringType({minLength: 1, maxLength: Infinity, pattern: /[_a-zA-Z][_a-zA-Z0-9]/});
+const $Identifier: Ucs2StringType = new Ucs2StringType({minLength: 1, maxLength: Infinity, pattern: /[_a-zA-Z][_a-zA-Z0-9]/});
 // Instantiate the date type, see next section to use a builtin instead of creating a new instance
-const $date: DateType = new DateType();
+const $Date: DateType = new DateType();
 
 // Both $identifier and $date are versioned type: they implement the methods of all the levels.
 
 // Use the methods provided by simple type 
-$identifier.test("abc"); // true
-$identifier.test($#!+); // false
-$date.testError(NaN); 
+$Identifier.test("abc"); // true
+$Identifier.test("$#!+"); // false
+$Date.testError(NaN); 
 const now: Date = new Date();
-const nowCopy = $date.clone(now);
+const nowCopy = $Date.clone(now);
 console.log(now === nowCopy); // false: `clone` performs a deep copy on objects
-$date.equals(now, nowCopy); // Tests the "equivalence" of the values: it's not the same object but they hold the same value
+$Date.equals(now, nowCopy); // Tests the "equivalence" of the values: it's not the same object but they hold the same value
 
 // Use the methods provided by serializable types
-$date.write("json", now); // Returns the ISO string "2017-10-15T17:10:08.218Z"
-$date.read("json", "2017-10-15T17:10:08.218Z"); // Returns a `Date` instance
-$identifier.read("json", "$#!+"); // Throws error: you can use Kryo to read untrusted input and validate it
-$date.readTrusted("json", "2017-10-15T17:10:08.218Z"); // If you know what you are doing, you can only perform conversion and ignore validation
+$Date.write("json", now); // Returns the ISO string "2017-10-15T17:10:08.218Z"
+$Date.read("json", "2017-10-15T17:10:08.218Z"); // Returns a `Date` instance
+$Identifier.read("json", "$#!+"); // Throws error: you can use Kryo to read untrusted input and validate it
+$Date.readTrusted("json", "2017-10-15T17:10:08.218Z"); // If you know what you are doing, you can only perform conversion and ignore validation
 
 // Use the methods provided by versionned types
-const diff1: number | undefined = $date.diff(now, nowCopy); // undefined: both are equal
-const diff2: number | undefined = $date.diff(new Date(10), new Date(30)); // 20: the diff of `DateType` is the difference in ms
-const diff3: number | undefined = $date.diff(new Date(30), new Date(60)); // 30
-const diff4: [string, string] | undefined = $identifier.diff("foo", "bar"); // ["foo", "bar"], strings return a simple [old, new] tuple
-$date.patch(new Date(10), diff2); // applies the diff: returns a value equivalent to `new Date(30)`
-$date.squash(diff2, diff3); // 50: merge the two diffs in a single diff representing the whole change
-$date.reverseDiff(diff3); // -30: Diffs are symetric: you can always reverse them
-$date.patch($date.reverseDiff(diff3)); // 30: Apply the reverse diff to retrieve `30` from `60`
+const diff1: number | undefined = $Date.diff(now, nowCopy); // undefined: both are equal
+const diff2: number | undefined = $Date.diff(new Date(10), new Date(30)); // 20: the diff of `DateType` is the difference in ms
+const diff3: number | undefined = $Date.diff(new Date(30), new Date(60)); // 30
+const diff4: [string, string] | undefined = $Identifier.diff("foo", "bar"); // ["foo", "bar"], strings return a simple [old, new] tuple
+$Date.patch(new Date(10), diff2); // applies the diff: returns a value equivalent to `new Date(30)`
+$Date.squash(diff2, diff3); // 50: merge the two diffs in a single diff representing the whole change
+$Date.reverseDiff(diff3); // -30: Diffs are symetric: you can always reverse them
+$Date.patch($Date.reverseDiff(diff3)); // 30: Apply the reverse diff to retrieve `30` from `60`
 ```
 
 ### Type constructors and builtins
@@ -91,7 +91,8 @@ the built-in `$Uint32` type: an instance of `IntegerType` already configured for
 32-bit integers (`[0, 2**32 - 1]`).
 
 ```typescript
-import {Integer, $Uint32} from "kryo/integer";
+import { IntegerType } from "kryo/types/integer";
+import { $Uint32 } from "kryo/builtins/uint32";
 
 /** Represents the type of the outcome of throwing two D6 dices and summing their value */
 const $twoDicesOutcome: Type<number> = new IntegerType({min: 2, max: 36});
