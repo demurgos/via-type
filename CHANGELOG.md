@@ -12,6 +12,7 @@
   `import { ExtraKeysError } from from "kryo/errors/extra-keys"; ExtraKeysError.Data`)
 - **[Feature]** Add support for ESM (publish `.mjs` files)
 - **[Feature]** Add `CustomType` to facilitate serialization of non-Kryo types
+- **[Feature]** Add `$UuidHex` builtin
 - **[Internal]** Remove `Type` aliases from each type module:
   `import { Type } from "kryo/types/integer"` was an alias of
   `import { IntegerType } from "kryo/types/integer"`
