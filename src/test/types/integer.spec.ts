@@ -1,5 +1,6 @@
 import { assert } from "chai";
-import { $Sint8 } from "../../lib/_builtins/integer";
+import { $Sint8 } from "../../lib/builtins/sint8";
+import { $Uint8 } from "../../lib/builtins/uint8";
 import { createQsSerializer } from "../../lib/qs";
 import { Serializer } from "../../lib/types";
 import { IntegerType } from "../../lib/types/integer";
@@ -33,13 +34,13 @@ describe("IntegerType", function () {
       {name: "Number.MAX_VALUE", value: Number.MAX_VALUE, valid: false},
       /* tslint:disable-next-line:no-construct */
       {name: "new Number(true)", value: new Number(1), valid: false},
-      {name: '""', value: "", valid: false},
-      {name: '"0"', value: "0", valid: false},
+      {name: "\"\"", value: "", valid: false},
+      {name: "\"0\"", value: "0", valid: false},
       {name: "Infinity", value: Infinity, valid: false},
       {name: "-Infinity", value: -Infinity, valid: false},
       {name: "NaN", value: NaN, valid: false},
-      {name: '"true"', value: "true", valid: false},
-      {name: '"false"', value: "false", valid: false},
+      {name: "\"true\"", value: "true", valid: false},
+      {name: "\"false\"", value: "false", valid: false},
       {name: "undefined", value: undefined, valid: false},
       {name: "null", value: null, valid: false},
       {name: "[]", value: [], valid: false},
@@ -62,25 +63,55 @@ describe("IntegerType", function () {
     assert.strictEqual(qsSerializer.read(type, "-2147483648"), -2147483648);
   });
 
-  describe("Bound integer", function () {
-    const type: IntegerType = $Sint8;
+  describe("Builtins", function () {
+    describe("$Sint8", function () {
+      const type: IntegerType = $Sint8;
 
-    const items: TypedValue[] = [
-      // Valid values
-      {name: "0", value: 0, valid: true},
-      {name: "1", value: 1, valid: true},
-      {name: "3", value: 3, valid: true},
-      {name: "7", value: 7, valid: true},
-      {name: "15", value: 15, valid: true},
-      {name: "31", value: 31, valid: true},
-      {name: "63", value: 63, valid: true},
-      {name: "127", value: 127, valid: true},
-      {name: "-128", value: -128, valid: true},
-      // Invalid values
-      {name: "-129", value: -129, valid: false},
-      {name: "128", value: 128, valid: false},
-    ];
+      const items: TypedValue[] = [
+        // Valid values
+        {name: "0", value: 0, valid: true},
+        {name: "-0", value: -0, valid: true},
+        {name: "1", value: 1, valid: true},
+        {name: "3", value: 3, valid: true},
+        {name: "7", value: 7, valid: true},
+        {name: "15", value: 15, valid: true},
+        {name: "31", value: 31, valid: true},
+        {name: "63", value: 63, valid: true},
+        {name: "127", value: 127, valid: true},
+        {name: "-128", value: -128, valid: true},
+        // Invalid values
+        {name: "-129", value: -129, valid: false},
+        {name: "128", value: 128, valid: false},
+      ];
 
-    runTests(type, items);
+      runTests(type, items);
+    });
+
+    describe("$Uint8", function () {
+      const type: IntegerType = $Uint8;
+
+      const items: TypedValue[] = [
+        // Valid values
+        {name: "0", value: 0, valid: true},
+        {name: "-0", value: -0, valid: true},
+        {name: "1", value: 1, valid: true},
+        {name: "3", value: 3, valid: true},
+        {name: "7", value: 7, valid: true},
+        {name: "15", value: 15, valid: true},
+        {name: "31", value: 31, valid: true},
+        {name: "63", value: 63, valid: true},
+        {name: "127", value: 127, valid: true},
+        {name: "255", value: 255, valid: true},
+        // Invalid values
+        {name: "-1", value: -1, valid: false},
+        {name: "-128", value: -128, valid: false},
+        {name: "-255", value: -255, valid: false},
+        {name: "-256", value: -256, valid: false},
+        {name: "-129", value: -129, valid: false},
+        {name: "256", value: 256, valid: false},
+      ];
+
+      runTests(type, items);
+    });
   });
 });
