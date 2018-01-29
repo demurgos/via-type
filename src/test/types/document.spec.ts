@@ -55,7 +55,7 @@ describe("Document", function () {
       },
       valid: true,
       output: {
-        json: {dateProp: "1970-01-01T00:00:00.000Z", nestedDoc: {id: 10}},
+        json: {dateProp: "1970-01-01T00:00:00.000Z", optIntProp: undefined, nestedDoc: {id: 10}},
       },
     },
 

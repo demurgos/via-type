@@ -9,8 +9,6 @@ import { Lazy, VersionedType } from "../types";
 export type Name = "array";
 export const name: Name = "array";
 export namespace json {
-  export type Input = any[];
-  export type Output = any[];
   // TODO(demurgos): Export arrayType to JSON
   export type Type = undefined;
 }
@@ -21,7 +19,7 @@ export interface Options<T, Input, Output extends Input, Diff> {
   maxLength: number;
 }
 
-export class ArrayType<T> implements VersionedType<T[], json.Input, json.Output, Diff> {
+export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
   readonly name: Name = name;
   readonly itemType!: VersionedType<T, any, any, any>;
   readonly maxLength!: number;
@@ -48,7 +46,7 @@ export class ArrayType<T> implements VersionedType<T[], json.Input, json.Output,
     throw createNotImplementedError("ArrayType#toJSON");
   }
 
-  readTrustedJson(input: json.Output): T[] {
+  readTrustedJson(input: any[]): T[] {
     return input.map((item: any): T => this.itemType.readTrustedJson(item));
   }
 
@@ -65,7 +63,7 @@ export class ArrayType<T> implements VersionedType<T[], json.Input, json.Output,
     return result;
   }
 
-  writeJson(val: T[]): json.Output {
+  writeJson(val: T[]): any[] {
     return val.map((item: T): any => this.itemType.writeJson(item));
   }
 

@@ -21,15 +21,15 @@ export namespace json {
 }
 export type Diff = any;
 
-export interface Options<T extends {}, Output, Input extends Output, Diff> {
+export interface TaggedUnionOptions<T extends {}> {
   variants: DocumentType<T>[];
-  tag: string;
+  tag: keyof T;
 }
 
 function getTagValuesWithBaseType<T extends {}>(
-  options: Options<T, any, any, any>,
+  options: TaggedUnionOptions<T>,
 ): [Map<number | string, DocumentType<T>>, JsonSerializer<any, any, any>] {
-  const tagName: string = options.tag;
+  const tagName: keyof T = options.tag;
   let tagBaseType: JsonSerializer<any, any, any> | undefined = undefined;
   const tagValuesMap: Map<number | string, DocumentType<T>> = new Map();
   for (const variant of options.variants) {
@@ -80,7 +80,7 @@ function getTagValuesWithBaseType<T extends {}>(
  * @return Map from the serialized label to the corresponding type variant.
  */
 function createOutValuesMap<T extends {}>(
-  tagName: string,
+  tagName: keyof T,
   variants: DocumentType<T>[],
   tagBaseType: any,
   serializer: Serializer,
@@ -100,8 +100,8 @@ function createOutValuesMap<T extends {}>(
   return result;
 }
 
-function toUnionOptions<T extends {}>(options: Options<T, any, any, any>): union.Options<T, any, any, any> {
-  const tagName: string = options.tag;
+function toUnionOptions<T extends {}>(options: TaggedUnionOptions<T>): union.Options<T, any, any, any> {
+  const tagName: keyof T = options.tag;
   // tslint:disable-next-line:max-line-length
   const [tagValuesMap, tagBaseType]: [Map<number | string, DocumentType<T>>, JsonSerializer<any, any, any>] = getTagValuesWithBaseType(options);
   const outValuesMaps: WeakMap<Serializer, Map<number | string, DocumentType<T>>> = new WeakMap();
@@ -141,9 +141,9 @@ function toUnionOptions<T extends {}>(options: Options<T, any, any, any>): union
 
 export class TaggedUnionType<T extends {}> extends union.UnionType<T> {
   readonly names: string[] = [this.name, name];
-  readonly variants!: DocumentType<T>[];
+  // readonly variants: DocumentType<T>[];
 
-  constructor(options: Lazy<Options<T, any, any, any>>, lazy?: boolean) {
+  constructor(options: Lazy<TaggedUnionOptions<T>>, lazy?: boolean) {
     super(() => toUnionOptions(typeof options === "function" ? options() : options), lazy);
   }
 

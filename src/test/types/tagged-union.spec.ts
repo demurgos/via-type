@@ -54,10 +54,10 @@ describe("TaggedUnion", function () {
     });
 
     type Shape = Rectangle | Circle;
-    const shapeType: TaggedUnionType<Shape> = new TaggedUnionType<Shape>({
+    const shapeType: TaggedUnionType<Shape> = new TaggedUnionType<Shape>(() => ({
       variants: [rectangleType, circleType],
       tag: "type",
-    });
+    }));
 
     const items: TypedValue[] = [
       {

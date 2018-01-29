@@ -57,7 +57,7 @@
   },
   "nyc": {
     "include": [
-      "build/test/lib/**/*.js"
+      "build/test/lib/**/*.mjs"
     ],
     "reporter": [
       "text",

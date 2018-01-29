@@ -9,16 +9,16 @@ import { FsNodeType } from "./fs-node-type";
 describe("FS Tree", function () {
   describe("File", function () {
     const items: TypedValue[] = [
-      {value: {type: FsNodeType.File, name: "a", size: 1}, valid: true},
-      {value: {type: FsNodeType.File, name: 2, size: 1}, valid: false},
+      {value: {tag: FsNodeType.File, name: "a", size: 1}, valid: true},
+      {value: {tag: FsNodeType.File, name: 2, size: 1}, valid: false},
     ];
     runTests($File, items);
   });
 
   describe("FsNode", function () {
     const items: TypedValue[] = [
-      {value: {type: FsNodeType.File, name: "a", size: 1}, valid: true},
-      {value: {type: FsNodeType.File, name: 2, size: 1}, valid: false},
+      {value: {tag: FsNodeType.File, name: "a", size: 1}, valid: true},
+      {value: {tag: FsNodeType.File, name: 2, size: 1}, valid: false},
     ];
     runTests($FsNode, items);
   });

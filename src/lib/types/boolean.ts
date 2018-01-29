@@ -3,13 +3,10 @@ import { VersionedType } from "../types";
 
 export type Name = "boolean";
 export const name: Name = "boolean";
-export namespace json {
-  export type Input = boolean;
-  export type Output = boolean;
-}
+
 export type Diff = boolean;
 
-export class BooleanType implements VersionedType<boolean, json.Input, json.Output, Diff> {
+export class BooleanType implements VersionedType<boolean, boolean, boolean, Diff> {
   readonly name: Name = name;
 
   toJSON(): undefined {
@@ -17,7 +14,7 @@ export class BooleanType implements VersionedType<boolean, json.Input, json.Outp
     return undefined;
   }
 
-  readTrustedJson(input: json.Output): boolean {
+  readTrustedJson(input: boolean): boolean {
     return input;
   }
 
@@ -28,7 +25,7 @@ export class BooleanType implements VersionedType<boolean, json.Input, json.Outp
     return input;
   }
 
-  writeJson(val: boolean): json.Output {
+  writeJson(val: boolean): boolean {
     return val;
   }
 

@@ -48,12 +48,16 @@ export const DEFAULT_MAX: number = Number.MAX_SAFE_INTEGER;
 export class IntegerType implements VersionedType<number, json.Input, json.Output, Diff> {
 
   readonly name: Name = name;
-  readonly min!: number;
-  readonly max!: number;
+  readonly min: number;
+  readonly max: number;
 
   private _options: Lazy<Options>;
 
   constructor(options?: Lazy<Options>, lazy?: boolean) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.min = <any> undefined;
+    this.max = <any> undefined;
+
     if (options === undefined) {
       this._options = {};
       this._applyOptions();

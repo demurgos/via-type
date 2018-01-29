@@ -54,7 +54,9 @@ export function testInvalidValueSync(type: Type<any>, item: InvalidTypedValue) {
 export function testValidValueSync(type: Type<any>, item: ValidTypedValue) {
   it("Should return `undefined` for .testErrorSync", function () {
     const error: Error | undefined = type.testError(item.value);
-    assert.isUndefined(error);
+    if (error !== undefined) {
+      assert.fail(error, undefined, String(error));
+    }
   });
 
   it("Should return `true` for .testSync", function () {

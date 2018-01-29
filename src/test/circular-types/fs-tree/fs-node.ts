@@ -11,5 +11,5 @@ export const $FsNode: TaggedUnionType<FsNode> = new TaggedUnionType<FsNode>(() =
     $Directory,
     $File,
   ],
-  tag: "type",
+  tag: "tag",
 }));

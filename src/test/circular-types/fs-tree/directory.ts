@@ -7,15 +7,15 @@ import { $FsNodeBase, FsNodeBase } from "./fs-node-base";
 import { $FsNodeType, FsNodeType } from "./fs-node-type";
 
 export interface Directory extends FsNodeBase {
-  type: FsNodeType.Directory;
+  tag: FsNodeType.Directory;
   children: FsNode[];
 }
 
-export const $Directory: DocumentType<Directory> = new DocumentType<Directory>({
+export const $Directory: DocumentType<Directory> = new DocumentType<Directory>(() => ({
   properties: {
     ...$FsNodeBase.properties,
-    type: {type: new LiteralType({type: $FsNodeType, value: FsNodeType.Directory})},
+    tag: {type: new LiteralType<FsNodeType.Directory>({type: $FsNodeType, value: FsNodeType.Directory})},
     children: {type: new ArrayType({itemType: $FsNode, maxLength: Infinity}), optional: true},
   },
   rename: CaseStyle.SnakeCase,
-});
+}));

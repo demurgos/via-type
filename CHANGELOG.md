@@ -10,9 +10,11 @@
 - **[Breaking change]** Remove namespace for errors: define `Name`, `Data` and `Cause` as
   module exports (`import { Data } from "kryo/errors/extra-keys"` instead of
   `import { ExtraKeysError } from from "kryo/errors/extra-keys"; ExtraKeysError.Data`)
+- **[Breaking change]** Require stricter type annotations for `LiteralType`
 - **[Feature]** Add support for ESM (publish `.mjs` files)
 - **[Feature]** Add `CustomType` to facilitate serialization of non-Kryo types
 - **[Feature]** Add `$UuidHex` builtin
+- **[Feature]** Report all errors when reading and testing document types
 - **[Internal]** Remove `Type` aliases from each type module:
   `import { Type } from "kryo/types/integer"` was an alias of
   `import { IntegerType } from "kryo/types/integer"`
