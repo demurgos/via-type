@@ -1,4 +1,4 @@
-# Next
+# 0.6.0 (2018-01-29)
 
 - **[Breaking change]** Remove index module, you need to import specific modules with deep imports
   such as `import { DocumentType } from "kryo/types/document"`.
