@@ -62,6 +62,9 @@
     "reporter": [
       "text",
       "html"
+    ],
+    "extension": [
+      ".mjs"
     ]
   },
   "@std/esm": {
