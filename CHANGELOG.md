@@ -20,6 +20,7 @@
 - **[Feature]** Add `$UuidHex` builtin
 - **[Feature]** Report all errors when reading and testing document types
 - **[Fix]** Support `.equals` for object arrays.
+- **[Fix]** Fix support for `WhiteListType` allowing to create lighter unions of literals.
 - **[Internal]** Remove `Type` aliases from each type module:
   `import { Type } from "kryo/types/integer"` was an alias of
   `import { IntegerType } from "kryo/types/integer"`

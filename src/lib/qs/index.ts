@@ -15,6 +15,7 @@ import { register as registerNull } from "./null";
 import { register as registerSimpleEnum } from "./simple-enum";
 import { register as registerUcs2String } from "./ucs2-string";
 import { register as registerUnion } from "./union";
+import { register as registerWhiteList } from "./white-list";
 
 export function createQsSerializer(): BaseSerializer {
   const serializer: BaseSerializer = new BaseSerializer("qs");
@@ -34,5 +35,6 @@ export function createQsSerializer(): BaseSerializer {
   registerSimpleEnum(serializer);
   registerUcs2String(serializer);
   registerUnion(serializer);
+  registerWhiteList(serializer);
   return serializer;
 }

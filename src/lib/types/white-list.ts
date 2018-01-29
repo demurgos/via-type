@@ -1,7 +1,8 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createLazyOptionsError } from "../errors/lazy-options";
-import { createNotImplementedError, NotImplementedError } from "../errors/not-implemented";
+import { createNotImplementedError } from "../errors/not-implemented";
+import { JSON_SERIALIZER } from "../json";
 import { Lazy, VersionedType } from "../types";
 
 export type Name = "white-list";
@@ -50,11 +51,11 @@ export class WhiteListType<T> implements VersionedType<T, json.Input, json.Outpu
   }
 
   readTrustedJson(val: json.Output): T {
-    return this.itemType.readJson(val);
+    return JSON_SERIALIZER.readTrusted(this.itemType, val);
   }
 
   readJson(val: any): T {
-    const value: T = this.itemType.readJson(val);
+    const value: T = JSON_SERIALIZER.read(this.itemType, val);
     for (const allowed of this.values) {
       if (this.itemType.equals(value, allowed)) {
         return value;
@@ -64,7 +65,7 @@ export class WhiteListType<T> implements VersionedType<T, json.Input, json.Outpu
   }
 
   writeJson(val: T): json.Output {
-    return this.itemType.writeJson(val);
+    return JSON_SERIALIZER.write(this.itemType, val);
   }
 
   testError(val: T): Error | undefined {
