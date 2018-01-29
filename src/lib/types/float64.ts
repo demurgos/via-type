@@ -2,6 +2,7 @@ import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createInvalidFloat64Error } from "../errors/invalid-float64";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { Lazy, VersionedType } from "../types";
 
 export type Name = "float64";
@@ -45,23 +46,16 @@ export class Float64Type implements VersionedType<number, number | "NaN" | "+Inf
 
   private _options: Lazy<Float64Options>;
 
-  constructor(options?: Lazy<Float64Options>, lazy?: boolean) {
+  constructor(options?: Lazy<Float64Options>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.allowNaN = <any> undefined;
     this.allowInfinity = <any> undefined;
 
     this._options = options !== undefined ? options : {};
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["allowNaN", "allowInfinity"],
-      );
+      lazyProperties(this, this._applyOptions, ["allowNaN", "allowInfinity"]);
     }
   }
 
@@ -178,7 +172,7 @@ export class Float64Type implements VersionedType<number, number | "NaN" | "+Inf
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Float64Options = typeof this._options === "function" ? this._options() : this._options;
     const allowNaN: boolean = options.allowNaN !== undefined ? options.allowNaN : false;

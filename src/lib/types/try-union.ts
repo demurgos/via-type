@@ -46,10 +46,8 @@ function toUnionOptions<T>(options: Options<T, any, any, any>): union.Options<T,
 }
 
 export class TryUnionType<T extends {}> extends union.UnionType<T> {
-  readonly names: string[] = [this.name, name];
-
-  constructor(options: Lazy<Options<T, any, any, any>>, lazy?: boolean) {
-    super(() => toUnionOptions(typeof options === "function" ? options() : options), lazy);
+  constructor(options: Lazy<Options<T, any, any, any>>) {
+    super(typeof options === "function" ? () => toUnionOptions(options()) : toUnionOptions(options));
   }
 
   toJSON(): json.Type {

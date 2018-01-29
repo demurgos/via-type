@@ -2,6 +2,7 @@ import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { CaseStyle, rename } from "../case-style";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createNotImplementedError } from "../errors/not-implemented";
 import { Lazy, VersionedType } from "../types";
 
@@ -52,26 +53,24 @@ export interface Options<E extends number> {
  */
 export class SimpleEnumType<E extends number> implements VersionedType<E, json.Input, json.Output, Diff> {
   readonly name: Name = name;
-  readonly enum!: EnumConstructor<E>;
+  readonly enum: EnumConstructor<E>;
   readonly rename?: CaseStyle;
-  readonly outputNameToValue!: AnySimpleEnum;
-  readonly valueToOutputName!: AnyReversedEnum;
+  readonly outputNameToValue: AnySimpleEnum;
+  readonly valueToOutputName: AnyReversedEnum;
 
   private _options: Lazy<Options<E>>;
 
-  constructor(options: Lazy<Options<E>>, lazy?: boolean) {
+  constructor(options: Lazy<Options<E>>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.enum = <any> undefined;
+    this.outputNameToValue = <any> undefined;
+    this.valueToOutputName = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["enum", "rename", "outputNameToValue", "valueToOutputName"],
-      );
+      lazyProperties(this, this._applyOptions, ["enum", "rename", "outputNameToValue", "valueToOutputName"]);
     }
   }
 
@@ -151,7 +150,7 @@ export class SimpleEnumType<E extends number> implements VersionedType<E, json.I
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options<E> = typeof this._options === "function" ? this._options() : this._options;
 

@@ -2,6 +2,7 @@ import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createInvalidIntegerError } from "../errors/invalid-integer";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { Lazy, VersionedType } from "../types";
 
 export type Name = "integer";
@@ -53,7 +54,7 @@ export class IntegerType implements VersionedType<number, json.Input, json.Outpu
 
   private _options: Lazy<Options>;
 
-  constructor(options?: Lazy<Options>, lazy?: boolean) {
+  constructor(options?: Lazy<Options>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.min = <any> undefined;
     this.max = <any> undefined;
@@ -64,17 +65,10 @@ export class IntegerType implements VersionedType<number, json.Input, json.Outpu
       return;
     }
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["min", "max"],
-      );
+      lazyProperties(this, this._applyOptions, ["min", "max"]);
     }
   }
 
@@ -157,7 +151,7 @@ export class IntegerType implements VersionedType<number, json.Input, json.Outpu
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options = typeof this._options === "function" ? this._options() : this._options;
 

@@ -3,6 +3,7 @@ import { lazyProperties } from "../_helpers/lazy-properties";
 import { CaseStyle, rename } from "../case-style";
 import { createInvalidDocumentError } from "../errors/invalid-document";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createNotImplementedError } from "../errors/not-implemented";
 import { JSON_SERIALIZER } from "../json";
 import { Lazy, Type as KryoType, VersionedType } from "../types";
@@ -83,11 +84,7 @@ export const DocumentType: DocumentTypeConstructor = class<T extends {}> {
     if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["ignoreExtraKeys", "properties", "rename", "keys" as keyof this],
-      );
+      lazyProperties(this, this._applyOptions, ["ignoreExtraKeys", "properties", "rename", "keys" as keyof this]);
     }
   }
 
@@ -317,7 +314,7 @@ export const DocumentType: DocumentTypeConstructor = class<T extends {}> {
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: DocumentTypeOptions<T> = typeof this._options === "function" ?
       this._options() :

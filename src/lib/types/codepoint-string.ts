@@ -2,6 +2,7 @@ import { Incident } from "incident";
 import { checkedUcs2Decode } from "../_helpers/checked-ucs2-decode";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createLowerCaseError } from "../errors/lower-case";
 import { createMaxCodepointsError } from "../errors/max-codepoints";
 import { createMinCodepointsError } from "../errors/min-codepoints";
@@ -86,22 +87,26 @@ export interface Options {
 export class CodepointStringType implements VersionedType<string, json.Input, json.Output, Diff> {
 
   readonly name: Name = name;
-  readonly normalization!: Normalization;
-  readonly enforceUnicodeRegExp!: boolean;
+  readonly normalization: Normalization;
+  readonly enforceUnicodeRegExp: boolean;
   readonly pattern?: RegExp;
-  readonly lowerCase!: boolean; // TODO(demurgos): Rename to enforceLowerCase
-  readonly trimmed!: boolean; // TODO(demurgos): Rename to enforceTrimmed
+  readonly lowerCase: boolean;
+  readonly trimmed: boolean;
   readonly minCodepoints?: number;
-  readonly maxCodepoints!: number;
+  readonly maxCodepoints: number;
 
   private _options: Lazy<Options>;
 
-  constructor(options: Lazy<Options>, lazy?: boolean) {
+  constructor(options: Lazy<Options>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.normalization = <any> undefined;
+    this.enforceUnicodeRegExp = <any> undefined;
+    this.lowerCase = <any> undefined;
+    this.trimmed = <any> undefined;
+    this.maxCodepoints = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
       lazyProperties(
@@ -260,7 +265,7 @@ export class CodepointStringType implements VersionedType<string, json.Input, js
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options = typeof this._options === "function" ? this._options() : this._options;
 

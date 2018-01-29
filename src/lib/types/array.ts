@@ -27,23 +27,16 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
 
   private _options: Lazy<Options<T, any, any, any>>;
 
-  constructor(options: Lazy<Options<T, any, any, any>>, lazy?: boolean) {
+  constructor(options: Lazy<Options<T, any, any, any>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.itemType = <any> undefined;
     this.maxLength = <any> undefined;
 
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["itemType", "maxLength"],
-      );
+      lazyProperties(this, this._applyOptions, ["itemType", "maxLength"]);
     }
   }
 

@@ -1,5 +1,6 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createNotImplementedError, NotImplementedError } from "../errors/not-implemented";
 import { Lazy, VersionedType } from "../types";
 
@@ -22,24 +23,21 @@ export interface Options<T> {
 
 export class WhiteListType<T> implements VersionedType<T, json.Input, json.Output, Diff> {
   readonly name: Name = name;
-  readonly itemType!: VersionedType<any, any, any, any>;
-  readonly values!: T[];
+  readonly itemType: VersionedType<any, any, any, any>;
+  readonly values: T[];
 
   private _options: Lazy<Options<T>>;
 
-  constructor(options: Lazy<Options<T>>, lazy?: boolean) {
+  constructor(options: Lazy<Options<T>>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.itemType = <any> undefined;
+    this.values = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["itemType", "values"],
-      );
+      lazyProperties(this, this._applyOptions, ["itemType", "values"]);
     }
   }
 
@@ -112,7 +110,7 @@ export class WhiteListType<T> implements VersionedType<T, json.Input, json.Outpu
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options<T> = typeof this._options === "function" ? this._options() : this._options;
 

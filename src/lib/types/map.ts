@@ -1,6 +1,7 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createNotImplementedError } from "../errors/not-implemented";
 import { Lazy, VersionedType } from "../types";
 
@@ -47,26 +48,25 @@ export interface Options<K, V> {
 
 export class MapType<K, V> implements VersionedType<Map<K, V>, json.Input, json.Output, Diff> {
   readonly name: Name = name;
-  readonly keyType!: VersionedType<K, any, any, any>;
-  readonly valueType!: VersionedType<V, any, any, any>;
-  readonly maxSize!: number;
-  readonly assumeStringKey!: boolean;
+  readonly keyType: VersionedType<K, any, any, any>;
+  readonly valueType: VersionedType<V, any, any, any>;
+  readonly maxSize: number;
+  readonly assumeStringKey: boolean;
 
   private _options: Lazy<Options<K, V>>;
 
-  constructor(options: Lazy<Options<K, V>>, lazy?: boolean) {
+  constructor(options: Lazy<Options<K, V>>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.keyType = <any> undefined;
+    this.valueType = <any> undefined;
+    this.maxSize = <any> undefined;
+    this.assumeStringKey = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["keyType", "valueType", "maxSize", "assumeStringKey"],
-      );
+      lazyProperties(this, this._applyOptions, ["keyType", "valueType", "maxSize", "assumeStringKey"]);
     }
   }
 
@@ -178,7 +178,7 @@ export class MapType<K, V> implements VersionedType<Map<K, V>, json.Input, json.
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options<K, V> = typeof this._options === "function" ? this._options() : this._options;
 

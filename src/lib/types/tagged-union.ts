@@ -140,11 +140,8 @@ function toUnionOptions<T extends {}>(options: TaggedUnionOptions<T>): union.Opt
 }
 
 export class TaggedUnionType<T extends {}> extends union.UnionType<T> {
-  readonly names: string[] = [this.name, name];
-  // readonly variants: DocumentType<T>[];
-
-  constructor(options: Lazy<TaggedUnionOptions<T>>, lazy?: boolean) {
-    super(() => toUnionOptions(typeof options === "function" ? options() : options), lazy);
+  constructor(options: Lazy<TaggedUnionOptions<T>>) {
+    super(typeof options === "function" ? () => toUnionOptions(options()) : toUnionOptions(options));
   }
 
   toJSON(): json.Type {

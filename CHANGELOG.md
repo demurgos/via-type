@@ -12,8 +12,9 @@
   `import { ExtraKeysError } from from "kryo/errors/extra-keys"; ExtraKeysError.Data`)
 - **[Breaking change]** Require stricter type annotations for `LiteralType`
 - **[Breaking change]** Rename the options of `Float64` from `notNan` and `notInfinity` to
-                        `allowNaN` and `allowInfinity`. The behavior of the default remains the
-                        same.
+  `allowNaN` and `allowInfinity`. The behavior of the default remains the same.
+- **[Breaking change]** Remove `lazy` flags from constructors. Wrap options in functions to get
+  lazy evaluation. `new DocumentType(opts, true)` becomes `new DocumentType(() => opts)`
 - **[Feature]** Add support for ESM (publish `.mjs` files)
 - **[Feature]** Add `CustomType` to facilitate serialization of non-Kryo types
 - **[Feature]** Add `$UuidHex` builtin

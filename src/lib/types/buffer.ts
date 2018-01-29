@@ -1,6 +1,7 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createMaxArrayLengthError } from "../errors/max-array-length";
 import { createNotImplementedError } from "../errors/not-implemented";
 import { Lazy, VersionedType } from "../types";
@@ -21,23 +22,19 @@ export interface Options {
 
 export class BufferType implements VersionedType<Uint8Array, json.Input, json.Output, Diff> {
   readonly name: Name = name;
-  readonly maxLength!: number;
+  readonly maxLength: number;
 
   private _options: Lazy<Options>;
 
-  constructor(options: Lazy<Options>, lazy?: boolean) {
+  constructor(options: Lazy<Options>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.maxLength = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["maxLength"],
-      );
+      lazyProperties(this, this._applyOptions, ["maxLength"]);
     }
   }
 
@@ -135,7 +132,7 @@ export class BufferType implements VersionedType<Uint8Array, json.Input, json.Ou
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options = typeof this._options === "function" ? this._options() : this._options;
 

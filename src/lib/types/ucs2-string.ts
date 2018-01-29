@@ -1,6 +1,7 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createLowerCaseError } from "../errors/lower-case";
 import { createMaxUcs2StringLengthError } from "../errors/max-ucs2-string-length";
 import { createMinUcs2StringLengthError } from "../errors/min-ucs2-string-length";
@@ -107,21 +108,24 @@ export interface Options {
  */
 export class Ucs2StringType implements VersionedType<string, json.Input, json.Output, Diff> {
   readonly name: Name = name;
-  readonly allowUnicodeRegExp!: boolean;
+  readonly allowUnicodeRegExp: boolean;
   readonly pattern?: RegExp;
-  readonly lowerCase!: boolean;
-  readonly trimmed!: boolean;
+  readonly lowerCase: boolean;
+  readonly trimmed: boolean;
   readonly minLength?: number;
-  readonly maxLength!: number;
+  readonly maxLength: number;
 
   private _options: Lazy<Options>;
 
-  constructor(options: Lazy<Options>, lazy?: boolean) {
+  constructor(options: Lazy<Options>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.allowUnicodeRegExp = <any> undefined;
+    this.lowerCase = <any> undefined;
+    this.trimmed = <any> undefined;
+    this.maxLength = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
       lazyProperties(
@@ -251,7 +255,7 @@ export class Ucs2StringType implements VersionedType<string, json.Input, json.Ou
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options = typeof this._options === "function" ? this._options() : this._options;
 

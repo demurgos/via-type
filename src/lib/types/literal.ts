@@ -1,5 +1,6 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createNotImplementedError, NotImplementedError } from "../errors/not-implemented";
 import { Lazy, VersionedType } from "../types";
 
@@ -35,23 +36,16 @@ export class LiteralType<T> implements VersionedType<T, json.Input, json.Output,
 
   private _options: Lazy<Options<T, any, any, any>>;
 
-  constructor(options: Lazy<Options<T, any, any, any>>, lazy?: boolean) {
+  constructor(options: Lazy<Options<T, any, any, any>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.type = <any> undefined;
     this.value = <any> undefined;
 
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(
-        this,
-        this._applyOptions,
-        ["type", "value"],
-      );
+      lazyProperties(this, this._applyOptions, ["type", "value"]);
     }
   }
 
@@ -112,7 +106,7 @@ export class LiteralType<T> implements VersionedType<T, json.Input, json.Output,
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options<T, any, any, any> = typeof this._options === "function" ? this._options() : this._options;
 

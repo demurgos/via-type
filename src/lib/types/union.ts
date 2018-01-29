@@ -1,5 +1,6 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createNotImplementedError, NotImplementedError } from "../errors/not-implemented";
 import { JSON_SERIALIZER } from "../json/index";
 import { JsonSerializer, Lazy, Serializer, Type, VersionedType } from "../types";
@@ -33,20 +34,24 @@ export type TestWithVariantResult<T> =
 
 export class UnionType<T> implements VersionedType<T, json.Input, json.Output, Diff> {
   readonly name: Name = name;
-  readonly variants!: VersionedType<T, any, any, Diff>[];
-  readonly matcher!: Matcher<T>;
-  readonly trustedMatcher!: TrustedMatcher<T>;
-  readonly readMatcher!: ReadMatcher<T>;
-  readonly readTrustedMatcher!: ReadTrustedMatcher<T>;
+  readonly variants: VersionedType<T, any, any, Diff>[];
+  readonly matcher: Matcher<T>;
+  readonly trustedMatcher: TrustedMatcher<T>;
+  readonly readMatcher: ReadMatcher<T>;
+  readonly readTrustedMatcher: ReadTrustedMatcher<T>;
 
   private _options?: Lazy<Options<T, any, any, any>>;
 
-  constructor(options: Lazy<Options<T, any, any, any>>, lazy?: boolean) {
+  constructor(options: Lazy<Options<T, any, any, any>>) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.variants = <any> undefined;
+    this.matcher = <any> undefined;
+    this.trustedMatcher = <any> undefined;
+    this.readMatcher = <any> undefined;
+    this.readTrustedMatcher = <any> undefined;
+
     this._options = options;
-    if (lazy === undefined) {
-      lazy = typeof options === "function";
-    }
-    if (!lazy) {
+    if (typeof options !== "function") {
       this._applyOptions();
     } else {
       lazyProperties(
@@ -142,7 +147,7 @@ export class UnionType<T> implements VersionedType<T, json.Input, json.Output, D
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options<T, any, any, any> = typeof this._options === "function" ? this._options() : this._options;
     delete this._options;
