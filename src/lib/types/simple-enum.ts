@@ -43,7 +43,7 @@ export namespace json {
 }
 export type Diff = number;
 
-export interface Options<E extends number> {
+export interface SimpleEnumTypeOptions<E extends number> {
   enum: EnumConstructor<E> | Object;
   rename?: CaseStyle;
 }
@@ -58,9 +58,9 @@ export class SimpleEnumType<E extends number> implements VersionedType<E, json.I
   readonly outputNameToValue: AnySimpleEnum;
   readonly valueToOutputName: AnyReversedEnum;
 
-  private _options: Lazy<Options<E>>;
+  private _options: Lazy<SimpleEnumTypeOptions<E>>;
 
-  constructor(options: Lazy<Options<E>>) {
+  constructor(options: Lazy<SimpleEnumTypeOptions<E>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.enum = <any> undefined;
     this.outputNameToValue = <any> undefined;
@@ -152,7 +152,7 @@ export class SimpleEnumType<E extends number> implements VersionedType<E, json.I
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<E> = typeof this._options === "function" ? this._options() : this._options;
+    const options: SimpleEnumTypeOptions<E> = typeof this._options === "function" ? this._options() : this._options;
 
     const baseEnum: EnumConstructor<E> = <any> options.enum;
     const renameAll: CaseStyle | undefined = options.rename;

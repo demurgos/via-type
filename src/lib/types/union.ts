@@ -19,7 +19,7 @@ export type TrustedMatcher<T> = (value: T) => Type<T>;
 export type ReadMatcher<T> = (input: any, serializer: Serializer) => Type<T> | undefined;
 export type ReadTrustedMatcher<T> = (input: any, serializer: Serializer) => Type<T>;
 
-export interface Options<T, Output, Input extends Output, Diff> {
+export interface UnionTypeOptions<T, Output, Input extends Output, Diff> {
   variants: VersionedType<T, Output, Input, Diff>[];
   matcher: Matcher<T>;
   trustedMatcher?: TrustedMatcher<T>;
@@ -40,9 +40,9 @@ export class UnionType<T> implements VersionedType<T, json.Input, json.Output, D
   readonly readMatcher: ReadMatcher<T>;
   readonly readTrustedMatcher: ReadTrustedMatcher<T>;
 
-  private _options?: Lazy<Options<T, any, any, any>>;
+  private _options?: Lazy<UnionTypeOptions<T, any, any, any>>;
 
-  constructor(options: Lazy<Options<T, any, any, any>>) {
+  constructor(options: Lazy<UnionTypeOptions<T, any, any, any>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.variants = <any> undefined;
     this.matcher = <any> undefined;
@@ -149,7 +149,9 @@ export class UnionType<T> implements VersionedType<T, json.Input, json.Output, D
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<T, any, any, any> = typeof this._options === "function" ? this._options() : this._options;
+    const options: UnionTypeOptions<T, any, any, any> = typeof this._options === "function"
+      ? this._options()
+      : this._options;
     delete this._options;
     const variants: VersionedType<T, any, any, Diff>[] = options.variants;
     const matcher: Matcher<T> = options.matcher;

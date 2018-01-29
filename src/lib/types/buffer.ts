@@ -16,7 +16,7 @@ export namespace json {
 }
 export type Diff = any;
 
-export interface Options {
+export interface BufferTypeOptions {
   maxLength: number;
 }
 
@@ -24,9 +24,9 @@ export class BufferType implements VersionedType<Uint8Array, json.Input, json.Ou
   readonly name: Name = name;
   readonly maxLength: number;
 
-  private _options: Lazy<Options>;
+  private _options: Lazy<BufferTypeOptions>;
 
-  constructor(options: Lazy<Options>) {
+  constructor(options: Lazy<BufferTypeOptions>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.maxLength = <any> undefined;
 
@@ -134,7 +134,7 @@ export class BufferType implements VersionedType<Uint8Array, json.Input, json.Ou
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options = typeof this._options === "function" ? this._options() : this._options;
+    const options: BufferTypeOptions = typeof this._options === "function" ? this._options() : this._options;
 
     const maxLength: number = options.maxLength;
 

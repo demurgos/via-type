@@ -20,9 +20,9 @@ export namespace json {
 export type Diff = number;
 
 /**
- * Options for the `int` type.
+ * Options for the `integer` type.
  */
-export interface Options {
+export interface IntegerTypeOptions {
   /**
    * Inclusive minimum value.
    */
@@ -52,9 +52,9 @@ export class IntegerType implements VersionedType<number, json.Input, json.Outpu
   readonly min: number;
   readonly max: number;
 
-  private _options: Lazy<Options>;
+  private _options: Lazy<IntegerTypeOptions>;
 
-  constructor(options?: Lazy<Options>) {
+  constructor(options?: Lazy<IntegerTypeOptions>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.min = <any> undefined;
     this.max = <any> undefined;
@@ -153,7 +153,7 @@ export class IntegerType implements VersionedType<number, json.Input, json.Outpu
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options = typeof this._options === "function" ? this._options() : this._options;
+    const options: IntegerTypeOptions = typeof this._options === "function" ? this._options() : this._options;
 
     const min: number = options.min !== undefined ? options.min : DEFAULT_MIN;
     const max: number = options.max !== undefined ? options.max : DEFAULT_MAX;

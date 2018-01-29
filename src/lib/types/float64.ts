@@ -19,7 +19,7 @@ export type Diff = [number, number];
 /**
  * Options for the `Float64` meta-type.
  */
-export interface Float64Options {
+export interface Float64TypeOptions {
   /**
    * Accept `NaN` values.
    * If you enable this option, the `test` method will treat two `NaN` values as equal.
@@ -44,9 +44,9 @@ export class Float64Type implements VersionedType<number, number | "NaN" | "+Inf
   readonly allowNaN: boolean;
   readonly allowInfinity: boolean;
 
-  private _options: Lazy<Float64Options>;
+  private _options: Lazy<Float64TypeOptions>;
 
-  constructor(options?: Lazy<Float64Options>) {
+  constructor(options?: Lazy<Float64TypeOptions>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.allowNaN = <any> undefined;
     this.allowInfinity = <any> undefined;
@@ -174,7 +174,7 @@ export class Float64Type implements VersionedType<number, number | "NaN" | "+Inf
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Float64Options = typeof this._options === "function" ? this._options() : this._options;
+    const options: Float64TypeOptions = typeof this._options === "function" ? this._options() : this._options;
     const allowNaN: boolean = options.allowNaN !== undefined ? options.allowNaN : false;
     const allowInfinity: boolean = options.allowInfinity !== undefined ? options.allowInfinity : false;
 

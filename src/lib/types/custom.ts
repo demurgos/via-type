@@ -14,7 +14,7 @@ export type TestError<T> = (val: T) => Error | undefined;
 export type Equals<T> = (val1: T, val2: T) => boolean;
 export type Clone<T> = (val: T) => T;
 
-export interface Options<T> {
+export interface CustomTypeOptions<T> {
   read: Read<T>;
   write: Write<T>;
   testError: TestError<T>;
@@ -30,9 +30,9 @@ export class CustomType<T> implements Type<T> {
   readonly equals: Equals<T>;
   readonly clone: Clone<T>;
 
-  private _options?: Lazy<Options<T>>;
+  private _options?: Lazy<CustomTypeOptions<T>>;
 
-  constructor(options: Lazy<Options<T>>) {
+  constructor(options: Lazy<CustomTypeOptions<T>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.read = <any> undefined;
     this.write = <any> undefined;
@@ -72,7 +72,7 @@ export class CustomType<T> implements Type<T> {
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<T> = typeof this._options === "function" ? this._options() : this._options;
+    const options: CustomTypeOptions<T> = typeof this._options === "function" ? this._options() : this._options;
     Object.assign(
       this,
       {

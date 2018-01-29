@@ -15,19 +15,30 @@ export namespace json {
 }
 export type Diff = any;
 
-export interface Options<T, Input, Output extends Input, Diff> {
-  itemType: VersionedType<T, Input, Output, Diff>;
+export interface ArrayTypeOptions<T> {
+  itemType: VersionedType<T, any, any, any>;
   maxLength: number;
 }
 
-export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
+export interface ArrayTypeConstructor {
+  /**
+   * Create a new array type
+   */
+  new<T>(options: Lazy<ArrayTypeOptions<T>>): ArrayType<T>;
+}
+
+export interface ArrayType<T> extends VersionedType<T[], any, any, Diff>, ArrayTypeOptions<T> {
+}
+
+// tslint:disable-next-line:variable-name
+export const ArrayType: ArrayTypeConstructor = class<T> {
   readonly name: Name = name;
   readonly itemType: VersionedType<T, any, any, any>;
   readonly maxLength: number;
 
-  private _options: Lazy<Options<T, any, any, any>>;
+  private _options: Lazy<ArrayTypeOptions<T>>;
 
-  constructor(options: Lazy<Options<T, any, any, any>>) {
+  constructor(options: Lazy<ArrayTypeOptions<T>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.itemType = <any> undefined;
     this.maxLength = <any> undefined;
@@ -155,7 +166,7 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<T, any, any, any> = typeof this._options === "function" ? this._options() : this._options;
+    const options: ArrayTypeOptions<T> = typeof this._options === "function" ? this._options() : this._options;
 
     const itemType: VersionedType<T, any, any, any> = options.itemType;
     const maxLength: number = options.maxLength;
@@ -163,4 +174,4 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
     Object.assign(this, {itemType, maxLength});
     Object.freeze(this);
   }
-}
+};

@@ -46,7 +46,7 @@ export namespace json {
 }
 export type Diff = [string, string];
 
-export interface Options {
+export interface CodepointStringOptions {
   /**
    * Ensure NFC normalization when reading strings.
    *
@@ -95,9 +95,9 @@ export class CodepointStringType implements VersionedType<string, json.Input, js
   readonly minCodepoints?: number;
   readonly maxCodepoints: number;
 
-  private _options: Lazy<Options>;
+  private _options: Lazy<CodepointStringOptions>;
 
-  constructor(options: Lazy<Options>) {
+  constructor(options: Lazy<CodepointStringOptions>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.normalization = <any> undefined;
     this.enforceUnicodeRegExp = <any> undefined;
@@ -118,7 +118,7 @@ export class CodepointStringType implements VersionedType<string, json.Input, js
   }
 
   static fromJSON(options: json.Type): CodepointStringType {
-    const resolvedOptions: Options = {
+    const resolvedOptions: CodepointStringOptions = {
       normalization: options.normalization === "none" ? Normalization.None : Normalization.Nfc,
       enforceUnicodeRegExp: options.enforceUnicodeRegExp,
       lowerCase: options.lowerCase,
@@ -267,7 +267,7 @@ export class CodepointStringType implements VersionedType<string, json.Input, js
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options = typeof this._options === "function" ? this._options() : this._options;
+    const options: CodepointStringOptions = typeof this._options === "function" ? this._options() : this._options;
 
     const normalization: Normalization = options.normalization !== undefined ?
       options.normalization :

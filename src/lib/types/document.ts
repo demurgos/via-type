@@ -53,13 +53,21 @@ export interface PropertyDescriptor<MetaType extends KryoType<any>> {
 }
 
 export interface DocumentTypeConstructor {
+  /**
+   * Create a new document type checking for objects with the supplied properties.
+   *
+   * The generic type `T` is the interface described by this instance.
+   *
+   * @param options Options describing this document type.
+   * @return The document type corresponding to the provided options
+   */
   new<T>(options: Lazy<DocumentTypeOptions<T>>): DocumentType<T>;
 }
 
 export interface DocumentType<T> extends VersionedType<T, any, any, Diff<T>>, DocumentTypeOptions<T> {
-
 }
 
+// We use an `any` cast because of the `properties` property.
 // tslint:disable-next-line:variable-name
 export const DocumentType: DocumentTypeConstructor = class<T extends {}> {
   readonly name: Name = name;

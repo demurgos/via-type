@@ -21,13 +21,13 @@ export namespace json {
 }
 export type Diff = any;
 
-export interface TaggedUnionOptions<T extends {}> {
+export interface TaggedUnionTypeOptions<T extends {}> {
   variants: DocumentType<T>[];
   tag: keyof T;
 }
 
 function getTagValuesWithBaseType<T extends {}>(
-  options: TaggedUnionOptions<T>,
+  options: TaggedUnionTypeOptions<T>,
 ): [Map<number | string, DocumentType<T>>, JsonSerializer<any, any, any>] {
   const tagName: keyof T = options.tag;
   let tagBaseType: JsonSerializer<any, any, any> | undefined = undefined;
@@ -100,7 +100,7 @@ function createOutValuesMap<T extends {}>(
   return result;
 }
 
-function toUnionOptions<T extends {}>(options: TaggedUnionOptions<T>): union.Options<T, any, any, any> {
+function toUnionOptions<T extends {}>(options: TaggedUnionTypeOptions<T>): union.UnionTypeOptions<T, any, any, any> {
   const tagName: keyof T = options.tag;
   // tslint:disable-next-line:max-line-length
   const [tagValuesMap, tagBaseType]: [Map<number | string, DocumentType<T>>, JsonSerializer<any, any, any>] = getTagValuesWithBaseType(options);
@@ -140,7 +140,7 @@ function toUnionOptions<T extends {}>(options: TaggedUnionOptions<T>): union.Opt
 }
 
 export class TaggedUnionType<T extends {}> extends union.UnionType<T> {
-  constructor(options: Lazy<TaggedUnionOptions<T>>) {
+  constructor(options: Lazy<TaggedUnionTypeOptions<T>>) {
     super(typeof options === "function" ? () => toUnionOptions(options()) : toUnionOptions(options));
   }
 

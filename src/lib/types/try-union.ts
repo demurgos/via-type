@@ -17,11 +17,11 @@ export namespace json {
 }
 export type Diff = any;
 
-export interface Options<T, Output, Input extends Output, Diff> {
+export interface TryUnionTypeOptions<T, Output, Input extends Output, Diff> {
   variants: VersionedType<T, any, any, Diff>[];
 }
 
-function toUnionOptions<T>(options: Options<T, any, any, any>): union.Options<T, any, any, any> {
+function toUnionOptions<T>(options: TryUnionTypeOptions<T, any, any, any>): union.UnionTypeOptions<T, any, any, any> {
   const variants: VersionedType<T, any, any, Diff>[] = options.variants;
   const matcher: union.Matcher<T> = (value: any) => {
     for (const variant of variants) {
@@ -46,7 +46,7 @@ function toUnionOptions<T>(options: Options<T, any, any, any>): union.Options<T,
 }
 
 export class TryUnionType<T extends {}> extends union.UnionType<T> {
-  constructor(options: Lazy<Options<T, any, any, any>>) {
+  constructor(options: Lazy<TryUnionTypeOptions<T, any, any, any>>) {
     super(typeof options === "function" ? () => toUnionOptions(options()) : toUnionOptions(options));
   }
 

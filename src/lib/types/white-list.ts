@@ -17,7 +17,7 @@ export namespace json {
 }
 export type Diff = [number, number];
 
-export interface Options<T> {
+export interface WhiteListTypeOptions<T> {
   itemType: VersionedType<any, any, any, any>;
   values: T[];
 }
@@ -27,9 +27,9 @@ export class WhiteListType<T> implements VersionedType<T, json.Input, json.Outpu
   readonly itemType: VersionedType<any, any, any, any>;
   readonly values: T[];
 
-  private _options: Lazy<Options<T>>;
+  private _options: Lazy<WhiteListTypeOptions<T>>;
 
-  constructor(options: Lazy<Options<T>>) {
+  constructor(options: Lazy<WhiteListTypeOptions<T>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.itemType = <any> undefined;
     this.values = <any> undefined;
@@ -113,7 +113,7 @@ export class WhiteListType<T> implements VersionedType<T, json.Input, json.Outpu
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<T> = typeof this._options === "function" ? this._options() : this._options;
+    const options: WhiteListTypeOptions<T> = typeof this._options === "function" ? this._options() : this._options;
 
     const itemType: VersionedType<any, any, any, any> = options.itemType;
     const values: T[] = options.values;

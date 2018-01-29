@@ -21,7 +21,7 @@ export namespace json {
     pattern?: [string, string];
     lowerCase: boolean;
     /**
-     * @see [[Options.trimmed]]
+     * @see [[Ucs2StringTypeOptions.trimmed]]
      */
     trimmed: boolean;
     minLength?: number;
@@ -30,7 +30,7 @@ export namespace json {
 }
 export type Diff = [string, string];
 
-export interface Options {
+export interface Ucs2StringTypeOptions {
   allowUnicodeRegExp?: boolean;
   pattern?: RegExp;
   lowerCase?: boolean;
@@ -115,9 +115,9 @@ export class Ucs2StringType implements VersionedType<string, json.Input, json.Ou
   readonly minLength?: number;
   readonly maxLength: number;
 
-  private _options: Lazy<Options>;
+  private _options: Lazy<Ucs2StringTypeOptions>;
 
-  constructor(options: Lazy<Options>) {
+  constructor(options: Lazy<Ucs2StringTypeOptions>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.allowUnicodeRegExp = <any> undefined;
     this.lowerCase = <any> undefined;
@@ -137,7 +137,7 @@ export class Ucs2StringType implements VersionedType<string, json.Input, json.Ou
   }
 
   static fromJSON(options: json.Type): Ucs2StringType {
-    const resolvedOptions: Options = {
+    const resolvedOptions: Ucs2StringTypeOptions = {
       allowUnicodeRegExp: options.allowUnicodeRegExp,
       lowerCase: options.lowerCase,
       trimmed: options.trimmed,
@@ -257,7 +257,7 @@ export class Ucs2StringType implements VersionedType<string, json.Input, json.Ou
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options = typeof this._options === "function" ? this._options() : this._options;
+    const options: Ucs2StringTypeOptions = typeof this._options === "function" ? this._options() : this._options;
 
     const allowUnicodeRegExp: boolean = options.allowUnicodeRegExp !== undefined ? options.allowUnicodeRegExp : true;
     const pattern: RegExp | undefined = options.pattern;

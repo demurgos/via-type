@@ -17,7 +17,7 @@ export namespace json {
 }
 export type Diff = any;
 
-export interface Options<T, Output, Input extends Output, Diff> {
+export interface LiteralTypeOptions<T, Output, Input extends Output, Diff> {
   type: VersionedType<any, Output, Input, Diff>;
   value: T;
 }
@@ -34,9 +34,9 @@ export class LiteralType<T> implements VersionedType<T, json.Input, json.Output,
   readonly type: VersionedType<T, any, any, Diff>;
   readonly value: T;
 
-  private _options: Lazy<Options<T, any, any, any>>;
+  private _options: Lazy<LiteralTypeOptions<T, any, any, any>>;
 
-  constructor(options: Lazy<Options<T, any, any, any>>) {
+  constructor(options: Lazy<LiteralTypeOptions<T, any, any, any>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.type = <any> undefined;
     this.value = <any> undefined;
@@ -108,7 +108,9 @@ export class LiteralType<T> implements VersionedType<T, json.Input, json.Output,
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<T, any, any, any> = typeof this._options === "function" ? this._options() : this._options;
+    const options: LiteralTypeOptions<T, any, any, any> = typeof this._options === "function"
+      ? this._options()
+      : this._options;
 
     const type: VersionedType<T, any, any, Diff> = options.type;
     const value: T = options.value;

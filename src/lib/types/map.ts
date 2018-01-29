@@ -7,15 +7,6 @@ import { Lazy, VersionedType } from "../types";
 
 export type Name = "map";
 export const name: Name = "map";
-export namespace bson {
-  export interface Input {
-    [key: string]: any;
-  }
-
-  export interface Output {
-    [key: string]: any;
-  }
-}
 export namespace json {
   export interface Input {
     [key: string]: any;
@@ -28,18 +19,9 @@ export namespace json {
   // TODO(demurgos): Export arrayType to JSON
   export type Type = undefined;
 }
-export namespace qs {
-  export interface Input {
-    [key: string]: any;
-  }
-
-  export interface Output {
-    [key: string]: any;
-  }
-}
 export type Diff = any;
 
-export interface Options<K, V> {
+export interface MapTypeOptions<K, V> {
   keyType: VersionedType<K, any, any, any>;
   valueType: VersionedType<V, any, any, any>;
   maxSize: number;
@@ -53,9 +35,9 @@ export class MapType<K, V> implements VersionedType<Map<K, V>, json.Input, json.
   readonly maxSize: number;
   readonly assumeStringKey: boolean;
 
-  private _options: Lazy<Options<K, V>>;
+  private _options: Lazy<MapTypeOptions<K, V>>;
 
-  constructor(options: Lazy<Options<K, V>>) {
+  constructor(options: Lazy<MapTypeOptions<K, V>>) {
     // TODO: Remove once TS 2.7 is better supported by editors
     this.keyType = <any> undefined;
     this.valueType = <any> undefined;
@@ -180,7 +162,7 @@ export class MapType<K, V> implements VersionedType<Map<K, V>, json.Input, json.
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: Options<K, V> = typeof this._options === "function" ? this._options() : this._options;
+    const options: MapTypeOptions<K, V> = typeof this._options === "function" ? this._options() : this._options;
 
     const keyType: VersionedType<K, any, any, any> = options.keyType;
     const valueType: VersionedType<V, any, any, any> = options.valueType;
