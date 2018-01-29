@@ -86,7 +86,7 @@ export const DocumentType: DocumentTypeConstructor = class<T extends {}> {
       lazyProperties(
         this,
         this._applyOptions,
-        ["ignoreExtraKeys", "properties", "rename", "keys"],
+        ["ignoreExtraKeys", "properties", "rename", "keys" as keyof this],
       );
     }
   }

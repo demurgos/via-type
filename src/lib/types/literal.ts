@@ -50,7 +50,7 @@ export class LiteralType<T> implements VersionedType<T, json.Input, json.Output,
       lazyProperties(
         this,
         this._applyOptions,
-        ["min", "max"],
+        ["type", "value"],
       );
     }
   }

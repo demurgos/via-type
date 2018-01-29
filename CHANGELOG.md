@@ -11,10 +11,14 @@
   module exports (`import { Data } from "kryo/errors/extra-keys"` instead of
   `import { ExtraKeysError } from from "kryo/errors/extra-keys"; ExtraKeysError.Data`)
 - **[Breaking change]** Require stricter type annotations for `LiteralType`
+- **[Breaking change]** Rename the options of `Float64` from `notNan` and `notInfinity` to
+                        `allowNaN` and `allowInfinity`. The behavior of the default remains the
+                        same.
 - **[Feature]** Add support for ESM (publish `.mjs` files)
 - **[Feature]** Add `CustomType` to facilitate serialization of non-Kryo types
 - **[Feature]** Add `$UuidHex` builtin
 - **[Feature]** Report all errors when reading and testing document types
+- **[Fix]** Support `.equals` for object arrays.
 - **[Internal]** Remove `Type` aliases from each type module:
   `import { Type } from "kryo/types/integer"` was an alias of
   `import { IntegerType } from "kryo/types/integer"`

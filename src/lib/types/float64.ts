@@ -1,41 +1,56 @@
 import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
+import { createInvalidFloat64Error } from "../errors/invalid-float64";
 import { createInvalidTypeError } from "../errors/invalid-type";
 import { Lazy, VersionedType } from "../types";
 
 export type Name = "float64";
 export const name: Name = "float64";
 export namespace json {
-  export type Input = number | "NaN" | "+Infinity" | "-Infinity";
-  export type Output = number | "NaN" | "+Infinity" | "-Infinity";
-
   export interface Type {
-    name: Name;
-    notNan: boolean;
-    notInfinity: boolean;
+    readonly name: Name;
+    readonly allowNaN: boolean;
+    readonly allowInfinity: boolean;
   }
 }
 export type Diff = [number, number];
 
-export interface Options {
-  notNan?: boolean;
-  notInfinity?: boolean;
+/**
+ * Options for the `Float64` meta-type.
+ */
+export interface Float64Options {
+  /**
+   * Accept `NaN` values.
+   * If you enable this option, the `test` method will treat two `NaN` values as equal.
+   *
+   * @default `false`
+   */
+  readonly allowNaN?: boolean;
+
+  /**
+   * Accept `+Infinity` and `-Infinity`.
+   *
+   * @default `false`
+   */
+  readonly allowInfinity?: boolean;
+
+  // TODO: Add `unifyZeros` (defaults to `true`) to handle `+0` and `-0`
 }
 
-export class Float64Type implements VersionedType<number, json.Input, json.Output, Diff> {
+// tslint:disable:max-line-length
+export class Float64Type implements VersionedType<number, number | "NaN" | "+Infinity" | "-Infinity", number | "NaN" | "+Infinity" | "-Infinity", Diff> {
   readonly name: Name = name;
-  readonly notNan!: boolean; // TODO(demurgos): rename to allowNaN
-  readonly notInfinity!: boolean; // TODO(demurgos): rename to allowInfinity
+  readonly allowNaN: boolean;
+  readonly allowInfinity: boolean;
 
-  private _options: Lazy<Options>;
+  private _options: Lazy<Float64Options>;
 
-  constructor(options?: Lazy<Options>, lazy?: boolean) {
-    if (options === undefined) {
-      this._options = {};
-      this._applyOptions();
-      return;
-    }
-    this._options = options;
+  constructor(options?: Lazy<Float64Options>, lazy?: boolean) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.allowNaN = <any> undefined;
+    this.allowInfinity = <any> undefined;
+
+    this._options = options !== undefined ? options : {};
     if (lazy === undefined) {
       lazy = typeof options === "function";
     }
@@ -45,7 +60,7 @@ export class Float64Type implements VersionedType<number, json.Input, json.Outpu
       lazyProperties(
         this,
         this._applyOptions,
-        ["notNan", "notInfinity"],
+        ["allowNaN", "allowInfinity"],
       );
     }
   }
@@ -57,12 +72,12 @@ export class Float64Type implements VersionedType<number, json.Input, json.Outpu
   toJSON(): json.Type {
     return {
       name,
-      notNan: this.notNan,
-      notInfinity: this.notInfinity,
+      allowNaN: this.allowNaN,
+      allowInfinity: this.allowInfinity,
     };
   }
 
-  readTrustedJson(input: json.Output): number {
+  readTrustedJson(input: number | "NaN" | "+Infinity" | "-Infinity"): number {
     switch (input) {
       case "NaN":
         return NaN;
@@ -75,32 +90,33 @@ export class Float64Type implements VersionedType<number, json.Input, json.Outpu
     }
   }
 
-  readJson(input: any): number {
-    if (typeof input === "number") {
-      return input;
-    }
+  readJson(input: number | "NaN" | "+Infinity" | "-Infinity"): number {
     switch (input) {
       case "NaN":
-        if (this.notNan) {
-          throw Incident("Nan", "NaN is not allowed");
+        if (!this.allowNaN) {
+          throw createInvalidFloat64Error(input);
         }
         return NaN;
       case "+Infinity":
-        if (this.notNan) {
-          throw Incident("Infinity", "+Infinity is not allowed");
+        if (!this.allowInfinity) {
+          throw createInvalidFloat64Error(input);
         }
         return Infinity;
       case "-Infinity":
-        if (this.notNan) {
-          throw Incident("Infinity", "-Infinity is not allowed");
+        if (!this.allowInfinity) {
+          throw createInvalidFloat64Error(input);
         }
         return -Infinity;
       default:
-        throw Incident("InvalidNumberInput", "Expected a number, or one of NaN, +Infinity, -Infinity");
+        if (typeof input === "number") {
+          return input;
+        } else {
+          throw createInvalidFloat64Error(input);
+        }
     }
   }
 
-  writeJson(val: number): json.Output {
+  writeJson(val: number): number | "NaN" | "+Infinity" | "-Infinity" {
     if (isNaN(val)) {
       return "NaN";
     } else if (val === Infinity) {
@@ -115,18 +131,16 @@ export class Float64Type implements VersionedType<number, json.Input, json.Outpu
     if (typeof val !== "number") {
       return createInvalidTypeError("number", val);
     }
-    if (isNaN(val) && this.notNan) {
-      return Incident("");
-    } else if (val === Infinity && this.notInfinity) {
-      return Incident("Infinity", "+Infinity is not allowed");
-    } else if (val === -Infinity && this.notInfinity) {
-      return Incident("Infinity", "-Infinity is not allowed");
+    if (isNaN(val) && !this.allowNaN) {
+      return createInvalidFloat64Error(val);
+    } else if (Math.abs(val) === Infinity && !this.allowInfinity) {
+      return createInvalidFloat64Error(val);
     }
     return undefined;
   }
 
   test(val: number): boolean {
-    return this.testError(val) === undefined;
+    return typeof val === "number" && (this.allowNaN || !isNaN(val)) && (this.allowInfinity || Math.abs(val) !== Infinity);
   }
 
   equals(val1: number, val2: number): boolean {
@@ -141,7 +155,7 @@ export class Float64Type implements VersionedType<number, json.Input, json.Outpu
   }
 
   diff(oldVal: number, newVal: number): Diff | undefined {
-    // We can'number use an arithmetic difference due to possible precision loss
+    // We can't use an arithmetic difference due to possible precision loss
     return this.equals(oldVal, newVal) ? undefined : [oldVal, newVal];
   }
 
@@ -166,16 +180,11 @@ export class Float64Type implements VersionedType<number, json.Input, json.Outpu
     if (this._options === undefined) {
       throw new Incident("No pending options");
     }
-    const options: Options = typeof this._options === "function" ? this._options() : this._options;
+    const options: Float64Options = typeof this._options === "function" ? this._options() : this._options;
+    const allowNaN: boolean = options.allowNaN !== undefined ? options.allowNaN : false;
+    const allowInfinity: boolean = options.allowInfinity !== undefined ? options.allowInfinity : false;
 
-    let notNan: boolean = true;
-    let notInfinity: boolean = true;
-    if (options !== undefined) {
-      notNan = options.notNan !== undefined ? options.notNan : notNan;
-      notInfinity = options.notInfinity !== undefined ? options.notInfinity : notInfinity;
-    }
-
-    Object.assign(this, {notNan, notInfinity});
+    Object.assign(this, {allowNaN, allowInfinity});
     Object.freeze(this);
   }
 }

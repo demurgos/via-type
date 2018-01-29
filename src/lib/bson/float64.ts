@@ -1,18 +1,15 @@
-import { createInvalidTypeError } from "../errors/invalid-type";
 import { Serializer, TypeSerializer } from "../types";
 import { Float64Type, name as typeName } from "../types/float64";
-
-// TODO(demurgos): Check if BSON support NaN and Infinity (add some tests)
 
 function write(type: Float64Type, value: number): number {
   return value;
 }
 
 function read(type: Float64Type, input: number): number {
-  if (typeof input !== "number") {
-    throw createInvalidTypeError("number", input);
+  const error: Error | undefined = type.testError(input);
+  if (error !== undefined) {
+    throw error;
   }
-  // TODO: NaN and Infinity checks
   return input;
 }
 

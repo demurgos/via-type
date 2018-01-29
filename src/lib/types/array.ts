@@ -1,9 +1,10 @@
-import { Incident } from "incident";
 import { lazyProperties } from "../_helpers/lazy-properties";
-import { createInvalidArrayItemError } from "../errors/invalid-array-item";
+import { createInvalidArrayItemsError } from "../errors/invalid-array-items";
 import { createInvalidTypeError } from "../errors/invalid-type";
+import { createLazyOptionsError } from "../errors/lazy-options";
 import { createMaxArrayLengthError } from "../errors/max-array-length";
 import { createNotImplementedError } from "../errors/not-implemented";
+import { JSON_SERIALIZER } from "../json";
 import { Lazy, VersionedType } from "../types";
 
 export type Name = "array";
@@ -21,12 +22,16 @@ export interface Options<T, Input, Output extends Input, Diff> {
 
 export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
   readonly name: Name = name;
-  readonly itemType!: VersionedType<T, any, any, any>;
-  readonly maxLength!: number;
+  readonly itemType: VersionedType<T, any, any, any>;
+  readonly maxLength: number;
 
   private _options: Lazy<Options<T, any, any, any>>;
 
   constructor(options: Lazy<Options<T, any, any, any>>, lazy?: boolean) {
+    // TODO: Remove once TS 2.7 is better supported by editors
+    this.itemType = <any> undefined;
+    this.maxLength = <any> undefined;
+
     this._options = options;
     if (lazy === undefined) {
       lazy = typeof options === "function";
@@ -47,24 +52,40 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
   }
 
   readTrustedJson(input: any[]): T[] {
-    return input.map((item: any): T => this.itemType.readTrustedJson(item));
+    return input.map((item: any): T => JSON_SERIALIZER.readTrusted(this.itemType, item));
   }
 
   readJson(input: any): T[] {
-    let result: T[];
     if (!Array.isArray(input)) {
       throw createInvalidTypeError("array", input);
     }
-    result = input.map((item: any): T => this.itemType.readJson(item));
-    const error: Error | undefined = this.testError(result);
-    if (error !== undefined) {
-      throw error;
+    if (this.maxLength !== undefined && input.length > this.maxLength) {
+      throw createMaxArrayLengthError(input, this.maxLength);
+    }
+    let invalid: undefined | Map<number, Error> = undefined;
+    const result: T[] = [];
+    const itemCount: number = input.length;
+    for (let i: number = 0; i < itemCount; i++) {
+      try {
+        const item: T = JSON_SERIALIZER.read(this.itemType, input[i]);
+        if (invalid === undefined) {
+          result.push(item);
+        }
+      } catch (err) {
+        if (invalid === undefined) {
+          invalid = new Map();
+        }
+        invalid.set(i, err);
+      }
+    }
+    if (invalid !== undefined) {
+      throw createInvalidArrayItemsError(invalid);
     }
     return result;
   }
 
   writeJson(val: T[]): any[] {
-    return val.map((item: T): any => this.itemType.writeJson(item));
+    return val.map((item: T): any => JSON_SERIALIZER.write(this.itemType, item));
   }
 
   testError(val: T[]): Error | undefined {
@@ -74,17 +95,30 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
     if (this.maxLength !== undefined && val.length > this.maxLength) {
       return createMaxArrayLengthError(val, this.maxLength);
     }
-    for (let i: number = 0; i < val.length; i++) {
+    const invalid: Map<number, Error> = new Map();
+    const itemCount: number = val.length;
+    for (let i: number = 0; i < itemCount; i++) {
       const error: Error | undefined = this.itemType.testError(val[i]);
       if (error !== undefined) {
-        return createInvalidArrayItemError(i, val[i]);
+        invalid.set(i, error);
       }
+    }
+    if (invalid.size !== 0) {
+      return createInvalidArrayItemsError(invalid);
     }
     return undefined;
   }
 
-  test(val: T[]): boolean {
-    return this.testError(val) === undefined;
+  test(val: T[]): val is T[] {
+    if (!Array.isArray(val) || (this.maxLength !== undefined && val.length > this.maxLength)) {
+      return false;
+    }
+    for (const item of val) {
+      if (!this.itemType.test(item)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   equals(val1: T[], val2: T[]): boolean {
@@ -92,7 +126,7 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
       return false;
     }
     for (let i: number = 0; i < val1.length; i++) {
-      if (val2[i] !== val1[i]) {
+      if (!this.itemType.equals(val2[i], val1[i])) {
         return false;
       }
     }
@@ -126,7 +160,7 @@ export class ArrayType<T> implements VersionedType<T[], any[], any[], Diff> {
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw new Incident("No pending options");
+      throw createLazyOptionsError(this);
     }
     const options: Options<T, any, any, any> = typeof this._options === "function" ? this._options() : this._options;
 

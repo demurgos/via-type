@@ -1,4 +1,4 @@
-import { Incident } from "incident";
+import { createInvalidFloat64Error } from "../errors/invalid-float64";
 import { createInvalidTypeError } from "../errors/invalid-type";
 import { Serializer, TypeSerializer } from "../types";
 import { Float64Type, name as typeName } from "../types/float64";
@@ -20,18 +20,18 @@ function read(type: Float64Type, input: string): number {
   }
   switch (input) {
     case "NaN":
-      if (type.notNan) {
-        throw Incident("Nan", "NaN is not allowed");
+      if (!type.allowNaN) {
+        throw createInvalidFloat64Error(input);
       }
       return NaN;
     case "+Infinity":
-      if (type.notNan) {
-        throw Incident("Infinity", "+Infinity is not allowed");
+      if (!type.allowInfinity) {
+        throw createInvalidFloat64Error(input);
       }
       return Infinity;
     case "-Infinity":
-      if (type.notNan) {
-        throw Incident("Infinity", "-Infinity is not allowed");
+      if (!type.allowInfinity) {
+        throw createInvalidFloat64Error(input);
       }
       return -Infinity;
     default:

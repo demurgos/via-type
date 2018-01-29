@@ -1,8 +1,9 @@
+import chai from "chai";
 import { Float64Type } from "../../lib/types/float64";
 import { runTests, TypedValue } from "../helpers/test";
 
 describe("Float64Type", function () {
-  const type: Float64Type = new Float64Type();
+  const $Float64: Float64Type = new Float64Type();
 
   const items: TypedValue[] = [
     {
@@ -25,15 +26,15 @@ describe("Float64Type", function () {
     {name: "0.0001", value: 0.0001, valid: true},
     {name: "Number.EPSILON", value: Number.EPSILON, valid: true},
 
-    /* tslint:disable-next-line:no-construct */
+    // tslint:disable-next-line:no-construct
     {name: "new Number(1)", value: new Number(1), valid: false},
-    {name: '""', value: "", valid: false},
-    {name: '"0"', value: "0", valid: false},
+    {name: "\"\"", value: "", valid: false},
+    {name: "\"0\"", value: "0", valid: false},
     {name: "Infinity", value: Infinity, valid: false},
     {name: "-Infinity", value: -Infinity, valid: false},
     {name: "NaN", value: NaN, valid: false},
-    {name: '"true"', value: "true", valid: false},
-    {name: '"false"', value: "false", valid: false},
+    {name: "\"true\"", value: "true", valid: false},
+    {name: "\"false\"", value: "false", valid: false},
     {name: "undefined", value: undefined, valid: false},
     {name: "null", value: null, valid: false},
     {name: "[]", value: [], valid: false},
@@ -42,5 +43,59 @@ describe("Float64Type", function () {
     {name: "/regex/", value: /regex/, valid: false},
   ];
 
-  runTests(type, items);
+  runTests($Float64, items);
+
+  describe("NaN support", function () {
+    const $Float64WithNan: Float64Type = new Float64Type({allowNaN: true});
+    const items: TypedValue[] = [
+      {name: "0", value: 0, valid: true},
+      {name: "1", value: 1, valid: true},
+      {name: "NaN", value: NaN, valid: true},
+
+      // tslint:disable-next-line:no-construct
+      {name: "new Number(NaN)", value: new Number(NaN), valid: false},
+      {name: "Infinity", value: Infinity, valid: false},
+      {name: "-Infinity", value: -Infinity, valid: false},
+    ];
+
+    runTests($Float64WithNan, items);
+
+    it("Should treat two `NaN` values as equal", function () {
+      chai.assert.isTrue($Float64WithNan.equals(NaN, NaN));
+    });
+  });
+
+  describe("Infinity support", function () {
+    const $Float64WithInfinity: Float64Type = new Float64Type({allowInfinity: true});
+    const items: TypedValue[] = [
+      {name: "0", value: 0, valid: true},
+      {name: "1", value: 1, valid: true},
+      {name: "Infinity", value: Infinity, valid: true},
+      {name: "-Infinity", value: -Infinity, valid: true},
+
+      // tslint:disable-next-line:no-construct
+      {name: "new Number(Infinity)", value: new Number(Infinity), valid: false},
+      // tslint:disable-next-line:no-construct
+      {name: "new Number(-Infinity)", value: new Number(-Infinity), valid: false},
+      {name: "NaN", value: NaN, valid: false},
+    ];
+
+    runTests($Float64WithInfinity, items);
+
+    it("should return `true` for `.equals(Infinity, Infinity)`", function () {
+      chai.assert.isTrue($Float64WithInfinity.equals(Infinity, Infinity));
+    });
+
+    it("should return `true` for `.equals(-Infinity, -Infinity)`", function () {
+      chai.assert.isTrue($Float64WithInfinity.equals(-Infinity, -Infinity));
+    });
+
+    it("should return `false` for `.equals(-Infinity, Infinity)`", function () {
+      chai.assert.isFalse($Float64WithInfinity.equals(-Infinity, Infinity));
+    });
+
+    it("should return `false` for `.equals(Infinity, -Infinity)`", function () {
+      chai.assert.isFalse($Float64WithInfinity.equals(Infinity, -Infinity));
+    });
+  });
 });
