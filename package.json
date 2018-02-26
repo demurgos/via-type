@@ -34,7 +34,7 @@
     "object-inspect": "^1.5.0"
   },
   "optionalDependencies": {
-    "bson": "^1.0.4",
+    "bson": "^2.0.0",
     "unorm": "^1.4.1"
   },
   "devDependencies": {
