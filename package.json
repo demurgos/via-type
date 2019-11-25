@@ -27,6 +27,9 @@
       "lint"
     ]
   },
+  "engines": {
+    "node": ">=13.2"
+  },
   "keywords": [],
   "license": "MIT",
   "dependencies": {

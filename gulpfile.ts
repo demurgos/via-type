@@ -6,7 +6,7 @@ import { LibTarget, registerLibTasks } from "turbo-gulp/targets/lib";
 import { MochaTarget, registerMochaTasks } from "turbo-gulp/targets/mocha";
 
 interface Options {
-  devDist?: string;
+  next?: string;
 }
 
 const options: Options & minimist.ParsedArgs = minimist(process.argv.slice(2), {

@@ -1,5 +1,6 @@
 # Next
 
+- **[Breaking change]** Require Node `13.2`.
 - **[Fix]** Update dependencies.
 
 # 0.8.1 (2019-01-03)
