@@ -31,17 +31,15 @@
     "format": "eslint --fix \"./src/**/*.ts\""
   },
   "dependencies": {
-    "@types/chai": "^4.2.8",
-    "@types/mocha": "^7.0.1",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
     "chai": "^4.2.0",
     "kryo": "^0.10.0",
-    "tslib": "^1.11.1"
+    "tslib": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "^13.11.1",
-    "c88": "^0.3.4",
-    "mocha": "^7.1.1",
-    "typescript": "^3.7.5"
+    "@types/node": "^14.0.6",
+    "c88": "^0.3.4"
   },
   "c88": {
     "match": [

@@ -1,3 +1,8 @@
+# Next
+
+- **[Fix]** Fix compilation error with TypeScript 3.9.
+- **[Fix]** Update dependencies
+
 # 0.10.0 (2020-04-10)
 
 - **[Breaking change]** Move format support to their own packages: `kryo-bson`, `kryo-json` and `kryo-qs`.

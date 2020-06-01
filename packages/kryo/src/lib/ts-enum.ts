@@ -80,7 +80,7 @@ export interface TsEnumTypeOptions<E extends string | number, EO extends {} = {}
  * non-numeric strings to strings or numbers and "reversed" properties from numeric strings to
  * keys of forward properties with constant numeric values.
  */
-export class TsEnumType<E extends string | number, EO extends any = any>
+export class TsEnumType<E extends string | number, EO extends {} = {}>
 implements IoType<E>, TsEnumTypeOptions<E, EO> {
   readonly name: Name = name;
   readonly enum!: Record<keyof EO, E>;
