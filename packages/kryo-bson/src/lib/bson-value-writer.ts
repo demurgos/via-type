@@ -53,3 +53,5 @@ export class BsonValueWriter extends StructuredWriter {
     return result;
   }
 }
+
+export const BSON_VALUE_WRITER: BsonValueWriter = new BsonValueWriter();

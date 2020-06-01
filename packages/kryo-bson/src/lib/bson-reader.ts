@@ -60,3 +60,5 @@ export class BsonReader implements Reader<Buffer> {
     return this.valueReader.readString(BSON.deserialize(raw)[this.primitiveWrapper], visitor);
   }
 }
+
+export const BSON_READER: BsonReader = new BsonReader();

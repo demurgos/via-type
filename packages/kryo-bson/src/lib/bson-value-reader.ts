@@ -21,16 +21,16 @@ export class BsonValueReader implements Reader<any> {
 
   readAny<R>(input: any, visitor: ReadVisitor<R>): R {
     switch (typeof input) {
-    case "boolean":
-      return visitor.fromBoolean(input);
-    case "string":
-      return visitor.fromString(input);
-    case "object":
-      return input === null
-        ? visitor.fromNull()
-        : visitor.fromMap(new Map(Object.keys(input).map(k => [k, input[k]] as [string, any])), this, this);
-    default:
-      throw createInvalidTypeError("boolean | null | object | string", input);
+      case "boolean":
+        return visitor.fromBoolean(input);
+      case "string":
+        return visitor.fromString(input);
+      case "object":
+        return input === null
+          ? visitor.fromNull()
+          : visitor.fromMap(new Map(Object.keys(input).map(k => [k, input[k]] as [string, any])), this, this);
+      default:
+        throw createInvalidTypeError("boolean | null | object | string", input);
     }
   }
 
@@ -45,7 +45,7 @@ export class BsonValueReader implements Reader<any> {
     let input: Uint8Array;
     if (isBinary(raw)) {
       // TODO: Fix BSON type definitions
-      input = (<any> raw as {value(asRaw: true): Buffer}).value(true);
+      input = (<any>raw as {value(asRaw: true): Buffer}).value(true);
     } else {
       // TODO: typecheck
       input = raw;
@@ -124,3 +124,5 @@ export class BsonValueReader implements Reader<any> {
     return visitor.fromString(input);
   }
 }
+
+export const BSON_VALUE_READER: BsonValueReader = new BsonValueReader();

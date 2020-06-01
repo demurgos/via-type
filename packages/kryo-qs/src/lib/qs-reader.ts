@@ -60,3 +60,5 @@ export class QsReader implements Reader<string> {
     return this.valueReader.readString(qs.parse(raw)[this.primitiveWrapper], visitor);
   }
 }
+
+export const QS_READER: QsReader = new QsReader();

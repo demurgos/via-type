@@ -59,3 +59,5 @@ export class QsValueWriter extends StructuredWriter {
     return value;
   }
 }
+
+export const QS_VALUE_WRITER: QsValueWriter = new QsValueWriter();

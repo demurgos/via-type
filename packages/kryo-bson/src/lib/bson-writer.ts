@@ -63,3 +63,5 @@ export class BsonWriter implements Writer<Buffer> {
     return BSON.serialize({[this.primitiveWrapper]: this.valueWriter.writeString(value)});
   }
 }
+
+export const BSON_WRITER: BsonWriter = new BsonWriter();

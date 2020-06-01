@@ -63,3 +63,5 @@ export class QsWriter implements Writer<string> {
     return qs.stringify({[this.primitiveWrapper]: this.valueWriter.writeString(value)});
   }
 }
+
+export const QS_WRITER: QsWriter = new QsWriter();

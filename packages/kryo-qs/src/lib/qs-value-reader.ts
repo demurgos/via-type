@@ -16,16 +16,16 @@ export class QsValueReader implements Reader<any> {
 
   readAny<R>(input: any, visitor: ReadVisitor<R>): R {
     switch (typeof input) {
-    case "boolean":
-      return visitor.fromBoolean(input);
-    case "string":
-      return visitor.fromString(input);
-    case "object":
-      return input === null
-        ? visitor.fromNull()
-        : visitor.fromMap(new Map(Object.keys(input).map(k => [k, input[k]] as [string, any])), this, this);
-    default:
-      throw createInvalidTypeError("boolean | null | object | string", input);
+      case "boolean":
+        return visitor.fromBoolean(input);
+      case "string":
+        return visitor.fromString(input);
+      case "object":
+        return input === null
+          ? visitor.fromNull()
+          : visitor.fromMap(new Map(Object.keys(input).map(k => [k, input[k]] as [string, any])), this, this);
+      default:
+        throw createInvalidTypeError("boolean | null | object | string", input);
     }
   }
 
@@ -135,3 +135,5 @@ export class QsValueReader implements Reader<any> {
     return visitor.fromString(input);
   }
 }
+
+export const QS_VALUE_READER: QsValueReader = new QsValueReader();
