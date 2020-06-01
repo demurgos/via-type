@@ -32,8 +32,8 @@
     "@types/bson": "^4.0.2",
     "bson": "^4.0.4",
     "incident": "^3.2.1",
-    "kryo": "^0.10.0",
-    "kryo-json": "^0.10.2",
+    "kryo": "^0.11.0",
+    "kryo-json": "^0.11.0",
     "tslib": "^2.0.0"
   },
   "devDependencies": {
@@ -41,7 +41,7 @@
     "@types/mocha": "^7.0.2",
     "c88": "^0.3.4",
     "chai": "^4.2.0",
-    "kryo-testing": "^0.10.0"
+    "kryo-testing": "^0.11.0"
   },
   "c88": {
     "match": [

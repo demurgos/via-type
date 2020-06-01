@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "incident": "^3.2.1",
-    "kryo": "^0.10.0",
+    "kryo": "^0.11.0",
     "tslib": "^2.0.0"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "@types/unorm": "^1.3.28",
     "c88": "^0.3.4",
     "chai": "^4.2.0",
-    "kryo-testing": "^0.10.0",
+    "kryo-testing": "^0.11.0",
     "unorm": "^1.6.0"
   },
   "c88": {
