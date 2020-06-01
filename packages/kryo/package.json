@@ -1,6 +1,6 @@
 {
   "name": "kryo",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Runtime types for validation and serialization",
   "license": "MIT",
   "keywords": [],

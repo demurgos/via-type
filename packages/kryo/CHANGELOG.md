@@ -1,4 +1,4 @@
-# Next
+# 0.11.0 (2020-06-01)
 
 - **[Breaking change]** Require Node 14.
 - **[Breaking change]** Type `test` and `testError` argument as `unknown`.
