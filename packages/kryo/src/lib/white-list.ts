@@ -51,7 +51,7 @@ export class WhiteListType<T> implements IoType<T>, VersionedType<T, Diff> {
     }
   }
 
-  testError(val: T): Error | undefined {
+  testError(val: unknown): Error | undefined {
     const error: Error | undefined = testError(this.itemType, val);
     if (error !== undefined) {
       return error;
@@ -64,7 +64,7 @@ export class WhiteListType<T> implements IoType<T>, VersionedType<T, Diff> {
     return incident.Incident("UnkownVariant", "Unknown variant");
   }
 
-  test(value: T): boolean {
+  test(value: unknown): value is T {
     if (!this.itemType.test(value)) {
       return false;
     }

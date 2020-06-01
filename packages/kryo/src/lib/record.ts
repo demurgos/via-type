@@ -216,7 +216,7 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
     });
   }
 
-  testError(val: T): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (typeof val !== "object" || val === null) {
       return createInvalidTypeError("object", val);
     }
@@ -230,7 +230,7 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
         extra.delete(key);
       }
       const descriptor: PropertyDescriptor<any> = this.properties[key];
-      const propertyValue: any = val[key];
+      const propertyValue: unknown = Reflect.get(val, key);
       if (propertyValue === undefined) {
         if (!descriptor.optional) {
           missing.add(key);
@@ -249,7 +249,7 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
     return undefined;
   }
 
-  test(val: T): val is T {
+  test(val: unknown): val is T {
     if (typeof val !== "object" || val === null) {
       return false;
     }
@@ -261,7 +261,7 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
         extra.delete(key);
       }
       const descriptor: PropertyDescriptor<any> = this.properties[key];
-      const propertyValue: any = val[key];
+      const propertyValue: unknown = Reflect.get(val, key);
       if (propertyValue === undefined) {
         if (!descriptor.optional) {
           return false;
@@ -270,7 +270,6 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
         return false;
       }
     }
-
     return extra === undefined || extra.size === 0;
   }
 

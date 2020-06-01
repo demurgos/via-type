@@ -19,14 +19,14 @@ export class NullType implements IoType<null>, VersionedType<null, undefined> {
     return writer.writeNull();
   }
 
-  testError(val: null): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (val !== null) {
       return createInvalidTypeError("null", val);
     }
     return undefined;
   }
 
-  test(val: null): val is null {
+  test(val: unknown): val is null {
     return val === null;
   }
 

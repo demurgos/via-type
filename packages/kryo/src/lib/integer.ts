@@ -92,7 +92,7 @@ export class IntegerType implements IoType<number>, VersionedType<number, Diff>,
     return writer.writeFloat64(value);
   }
 
-  testError(val: number): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (typeof val !== "number") {
       return createInvalidTypeError("number", val);
     }
@@ -105,8 +105,8 @@ export class IntegerType implements IoType<number>, VersionedType<number, Diff>,
     return undefined;
   }
 
-  test(val: number): boolean {
-    return typeof val === "number" && val >= this.min && val <= this.max && Math.round(val) === val;
+  test(value: unknown): value is number {
+    return typeof value === "number" && value >= this.min && value <= this.max && Math.round(value) === value;
   }
 
   equals(left: number, right: number): boolean {

@@ -110,7 +110,7 @@ export const ArrayType: ArrayTypeConstructor = <any> class<T, M extends Type<T> 
     });
   }
 
-  testError(value: T[]): Error | undefined {
+  testError(value: unknown): Error | undefined {
     if (!Array.isArray(value)) {
       return createInvalidTypeError("array", value);
     }
@@ -134,7 +134,7 @@ export const ArrayType: ArrayTypeConstructor = <any> class<T, M extends Type<T> 
     return undefined;
   }
 
-  test(val: T[]): val is T[] {
+  test(val: unknown): val is T[] {
     if (
       !Array.isArray(val)
       || (this.maxLength !== undefined && val.length > this.maxLength)

@@ -15,7 +15,7 @@ export class AnyType<T = any> implements IoType<T> {
     return writer.writeAny(value);
   }
 
-  testError(value: T): Error | undefined {
+  testError(value: unknown): Error | undefined {
     try {
       JSON.parse(JSON.stringify(value));
       return undefined;
@@ -24,7 +24,7 @@ export class AnyType<T = any> implements IoType<T> {
     }
   }
 
-  test(_value: T): boolean {
+  test(_value: unknown): _value is T {
     return true;
   }
 

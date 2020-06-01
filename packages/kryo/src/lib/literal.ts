@@ -41,14 +41,14 @@ export interface LiteralIoType<T, K extends IoType<any> = IoType<any>> extends I
  * @see https://github.com/Microsoft/TypeScript/issues/10195
  */
 // tslint:disable-next-line:variable-name
-export const LiteralType: LiteralTypeConstructor = class<TT, K extends Type<any> = Type<any>> implements IoType<TT> {
+export const LiteralType: LiteralTypeConstructor = class<T, K extends Type<any> = Type<any>> implements IoType<T> {
   readonly name: Name = name;
   readonly type!: K;
-  readonly value!: TT;
+  readonly value!: T;
 
-  private _options: Lazy<LiteralTypeOptions<TT, K>>;
+  private _options: Lazy<LiteralTypeOptions<T, K>>;
 
-  constructor(options: Lazy<LiteralTypeOptions<TT, K>>) {
+  constructor(options: Lazy<LiteralTypeOptions<T, K>>) {
     this._options = options;
     if (typeof options !== "function") {
       this._applyOptions();
@@ -57,21 +57,21 @@ export const LiteralType: LiteralTypeConstructor = class<TT, K extends Type<any>
     }
   }
 
-  read<R>(reader: Reader<R>, raw: R): TT {
+  read<R>(reader: Reader<R>, raw: R): T {
     if (this.type.read === undefined) {
       throw new incident.Incident("NotReadable", {type: this});
     }
     return reader.trustInput ? this.clone(this.value) : this.type.read(reader, raw);
   }
 
-  write<W>(writer: Writer<W>, value: TT): W {
+  write<W>(writer: Writer<W>, value: T): W {
     if (this.type.write === undefined) {
       throw new incident.Incident("NotWritable", {type: this});
     }
     return this.type.write(writer, value);
   }
 
-  testError(val: TT): Error | undefined {
+  testError(val: unknown): Error | undefined {
     const error: Error | undefined = testError(this.type, val);
     if (error !== undefined) {
       return error;
@@ -82,23 +82,23 @@ export const LiteralType: LiteralTypeConstructor = class<TT, K extends Type<any>
     return undefined;
   }
 
-  test(value: TT): boolean {
+  test(value: unknown): value is T {
     return this.type.test(value) && this.type.equals(value, this.value);
   }
 
-  equals(val1: TT, val2: TT): boolean {
+  equals(val1: T, val2: T): boolean {
     return this.type.equals(val1, val2);
   }
 
-  clone(val: TT): TT {
+  clone(val: T): T {
     return this.type.clone(val);
   }
 
-  diff(_oldVal: TT, _newVal: TT): undefined {
+  diff(_oldVal: T, _newVal: T): undefined {
     return;
   }
 
-  patch(oldVal: TT, _diff: undefined): TT {
+  patch(oldVal: T, _diff: undefined): T {
     return this.type.clone(oldVal);
   }
 
@@ -114,12 +114,12 @@ export const LiteralType: LiteralTypeConstructor = class<TT, K extends Type<any>
     if (this._options === undefined) {
       throw createLazyOptionsError(this);
     }
-    const options: LiteralTypeOptions<TT, K> = typeof this._options === "function"
+    const options: LiteralTypeOptions<T, K> = typeof this._options === "function"
       ? this._options()
       : this._options;
 
     const type: K = options.type;
-    const value: TT = options.value;
+    const value: T = options.value;
 
     Object.assign(this, {type, value});
   }

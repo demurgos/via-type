@@ -60,7 +60,7 @@ describe("Custom", function () {
     write<W>(writer: Writer<W>, value: Complex): W {
       return writer.writeString(value.toString());
     },
-    testError(value: Complex): Error | undefined {
+    testError(value: unknown): Error | undefined {
       if (!(value instanceof Complex)) {
         return createInvalidTypeError("Complex", value);
       }

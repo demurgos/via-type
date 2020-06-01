@@ -114,7 +114,7 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     );
   }
 
-  testError(val: Map<K, V>): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (!(val instanceof Map)) {
       return createInvalidTypeError("Map", val);
     }
@@ -131,7 +131,7 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     return undefined;
   }
 
-  test(val: Map<K, V>): boolean {
+  test(val: unknown): val is Map<K, V> {
     if (!(val instanceof Map)) {
       return false;
     }

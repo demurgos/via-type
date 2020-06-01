@@ -44,7 +44,7 @@ export class BytesType implements IoType<Uint8Array>, VersionedType<Uint8Array, 
     return writer.writeBytes(value);
   }
 
-  testError(val: Uint8Array): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (!(val instanceof Uint8Array)) {
       return createInvalidTypeError("Uint8Array", val);
     }
@@ -54,8 +54,8 @@ export class BytesType implements IoType<Uint8Array>, VersionedType<Uint8Array, 
     return undefined;
   }
 
-  test(val: Uint8Array): boolean {
-    return this.testError(val) === undefined;
+  test(value: unknown): value is Uint8Array {
+    return this.testError(value) === undefined;
   }
 
   equals(left: Uint8Array, right: Uint8Array): boolean {

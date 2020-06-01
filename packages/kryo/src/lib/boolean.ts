@@ -24,14 +24,14 @@ export class BooleanType implements IoType<boolean>, VersionedType<boolean, Diff
     return writer.writeBoolean(value);
   }
 
-  testError(val: boolean): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (typeof val !== "boolean") {
       return createInvalidTypeError("boolean", val);
     }
     return undefined;
   }
 
-  test(value: boolean): value is boolean {
+  test(value: unknown): value is boolean {
     return typeof value === "boolean";
   }
 

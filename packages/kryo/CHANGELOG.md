@@ -1,6 +1,7 @@
 # Next
 
 - **[Breaking change]** Require Node 14.
+- **[Breaking change]** Type `test` and `testError` argument as `unknown`.
 - **[Fix]** Fix compilation error with TypeScript 3.9.
 - **[Fix]** Update dependencies
 

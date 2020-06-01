@@ -28,20 +28,20 @@ export class DateType implements IoType<Date>, VersionedType<Date, Diff>, Ord<Da
     return writer.writeDate(value);
   }
 
-  testError(val: Date): Error | undefined {
-    if (!(val instanceof Date)) {
-      return createInvalidTypeError("Date", val);
+  testError(value: unknown): Error | undefined {
+    if (!(value instanceof Date)) {
+      return createInvalidTypeError("Date", value);
     }
-    const time: number = val.getTime();
+    const time: number = value.getTime();
     if (isNaN(time) || time > Number.MAX_SAFE_INTEGER || time < Number.MIN_SAFE_INTEGER) {
-      return createInvalidTimestampError(val);
+      return createInvalidTimestampError(value);
     }
 
     return undefined;
   }
 
-  test(val: Date): val is Date {
-    return this.testError(val) === undefined;
+  test(value: unknown): value is Date {
+    return this.testError(value) === undefined;
   }
 
   equals(left: Date, right: Date): boolean {

@@ -29,7 +29,7 @@ export interface Type<T> {
    * @param value The value to test against this type.
    * @return Boolean indicating if this type matches `value`.
    */
-  test(value: T): boolean;
+  test(value: unknown): value is T;
 
   /**
    * Tests if `left` is equal to `value`.
@@ -66,7 +66,7 @@ export interface Type<T> {
    * @return If this type matches `value` then `undefined`; otherwise an error describing why this
    *         type does not match `value`.
    */
-  testError?(value: T): Error | undefined;
+  testError?(value: unknown): Error | undefined;
 
   /**
    * Compares two valid values.

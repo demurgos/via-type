@@ -134,15 +134,15 @@ implements IoType<E>, TsEnumTypeOptions<E, EO> {
     return writer.writeString(this.jsToOut.get(value)!);
   }
 
-  testError(value: E): Error | undefined {
-    if (!this.jsToOut.has(value)) {
+  testError(value: unknown): Error | undefined {
+    if (!this.jsToOut.has(value as any)) {
       return incident.Incident("UnknownVariantError", {value}, "Unknown enum variant value");
     }
     return undefined;
   }
 
-  test(value: E): value is E {
-    return this.jsToOut.has(value);
+  test(value: unknown): value is E {
+    return this.jsToOut.has(value as any);
   }
 
   equals(val1: E, val2: E): boolean {

@@ -50,9 +50,12 @@ export class TaggedUnionType<T, K extends RecordType<T> = RecordType<T>> impleme
     }
   }
 
-  match(value: T): K | undefined {
+  match(value: unknown): K | undefined {
+    if (typeof value !== "object" || value === null) {
+      throw createInvalidTypeError("object", value);
+    }
     const tag: keyof T = this.tag;
-    const tagValue: any = value[tag];
+    const tagValue: unknown = Reflect.get(value, tag);
     if (tagValue === undefined) {
       return undefined;
       // throw new incident.Incident("MissingTag", {union: this, value});
@@ -112,7 +115,7 @@ export class TaggedUnionType<T, K extends RecordType<T> = RecordType<T>> impleme
     }));
   }
 
-  testError(value: T): Error | undefined {
+  testError(value: unknown): Error | undefined {
     if (typeof value !== "object" || value === null) {
       return createInvalidTypeError("object", value);
     }
@@ -131,7 +134,7 @@ export class TaggedUnionType<T, K extends RecordType<T> = RecordType<T>> impleme
   //   return [variant.test(val), variant] as TestWithVariantResult<T>;
   // }
 
-  test(value: T): boolean {
+  test(value: unknown): value is T {
     if (typeof value !== "object" || value === null) {
       return false;
     }

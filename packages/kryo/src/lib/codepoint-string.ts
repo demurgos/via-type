@@ -175,50 +175,50 @@ export class CodepointStringType implements IoType<string>, VersionedType<string
     return writer.writeString(value);
   }
 
-  testError(val: string): Error | undefined {
-    if (!(typeof val === "string")) {
-      return createInvalidTypeError("string", val);
+  testError(value: unknown): Error | undefined {
+    if (!(typeof value === "string")) {
+      return createInvalidTypeError("string", value);
     }
 
     switch (this.normalization) {
-    case Normalization.Nfc:
-      if (this.unorm === undefined) {
-        throw createMissingDependencyError("unorm", "Required to normalize unicode strings to NFC.");
-      }
-      if (val !== this.unorm.nfc(val)) {
-        return incident.Incident("UnicodeNormalization", "Not NFC-Normalized");
-      }
-      break;
-    case Normalization.None:
-      break;
-    default:
-      throw new incident.Incident(
-        `IncompleteSwitch: Received unexpected variant for this.normalization: ${this.normalization}`,
-      );
+      case Normalization.Nfc:
+        if (this.unorm === undefined) {
+          throw createMissingDependencyError("unorm", "Required to normalize unicode strings to NFC.");
+        }
+        if (value !== this.unorm.nfc(value)) {
+          return incident.Incident("UnicodeNormalization", "Not NFC-Normalized");
+        }
+        break;
+      case Normalization.None:
+        break;
+      default:
+        throw new incident.Incident(
+          `IncompleteSwitch: Received unexpected variant for this.normalization: ${this.normalization}`,
+        );
     }
 
-    if (this.lowerCase && val !== val.toLowerCase()) {
-      return createLowerCaseError(val);
+    if (this.lowerCase && value !== value.toLowerCase()) {
+      return createLowerCaseError(value);
     }
 
-    if (this.trimmed && val !== val.trim()) {
-      return createNotTrimmedError(val);
+    if (this.trimmed && value !== value.trim()) {
+      return createNotTrimmedError(value);
     }
 
     let codepointCount: number;
     try {
-      codepointCount = checkedUcs2Decode(val).length;
+      codepointCount = checkedUcs2Decode(value).length;
     } catch (err) {
       return err;
     }
 
     const minCodepoints: number | undefined = this.minCodepoints;
     if (typeof minCodepoints === "number" && codepointCount < minCodepoints) {
-      return createMinCodepointsError(val, codepointCount, minCodepoints);
+      return createMinCodepointsError(value, codepointCount, minCodepoints);
     }
 
     if (codepointCount > this.maxCodepoints) {
-      return createMaxCodepointsError(val, codepointCount, this.maxCodepoints);
+      return createMaxCodepointsError(value, codepointCount, this.maxCodepoints);
     }
 
     if (this.pattern instanceof RegExp) {
@@ -229,16 +229,16 @@ export class CodepointStringType implements IoType<string>, VersionedType<string
         );
       }
 
-      if (!this.pattern.test(val)) {
-        return createPatternNotMatchedError(this.pattern, val);
+      if (!this.pattern.test(value)) {
+        return createPatternNotMatchedError(this.pattern, value);
       }
     }
 
     return undefined;
   }
 
-  test(val: string): boolean {
-    return this.testError(val) === undefined;
+  test(value: unknown): value is string {
+    return this.testError(value) === undefined;
   }
 
   equals(val1: string, val2: string): boolean {

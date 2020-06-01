@@ -82,7 +82,7 @@ export class Float64Type implements IoType<number>, VersionedType<number, [numbe
     return writer.writeFloat64(value);
   }
 
-  testError(val: number): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (typeof val !== "number") {
       return createInvalidTypeError("number", val);
     }
@@ -94,10 +94,10 @@ export class Float64Type implements IoType<number>, VersionedType<number, [numbe
     return undefined;
   }
 
-  test(val: number): boolean {
-    return typeof val === "number"
-      && (this.allowNaN || !isNaN(val))
-      && (this.allowInfinity || Math.abs(val) !== Infinity);
+  test(value: unknown): value is number {
+    return typeof value === "number"
+      && (this.allowNaN || !isNaN(value))
+      && (this.allowInfinity || Math.abs(value) !== Infinity);
   }
 
   /**

@@ -183,7 +183,7 @@ export class Ucs2StringType implements IoType<string>, VersionedType<string, Dif
     return writer.writeString(value);
   }
 
-  testError(val: string): Error | undefined {
+  testError(val: unknown): Error | undefined {
     if (typeof val !== "string") {
       return createInvalidTypeError("string", val);
     }
@@ -218,7 +218,7 @@ export class Ucs2StringType implements IoType<string>, VersionedType<string, Dif
     return undefined;
   }
 
-  test(val: string): boolean {
+  test(val: unknown): val is string {
     return this.testError(val) === undefined;
   }
 

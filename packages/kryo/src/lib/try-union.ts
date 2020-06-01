@@ -41,7 +41,7 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
     }
   }
 
-  match(value: T): M | undefined {
+  match(value: unknown): M | undefined {
     for (const variant of this.variants) {
       if (variant.test(value)) {
         return variant;
@@ -81,7 +81,7 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
     throw new incident.Incident("InputVariantNotFound", {union: this, raw});
   }
 
-  testError(value: T): Error | undefined {
+  testError(value: unknown): Error | undefined {
     const variant: M | undefined = this.match(value);
     if (variant === undefined) {
       return new incident.Incident("UnknownUnionVariant", "Unknown union variant");
@@ -89,7 +89,7 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
     return testError(variant, value);
   }
 
-  test(val: T): boolean {
+  test(val: unknown): val is T {
     const type: M | undefined = this.match(val);
     if (type === undefined) {
       return false;

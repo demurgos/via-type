@@ -8,7 +8,7 @@ import { Type } from "../index.js";
  * @param value The value to match.
  * @return Undefined if the value matches, otherwise an `Error` instance.
  */
-export function testError<T>(type: Type<T>, value: T): Error | undefined {
+export function testError<T>(type: Type<T>, value: unknown): Error | undefined {
   if (type.testError !== undefined) {
     return type.testError(value);
   } else {

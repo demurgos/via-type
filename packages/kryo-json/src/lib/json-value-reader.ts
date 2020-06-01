@@ -17,16 +17,16 @@ export class JsonValueReader implements Reader<JsonValue> {
 
   readAny<R>(raw: JsonValue, visitor: ReadVisitor<R>): R {
     switch (typeof raw) {
-    case "boolean":
-      return visitor.fromBoolean(raw as boolean);
-    case "string":
-      return visitor.fromString(raw as string);
-    case "object":
-      return raw === null
-        ? visitor.fromNull()
-        : visitor.fromMap(new Map(Object.keys(raw).map(k => [k, (raw as any)[k]] as [string, any])), this, this);
-    default:
-      throw createInvalidTypeError("array | boolean | null | object | string", raw);
+      case "boolean":
+        return visitor.fromBoolean(raw as boolean);
+      case "string":
+        return visitor.fromString(raw as string);
+      case "object":
+        return raw === null
+          ? visitor.fromNull()
+          : visitor.fromMap(new Map(Object.keys(raw).map(k => [k, (raw as any)[k]] as [string, any])), this, this);
+      default:
+        throw createInvalidTypeError("array | boolean | null | object | string", raw);
     }
   }
 
@@ -43,9 +43,8 @@ export class JsonValueReader implements Reader<JsonValue> {
     } else if (!/^(?:[0-9a-f]{2})*$/.test(raw)) {
       throw createInvalidTypeError("lowerCaseHexEvenLengthString", raw);
     }
-    let result: Uint8Array;
     const len: number = raw.length / 2;
-    result = new Uint8Array(len);
+    const result: Uint8Array = new Uint8Array(len);
     for (let i: number = 0; i < len; i++) {
       result[i] = parseInt(raw.substr(2 * i, 2), 16);
     }
