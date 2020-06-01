@@ -1,3 +1,7 @@
+# Next
+
+- **[Breaking change]** Require Node 14.
+
 # 0.10.2 (2020-05-02)
 
 - **[Fix]** Fix publication.

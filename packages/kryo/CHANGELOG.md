@@ -1,5 +1,6 @@
 # Next
 
+- **[Breaking change]** Require Node 14.
 - **[Fix]** Fix compilation error with TypeScript 3.9.
 - **[Fix]** Update dependencies
 

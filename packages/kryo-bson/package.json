@@ -16,9 +16,6 @@
   "exports": {
     "./lib/": "./lib/"
   },
-  "engines": {
-    "node": ">=13.7"
-  },
   "scripts": {
     "build": "tsc --build src/lib/tsconfig.json",
     "pretest": "tsc --build src/test/tsconfig.json",
@@ -27,6 +24,9 @@
     "watch": "gulp lib:watch",
     "lint": "eslint \"./src/**/*.ts\"",
     "format": "eslint --fix \"./src/**/*.ts\""
+  },
+  "engines": {
+    "node": ">=14.0"
   },
   "dependencies": {
     "@types/bson": "^4.0.2",

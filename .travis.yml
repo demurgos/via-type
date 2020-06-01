@@ -6,7 +6,8 @@ notifications:
     on_failure: change
 
 node_js:
-  - 13.7
+  # Support policy: all latest and LTS Node versions above 14
+  - 14
 
 script:
   - yarn test

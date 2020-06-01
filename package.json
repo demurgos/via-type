@@ -8,6 +8,9 @@
     "pretest": "tsc --build test.tsconfig.json",
     "test": "yarn pretest && mocha \"packages/*/test/**/*.spec.js\""
   },
+  "engines": {
+    "node": ">=14.0"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.0.2",
     "@typescript-eslint/parser": "^3.0.2",
