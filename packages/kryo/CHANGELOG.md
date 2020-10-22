@@ -1,3 +1,7 @@
+# Next
+
+- **[Feature]** Add support for generic types.
+
 # 0.11.0 (2020-06-01)
 
 - **[Breaking change]** Require Node 14.

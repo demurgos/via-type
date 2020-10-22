@@ -237,7 +237,10 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
         }
         continue;
       }
-      const error: Error | undefined = descriptor.type.testError!(propertyValue);
+      if (descriptor.type.testError === undefined) {
+        throw new incident.Incident("MissingTestError", {key});
+      }
+      const error: Error | undefined = descriptor.type.testError(propertyValue);
       if (error !== undefined) {
         invalid.set(key as string, error);
       }

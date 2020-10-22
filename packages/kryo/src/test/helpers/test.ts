@@ -53,6 +53,9 @@ export function testInvalidValue(type: Type<any>, item: InvalidTypedValue) {
 export function testValidValue(type: Type<any>, item: ValidTypedValue) {
   if (type.testError !== undefined) {
     it("Should return `undefined` for .testError", function () {
+      if (type.testError === undefined) {
+        console.log("undef");
+      }
       const error: Error | undefined = type.testError!(item.value);
       if (error !== undefined) {
         chai.assert.fail(error, undefined, String(error));

@@ -42,9 +42,8 @@ export class QsValueReader implements Reader<any> {
     } else if (!/^(?:[0-9a-f]{2})*$/.test(input)) {
       throw createInvalidTypeError("lowerCaseHexEvenLengthString", input);
     }
-    let result: Uint8Array;
     const len: number = input.length / 2;
-    result = new Uint8Array(len);
+    const result: Uint8Array = new Uint8Array(len);
     for (let i: number = 0; i < len; i++) {
       result[i] = parseInt(input.substr(2 * i, 2), 16);
     }
