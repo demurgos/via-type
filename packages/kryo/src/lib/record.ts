@@ -61,8 +61,22 @@ export interface PropertyDescriptor<T, K extends Type<T> = Type<T>> {
 
   /**
    * The name of the key used in the serialized records.
+   * TODO: Remove in favor of `rename` of the property descriptor
    */
   rename?: string;
+}
+
+export interface ExtendRecordTypeOptions<E> {
+  /**
+   * A dictionary between a property name and its description.
+   */
+  properties: {readonly [P in keyof E]: PropertyDescriptor<E[P], Type<E[P]>>};
+
+  rename?: {readonly [P in keyof E]?: string};
+}
+
+export interface ExtendRecordIoTypeOptions<E> extends ExtendRecordTypeOptions<E> {
+  properties: {readonly [P in keyof E]: PropertyDescriptor<E[P], IoType<E[P]>>};
 }
 
 export interface RecordTypeConstructor {
@@ -81,6 +95,12 @@ export interface RecordTypeConstructor {
 
 export interface RecordType<T> extends Type<T>, VersionedType<T, Diff<T>>, RecordTypeOptions<T> {
   getOutKey(key: keyof T): string;
+
+  pick<K extends keyof T>(keys: readonly K[]): RecordType<Pick<T, K>>;
+
+  omit<K extends keyof T>(keys: readonly K[]): RecordType<Omit<T, K>>;
+
+  extend<E>(options: Lazy<ExtendRecordTypeOptions<E>>): RecordType<T & E>;
 }
 
 // tslint:disable-next-line:max-line-length
@@ -90,6 +110,13 @@ export interface RecordIoType<T> extends IoType<T>, VersionedType<T, Diff<T>>, R
   read<R>(reader: Reader<R>, raw: R): T;
 
   write<W>(writer: Writer<W>, value: T): W;
+
+  pick<K extends keyof T>(keys: readonly K[]): RecordIoType<Pick<T, K>>;
+
+  omit<K extends keyof T>(keys: readonly K[]): RecordIoType<Omit<T, K>>;
+
+  extend<E>(options: Lazy<ExtendRecordIoTypeOptions<E>>): RecordIoType<T & E>;
+  extend<E>(options: Lazy<ExtendRecordTypeOptions<E>>): RecordType<T & E>;
 }
 
 // We use an `any` cast because of the `properties` property.
@@ -386,6 +413,100 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
     const changeCase: CaseStyle | undefined = options.changeCase;
 
     Object.assign(this, {noExtraKeys, properties, rename, changeCase});
+  }
+
+  pick<K extends keyof T>(keys: readonly K[]): RecordType<Pick<T, K>> {
+    const keySet: ReadonlySet<K> = new Set(keys);
+
+    return new RecordType(() => {
+      const parentOptions: RecordTypeOptions<T> = typeof this._options === "function" ?
+        this._options() :
+        this._options;
+
+      const properties = {};
+      for (const key in parentOptions.properties) {
+        if (keySet.has(key as any)) {
+          Reflect.set(properties, key, parentOptions.properties[key]);
+        }
+      }
+
+      const options: RecordTypeOptions<Pick<T, K>> = {
+        ...parentOptions,
+        properties: properties as {[P in keyof Pick<T, K>]: PropertyDescriptor<any>},
+      };
+      return options;
+    });
+  }
+
+  omit<K extends keyof T>(keys: readonly K[]): RecordType<Omit<T, K>> {
+    const keySet: ReadonlySet<K> = new Set(keys);
+
+    return new RecordType(() => {
+      const parentOptions: RecordTypeOptions<T> = typeof this._options === "function" ?
+        this._options() :
+        this._options;
+
+      const properties = {};
+      for (const key in parentOptions.properties) {
+        if (!keySet.has(key as any)) {
+          Reflect.set(properties, key, parentOptions.properties[key]);
+        }
+      }
+
+      const options: RecordTypeOptions<Omit<T, K>> = {
+        ...parentOptions,
+        properties: properties as {[P in keyof Omit<T, K>]: PropertyDescriptor<any>},
+      };
+      return options;
+    });
+  }
+
+  extend<E>(options: Lazy<ExtendRecordTypeOptions<E>>): RecordType<T & E> {
+    return new RecordType(() => {
+      const parentOptions: RecordTypeOptions<T> = typeof this._options === "function" ?
+        this._options() :
+        this._options;
+      const extensionOptions: RecordTypeOptions<E> = typeof options === "function" ?
+        options() :
+        options;
+
+      const properties = {...parentOptions.properties};
+      for (const key in extensionOptions.properties) {
+        if (Reflect.has(parentOptions.properties, key)) {
+          throw new incident.Incident("RecordExtensionPropertyConflict", {key});
+        }
+        Reflect.set(properties, key, extensionOptions.properties[key]);
+      }
+
+      type ResultRename = {[P in keyof (T & E)]?: string};
+      let rename: ResultRename | undefined = undefined;
+      if (parentOptions.rename === undefined) {
+        if (extensionOptions.rename === undefined) {
+          rename = undefined;
+        } else {
+          rename = extensionOptions.rename as ResultRename;
+        }
+      } else {
+        if (extensionOptions.rename === undefined) {
+          rename = parentOptions.rename as ResultRename;
+        } else {
+          rename = {...parentOptions.rename} as ResultRename;
+          for (const key in extensionOptions.rename) {
+            if (Reflect.has(parentOptions.rename, key)) {
+              throw new incident.Incident("RecordExtensionRenameConflict", {key});
+            }
+            Reflect.set(properties, key, extensionOptions.properties[key]);
+          }
+        }
+      }
+
+      const resultOptions: RecordTypeOptions<T & E> = {
+        ...parentOptions,
+        properties: properties as {[P in keyof (T & E)]: PropertyDescriptor<any>},
+        rename,
+      };
+      return resultOptions;
+    });
   }
 };
 

@@ -1,7 +1,9 @@
+import { $Boolean } from "../../lib/boolean.js";
 import { DateType } from "../../lib/date.js";
 import { CaseStyle } from "../../lib/index.js";
-import { IntegerType } from "../../lib/integer.js";
+import { $Uint32, IntegerType } from "../../lib/integer.js";
 import { RecordType } from "../../lib/record.js";
+import { $Ucs2String } from "../../lib/ucs2-string.js";
 import { runTests, TypedValue } from "../helpers/test.js";
 
 describe("kryo | Record", function () {
@@ -127,5 +129,149 @@ describe("kryo | Record", function () {
     ];
 
     runTests(type, items);
+  });
+
+  describe("Record: pick", function () {
+    interface Base {
+      foo: number;
+      bar: string;
+    }
+
+    const $Base: RecordType<Base> = new RecordType<Base>({
+      properties: {
+        foo: {type: $Uint32},
+        bar: {type: $Ucs2String},
+      },
+    });
+
+    const $Pick: RecordType<Pick<Base, "foo">> = $Base.pick(["foo"]);
+
+    const items: TypedValue[] = [
+      {
+        value: {
+          foo: 10,
+          bar: "bar",
+        },
+        valid: true,
+        output: {
+          json: JSON.stringify({"foo": 10}),
+          qs: "foo=10",
+        },
+      },
+      {
+        value: {
+          foo: 20,
+        },
+        valid: true,
+        output: {
+          json: JSON.stringify({"foo": 20}),
+          qs: "foo=20",
+        },
+      },
+      {
+        value: {
+          bar: "bar",
+        },
+        valid: false,
+      },
+    ];
+
+    runTests($Pick, items);
+  });
+
+  describe("Record: omit", function () {
+    interface Base {
+      foo: number;
+      bar: string;
+    }
+
+    const $Base: RecordType<Base> = new RecordType<Base>({
+      properties: {
+        foo: {type: $Uint32},
+        bar: {type: $Ucs2String},
+      },
+    });
+
+    const $Omit: RecordType<Omit<Base, "foo">> = $Base.omit(["foo"]);
+
+    const items: TypedValue[] = [
+      {
+        value: {
+          foo: 10,
+          bar: "bar",
+        },
+        valid: true,
+        output: {
+          json: JSON.stringify({"bar": "bar"}),
+          qs: "bar=bar",
+        },
+      },
+      {
+        value: {
+          bar: "hello",
+        },
+        valid: true,
+        output: {
+          json: JSON.stringify({"bar": "hello"}),
+          qs: "bar=hello",
+        },
+      },
+      {
+        value: {
+          foo: 20,
+        },
+        valid: false,
+      },
+    ];
+
+    runTests($Omit, items);
+  });
+
+  describe("Record: extend", function () {
+    interface Base {
+      foo: number;
+      bar: string;
+    }
+
+    const $Base: RecordType<Base> = new RecordType<Base>({
+      properties: {
+        foo: {type: $Uint32},
+        bar: {type: $Ucs2String},
+      },
+    });
+
+    interface Ext {
+      baz: boolean;
+    }
+
+    const $Ext: RecordType<Ext> = $Base.extend({
+      properties: {
+        baz: {type: $Boolean},
+      },
+    });
+
+    const items: TypedValue[] = [
+      {
+        value: {
+          foo: 10,
+          bar: "bar",
+          baz: true,
+        },
+        valid: true,
+        output: {
+          json: JSON.stringify({"foo": 10, "bar": "bar", "baz": true}),
+          qs: "foo=10&bar=bar&baz=true",
+        },
+      },
+      {
+        value: {
+          foo: 10,
+          bar: "bar",
+        },
+        valid: false,
+      },
+    ];
+
+    runTests($Ext, items);
   });
 });

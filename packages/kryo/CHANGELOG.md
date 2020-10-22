@@ -1,6 +1,7 @@
 # Next
 
 - **[Feature]** Add support for generic types.
+- **[Feature]** Add record derivation helpers.
 
 # 0.11.0 (2020-06-01)
 
