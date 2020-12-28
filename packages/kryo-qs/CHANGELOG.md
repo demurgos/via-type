@@ -1,3 +1,7 @@
+# Next
+
+- **[Fix]** Include sources in package.
+
 # 0.11.0 (2020-06-01)
 
 - **[Breaking change]** Require Node 14.

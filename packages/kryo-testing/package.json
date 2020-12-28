@@ -11,7 +11,8 @@
   },
   "type": "module",
   "files": [
-    "./lib/"
+    "./lib/",
+    "./src/lib/"
   ],
   "main": "./lib/index.js",
   "exports": {
