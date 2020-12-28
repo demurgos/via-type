@@ -1,4 +1,4 @@
-# Next
+# 0.11.2 (2020-12-28)
 
 - **[Fix]** Include sources in package.
 
