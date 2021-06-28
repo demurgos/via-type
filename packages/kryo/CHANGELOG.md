@@ -1,3 +1,7 @@
+# 0.12.2 (2021-06-29)
+
+- **[Fix]** Add `prepack` lifecycle script.
+
 # 0.12.1 (2021-06-29)
 
 - **[Feature]** Make `Array`, `Bytes`, `CodepointString`, `Literal`, `Null` and `Ucs2String` ordered.

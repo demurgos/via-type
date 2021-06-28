@@ -1,6 +1,6 @@
 {
   "name": "kryo-testing",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "Helpers to test Kryo types and serializers",
   "license": "MIT",
   "keywords": [],
@@ -20,10 +20,10 @@
     "./lib/*": "./lib/*.js"
   },
   "scripts": {
-    "build": "tsc --build src/lib/tsconfig.json",
-    "posttest": "yarn run lint",
     "lint": "eslint \"./src/**/*.ts\"",
-    "format": "eslint --fix \"./src/**/*.ts\""
+    "format": "eslint --fix \"./src/**/*.ts\"",
+    "build": "tsc --build src/lib/tsconfig.json",
+    "prepack": "yarn run build"
   },
   "engines": {
     "node": ">=14.13.1"
