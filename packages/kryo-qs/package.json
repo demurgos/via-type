@@ -1,6 +1,6 @@
 {
   "name": "kryo-qs",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "Querystring serializer for Kryo types",
   "license": "MIT",
   "keywords": [],
@@ -18,12 +18,12 @@
     "./lib/*": "./lib/*.js"
   },
   "scripts": {
-    "build": "tsc --build src/lib/tsconfig.json",
-    "test:build": "tsc --build src/test/tsconfig.json",
-    "test": "yarn test:build && mocha \"test/**/*.spec.js\"",
-    "posttest": "yarn run lint",
     "lint": "eslint \"./src/**/*.ts\"",
-    "format": "eslint --fix \"./src/**/*.ts\""
+    "format": "eslint --fix \"./src/**/*.ts\"",
+    "build": "tsc --build src/lib/tsconfig.json",
+    "prepack": "yarn run build",
+    "test:build": "tsc --build src/test/tsconfig.json",
+    "test": "yarn run test:build && mocha \"test/**/*.spec.js\""
   },
   "engines": {
     "node": ">=14.13.1"
