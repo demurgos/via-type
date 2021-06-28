@@ -164,20 +164,15 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
     leftList.sort(compare);
     rightList.sort(compare);
 
-    for (let i: number = 0; i < Math.max(left.size, right.size); i++) {
-      if (i >= right.size) {
-        return false;
-      } else if (i >= left.size) {
-        return true;
-      } else {
-        const leftItem: T = leftList[i];
-        const rightItem: T = rightList[i];
-        if (!this.itemType.equals(leftItem, rightItem)) {
-          return this.itemType.lte!(leftItem, rightItem);
-        }
+    const minLength: number = Math.min(leftList.length, rightList.length);
+    for (let i: number = 0; i < minLength; i++) {
+      const leftItem: T = leftList[i];
+      const rightItem: T = rightList[i];
+      if (!this.itemType.equals(leftItem, rightItem)) {
+        return this.itemType.lte!(leftItem, rightItem);
       }
     }
-    return true;
+    return leftList.length <= rightList.length;
   }
 
   clone(val: Set<T>): Set<T> {

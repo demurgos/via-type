@@ -1,5 +1,5 @@
 /**
- * @module kryo/builtins/uuid-hex
+ * @module kryo/uuid-hex
  */
 
 import { Ucs2StringType } from "./ucs2-string.js";
