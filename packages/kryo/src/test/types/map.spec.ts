@@ -15,10 +15,6 @@ describe("Map", function () {
       name: "new Map([[1, 100], [2, 200]])",
       value: new Map([[1, 100], [2, 200]]),
       valid: true,
-      output: {
-        json: "{\"1\":100,\"2\":200}",
-        qs: "ignore",
-      },
     },
 
     {name: "new Date(0)", value: new Date(0), valid: false},
@@ -54,9 +50,6 @@ describe("Map (assumeStringKey)", function () {
       name: "new Map([[a, 100], [aa, 200]])",
       value: new Map([["a", 100], ["aa", 200]]),
       valid: true,
-      output: {
-        json: "{\"a\":100,\"aa\":200}",
-      },
     },
   ];
 

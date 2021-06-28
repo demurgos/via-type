@@ -69,10 +69,6 @@ describe("TaggedUnion", function () {
           height: 20,
         },
         valid: true,
-        output: {
-          json: "{\"type\":\"rectangle\",\"width\":10,\"height\":20}",
-          qs: "type=rectangle&width=10&height=20",
-        },
       },
       {
         name: "Circle {type: ShapeType.Circle, radius: 15}",
@@ -81,10 +77,6 @@ describe("TaggedUnion", function () {
           radius: 15,
         },
         valid: true,
-        output: {
-          json: "{\"type\":\"circle\",\"radius\":15}",
-          qs: "type=circle&radius=15",
-        },
       },
 
       {

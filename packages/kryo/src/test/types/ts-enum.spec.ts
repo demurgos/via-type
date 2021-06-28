@@ -16,49 +16,31 @@ describe("TsEnum", function () {
       name: "Color.Red",
       value: Color.Red,
       valid: true,
-      output: {
-        json: "\"Red\"",
-      },
     },
     {
       name: "Color.Green",
       value: Color.Green,
       valid: true,
-      output: {
-        json: "\"Green\"",
-      },
     },
     {
       name: "Color.Blue",
       value: Color.Blue,
       valid: true,
-      output: {
-        json: "\"Blue\"",
-      },
     },
     {
       name: "0",
       value: 0,
       valid: true,
-      output: {
-        json: "\"Red\"",
-      },
     },
     {
       name: "1",
       value: 1,
       valid: true,
-      output: {
-        json: "\"Green\"",
-      },
     },
     {
       name: "2",
       value: 2,
       valid: true,
-      output: {
-        json: "\"Blue\"",
-      },
     },
 
     {name: "new Date()", value: new Date(), valid: false},
@@ -95,55 +77,31 @@ describe("SimpleEnum: rename KebabCase", function () {
       name: "Node.Expression",
       value: Node.Expression,
       valid: true,
-      output: {
-        json: "\"expression\"",
-        qs: "_=expression",
-      },
     },
     {
       name: "Node.BinaryOperator",
       value: Node.BinaryOperator,
       valid: true,
-      output: {
-        json: "\"binary-operator\"",
-        qs: "_=binary-operator",
-      },
     },
     {
       name: "Node.BlockStatement",
       value: Node.BlockStatement,
       valid: true,
-      output: {
-        json: "\"block-statement\"",
-        qs: "_=block-statement",
-      },
     },
     {
       name: "0",
       value: 0,
       valid: true,
-      output: {
-        json: "\"expression\"",
-        qs: "_=expression",
-      },
     },
     {
       name: "1",
       value: 1,
       valid: true,
-      output: {
-        json: "\"binary-operator\"",
-        qs: "_=binary-operator",
-      },
     },
     {
       name: "2",
       value: 2,
       valid: true,
-      output: {
-        json: "\"block-statement\"",
-        qs: "_=block-statement",
-      },
     },
   ];
 

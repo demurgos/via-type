@@ -79,37 +79,21 @@ describe("Custom", function () {
       name: "Complex {real: 0, imaginary: 0}",
       value: new Complex(0, 0),
       valid: true,
-      output: {
-        json: "\"0\"",
-        qs: "_=0",
-      },
     },
     {
       name: "Complex {real: 1, imaginary: 0}",
       value: new Complex(1, 0),
       valid: true,
-      output: {
-        json: "\"1\"",
-        qs: "_=1",
-      },
     },
     {
       name: "Complex {real: 0, imaginary: 2}",
       value: new Complex(0, 2),
       valid: true,
-      output: {
-        json: "\"2j\"",
-        qs: "_=2j",
-      },
     },
     {
       name: "Complex {real: 3, imaginary: 4}",
       value: new Complex(3, 4),
       valid: true,
-      output: {
-        json: "\"3 + 4j\"",
-        qs: "_=3%20%2B%204j",
-      },
     },
     {name: "\"foo\"", value: "bar", valid: false},
     {name: "0", value: 0, valid: false},

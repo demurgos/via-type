@@ -31,12 +31,6 @@ describe("kryo | Generic", function () {
             value: "foo",
           },
           valid: true,
-          output: {
-            json: JSON.stringify({
-              time: "1970-01-01T00:00:00.000Z",
-              value: "foo",
-            }),
-          },
         },
         {
           value: {
@@ -59,12 +53,6 @@ describe("kryo | Generic", function () {
             value: 42,
           },
           valid: true,
-          output: {
-            json: JSON.stringify({
-              time: "1970-01-01T00:00:00.000Z",
-              value: 42,
-            }),
-          },
         },
         {
           value: {

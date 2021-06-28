@@ -11,25 +11,16 @@ describe("BytesType", function () {
       name: "Uint8Array.from([])",
       value: Uint8Array.from([]),
       valid: true,
-      output: {
-        json: "\"\"",
-      },
     },
     {
       name: "Uint8Array.from([1])",
       value: Uint8Array.from([1]),
       valid: true,
-      output: {
-        json: "\"01\"",
-      },
     },
     {
       name: "Uint8Array.from([2, 3])",
       value: Uint8Array.from([2, 3]),
       valid: true,
-      output: {
-        json: "\"0203\"",
-      },
     },
     {
       name: "Uint8Array.from([4, 5, 6])",

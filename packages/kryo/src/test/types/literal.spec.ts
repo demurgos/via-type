@@ -15,11 +15,6 @@ describe("Literal", function () {
         name: "\"foo\"",
         value: "foo",
         valid: true,
-        output: {
-          bson: Buffer.from("10000000025f0004000000666f6f0000", "hex"),
-          json: "\"foo\"",
-          qs: "_=foo",
-        },
       },
 
       {name: "\"bar\"", value: "bar", valid: false},
@@ -66,21 +61,11 @@ describe("Literal", function () {
         name: "Color.Red",
         value: Color.Red,
         valid: true,
-        output: {
-          bson: Buffer.from("10000000025f00040000005265640000", "hex"),
-          json: "\"Red\"",
-          qs: "_=Red",
-        },
       },
       {
         name: "0",
         value: 0,
         valid: true,
-        output: {
-          bson: Buffer.from("10000000025f00040000005265640000", "hex"),
-          json: "\"Red\"",
-          qs: "_=Red",
-        },
       },
       {name: "Color.Green", value: Color.Green, valid: false},
       {name: "undefined", value: undefined, valid: false},
