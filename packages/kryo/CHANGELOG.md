@@ -1,4 +1,4 @@
-# Next
+# 0.12.1 (2021-06-29)
 
 - **[Feature]** Make `Array`, `Bytes`, `CodepointString`, `Literal`, `Null` and `Ucs2String` ordered.
 
