@@ -3,7 +3,7 @@
  */
 
 import { Writer } from "kryo";
-import { StructuredWriter } from "kryo/lib/writers/structured.js";
+import { StructuredWriter } from "kryo/lib/writers/structured";
 
 export class JsonValueWriter extends StructuredWriter {
   writeFloat64(value: number): number | string {

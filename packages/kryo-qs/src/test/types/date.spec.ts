@@ -1,5 +1,5 @@
+import { DateType } from "kryo/lib/date";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { DateType } from "kryo/lib/date.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";

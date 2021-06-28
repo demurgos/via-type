@@ -1,5 +1,5 @@
+import { Float64Type } from "kryo/lib/float64";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { Float64Type } from "kryo/lib/float64.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";

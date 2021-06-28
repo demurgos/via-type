@@ -1,6 +1,6 @@
 import { CaseStyle } from "kryo";
+import { TsEnumType } from "kryo/lib/ts-enum";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { TsEnumType } from "kryo/lib/ts-enum.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";

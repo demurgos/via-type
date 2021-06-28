@@ -1,8 +1,8 @@
 import { CaseStyle } from "kryo";
+import { IntegerType } from "kryo/lib/integer";
+import { RecordType } from "kryo/lib/record";
+import { TryUnionType } from "kryo/lib/try-union";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { IntegerType } from "kryo/lib/integer.js";
-import { RecordType } from "kryo/lib/record.js";
-import { TryUnionType } from "kryo/lib/try-union.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";

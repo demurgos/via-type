@@ -1,7 +1,7 @@
 import { runTests, TypedValue } from "../../helpers/test.js";
 import { $File } from "./file.js";
-import { FsNodeType } from "./fs-node-type.js";
 import { $FsNode } from "./fs-node.js";
+import { FsNodeType } from "./fs-node-type.js";
 
 /**
  * Modelizes a simple file system with two kinds of nodes: files and directories.

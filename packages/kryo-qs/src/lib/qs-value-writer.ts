@@ -3,8 +3,8 @@
  */
 
 import { Writer } from "kryo";
-import { JsonWriter } from "kryo-json/lib/json-writer.js";
-import { StructuredWriter } from "kryo/lib/writers/structured.js";
+import { StructuredWriter } from "kryo/lib/writers/structured";
+import { JsonWriter } from "kryo-json/lib/json-writer";
 
 export class QsValueWriter extends StructuredWriter {
   writeBoolean(value: boolean): "true" | "false" {

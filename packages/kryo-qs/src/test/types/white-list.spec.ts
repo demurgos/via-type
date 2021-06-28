@@ -1,6 +1,6 @@
+import { Ucs2StringType } from "kryo/lib/ucs2-string";
+import { WhiteListType } from "kryo/lib/white-list";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { Ucs2StringType } from "kryo/lib/ucs2-string.js";
-import { WhiteListType } from "kryo/lib/white-list.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";

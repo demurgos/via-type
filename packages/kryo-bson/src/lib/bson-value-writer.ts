@@ -2,10 +2,10 @@
  * @module kryo/writers/bson-value
  */
 
-import BSON from "bson";
+import { Binary } from "bson";
 import { Writer } from "kryo";
-import { JsonWriter } from "kryo-json/lib/json-writer.js";
-import { StructuredWriter } from "kryo/lib/writers/structured.js";
+import { StructuredWriter } from "kryo/lib/writers/structured";
+import { JsonWriter } from "kryo-json/lib/json-writer";
 
 export class BsonValueWriter extends StructuredWriter {
   constructor() {
@@ -24,9 +24,9 @@ export class BsonValueWriter extends StructuredWriter {
     return null;
   }
 
-  writeBytes(value: Uint8Array): BSON.Binary {
+  writeBytes(value: Uint8Array): Binary {
     // TODO: Update Node type definitions
-    return new BSON.Binary(Buffer.from(value as any));
+    return new Binary(Buffer.from(value as any));
   }
 
   writeDate(value: Date): Date {

@@ -1,7 +1,7 @@
+import { LiteralIoType, LiteralType } from "kryo/lib/literal";
+import { TsEnumType } from "kryo/lib/ts-enum";
+import { Ucs2StringType } from "kryo/lib/ucs2-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { LiteralIoType, LiteralType } from "kryo/lib/literal.js";
-import { TsEnumType } from "kryo/lib/ts-enum.js";
-import { Ucs2StringType } from "kryo/lib/ucs2-string.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";
