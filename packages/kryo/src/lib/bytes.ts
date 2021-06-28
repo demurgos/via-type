@@ -73,8 +73,8 @@ export class BytesType implements IoType<Uint8Array>, VersionedType<Uint8Array, 
   lte(left: Uint8Array, right: Uint8Array): boolean {
     const minLength: number = Math.min(left.length, right.length);
     for (let i: number = 0; i < minLength; i++) {
-      if (left[i] > right[i]) {
-        return false;
+      if (left[i] !== right[i]) {
+        return left[i] <= right[i];
       }
     }
     return left.length <= right.length;

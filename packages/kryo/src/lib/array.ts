@@ -150,16 +150,28 @@ export const ArrayType: ArrayTypeConstructor = <any> class<T, M extends Type<T> 
     return true;
   }
 
-  equals(val1: T[], val2: T[]): boolean {
-    if (val2.length !== val1.length) {
+  equals(left: T[], right: T[]): boolean {
+    if (left.length !== right.length) {
       return false;
     }
-    for (let i: number = 0; i < val1.length; i++) {
-      if (!this.itemType.equals(val2[i], val1[i])) {
+    for (let i: number = 0; i < left.length; i++) {
+      if (!this.itemType.equals(left[i], right[i])) {
         return false;
       }
     }
     return true;
+  }
+
+  lte(left: T[], right: T[]): boolean {
+    const minLength: number = Math.min(left.length, right.length);
+    for (let i: number = 0; i < minLength; i++) {
+      const leftItem: T = left[i];
+      const rightItem: T = right[i];
+      if (!this.itemType.equals(leftItem, rightItem)) {
+        return this.itemType.lte!(leftItem, rightItem);
+      }
+    }
+    return left.length <= right.length;
   }
 
   clone(val: T[]): T[] {

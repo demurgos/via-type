@@ -241,8 +241,23 @@ export class CodepointStringType implements IoType<string>, VersionedType<string
     return this.testError(value) === undefined;
   }
 
-  equals(val1: string, val2: string): boolean {
-    return val1 === val2;
+  equals(left: string, right: string): boolean {
+    return left === right;
+  }
+
+  lte(left: string, right: string): boolean {
+    const leftList: string[] = [...left];
+    const rightList: string[] = [...right];
+
+    const minLength: number = Math.min(leftList.length, rightList.length);
+    for (let i: number = 0; i < minLength; i++) {
+      const leftItem: number = leftList[i].codePointAt(0)!;
+      const rightItem: number = rightList[i].codePointAt(0)!;
+      if (leftItem !== rightItem) {
+        return leftItem <= rightItem;
+      }
+    }
+    return leftList.length <= rightList.length;
   }
 
   clone(val: string): string {

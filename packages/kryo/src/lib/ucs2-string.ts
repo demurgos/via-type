@@ -222,8 +222,20 @@ export class Ucs2StringType implements IoType<string>, VersionedType<string, Dif
     return this.testError(val) === undefined;
   }
 
-  equals(val1: string, val2: string): boolean {
-    return val1 === val2;
+  equals(left: string, right: string): boolean {
+    return left === right;
+  }
+
+  lte(left: string, right: string): boolean {
+    const minLength: number = Math.min(left.length, right.length);
+    for (let i: number = 0; i < minLength; i++) {
+      const leftItem: number = left.charCodeAt(i);
+      const rightItem: number = right.charCodeAt(i);
+      if (leftItem !== rightItem) {
+        return leftItem <= rightItem;
+      }
+    }
+    return left.length <= right.length;
   }
 
   clone(val: string): string {

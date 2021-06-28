@@ -30,8 +30,12 @@ export class NullType implements IoType<null>, VersionedType<null, undefined> {
     return val === null;
   }
 
-  equals(val1: null, val2: null): boolean {
-    return val1 === val2;
+  equals(left: null, right: null): boolean {
+    return left === right;
+  }
+
+  lte(_left: null, _right: null): boolean {
+    return true;
   }
 
   clone(val: null): null {

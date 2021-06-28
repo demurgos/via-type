@@ -1,3 +1,7 @@
+# Next
+
+- **[Feature]** Make `Array`, `Bytes`, `CodepointString`, `Literal`, `Null` and `Ucs2String` ordered.
+
 # 0.12.0 (2021-06-28)
 
 - **[Feature]** Add support for sets.

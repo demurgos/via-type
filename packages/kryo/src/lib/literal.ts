@@ -86,8 +86,12 @@ export const LiteralType: LiteralTypeConstructor = class<T, K extends Type<any> 
     return this.type.test(value) && this.type.equals(value, this.value);
   }
 
-  equals(val1: T, val2: T): boolean {
-    return this.type.equals(val1, val2);
+  equals(left: T, right: T): boolean {
+    return this.type.equals(left, right);
+  }
+
+  lte(left: T, right: T): boolean {
+    return this.type.lte!(left, right);
   }
 
   clone(val: T): T {
