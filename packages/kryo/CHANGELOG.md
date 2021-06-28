@@ -1,4 +1,4 @@
-# Next
+# 0.12.0 (2021-06-28)
 
 - **[Feature]** Add support for sets.
 - **[Fix]** Update dependencies.

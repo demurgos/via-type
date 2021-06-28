@@ -158,7 +158,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/object-inspect@npm:^1.8.0":
+"@types/object-inspect@npm:^1.6.1, @types/object-inspect@npm:^1.8.0":
   version: 1.8.0
   resolution: "@types/object-inspect@npm:1.8.0"
   checksum: 4d0754108e433c058ee4e9d211743611d14f02baea46baaa3969fdf482cbe99684ea0e89d868e0f75d43b86ba946c7c4f83c2836ff55d777894df60b61585cb5
@@ -1774,7 +1774,19 @@ fsevents@~2.3.1:
   languageName: unknown
   linkType: soft
 
-"kryo@^0.11.0, kryo@workspace:*, kryo@workspace:packages/kryo":
+"kryo@npm:^0.11.0":
+  version: 0.11.2
+  resolution: "kryo@npm:0.11.2"
+  dependencies:
+    "@types/object-inspect": ^1.6.1
+    incident: ^3.2.1
+    object-inspect: ^1.7.0
+    tslib: ^2.0.0
+  checksum: 29b40be2b33eb9abbb87a4243df8accc08ed52601e3b96a168332504da79d5d76659be8feaec36ab5e4d2297e8e76875dd0fec76e375de6373e89fb743a7ef8b
+  languageName: node
+  linkType: hard
+
+"kryo@workspace:*, kryo@workspace:packages/kryo":
   version: 0.0.0-use.local
   resolution: "kryo@workspace:packages/kryo"
   dependencies:
@@ -2110,7 +2122,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"object-inspect@npm:^1.10.3, object-inspect@npm:^1.9.0":
+"object-inspect@npm:^1.10.3, object-inspect@npm:^1.7.0, object-inspect@npm:^1.9.0":
   version: 1.10.3
   resolution: "object-inspect@npm:1.10.3"
   checksum: f5d21d86dbedf7224f5e2bee8235beb1e94a419443102ae0d6c17603ace26b930de584ece5695ae6c338ec996656477d5ca425b1f8770b4aa3340aa3d188aa9a
