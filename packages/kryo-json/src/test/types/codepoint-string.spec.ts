@@ -1,5 +1,5 @@
+import { CodepointStringType } from "kryo/lib/codepoint-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { CodepointStringType } from "kryo/lib/codepoint-string.js";
 import unorm from "unorm";
 
 import { JSON_READER } from "../../lib/json-reader.js";

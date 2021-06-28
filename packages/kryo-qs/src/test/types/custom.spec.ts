@@ -1,9 +1,9 @@
 import incident from "incident";
 import { Reader, Writer } from "kryo";
+import { CustomType } from "kryo/lib/custom";
+import { createInvalidTypeError } from "kryo/lib/errors/invalid-type";
+import { readVisitor } from "kryo/lib/readers/read-visitor";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { CustomType } from "kryo/lib/custom.js";
-import { createInvalidTypeError } from "kryo/lib/errors/invalid-type.js";
-import { readVisitor } from "kryo/lib/readers/read-visitor.js";
 
 import { QsReader } from "../../lib/qs-reader.js";
 import { QsWriter } from "../../lib/qs-writer.js";

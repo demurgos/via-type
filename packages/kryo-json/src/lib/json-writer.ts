@@ -4,8 +4,8 @@
 
 import { Writer } from "kryo";
 
-import { JsonValueWriter } from "./json-value-writer.js";
 import { JsonValue } from "./json-value.js";
+import { JsonValueWriter } from "./json-value-writer.js";
 
 export class JsonWriter implements Writer<string> {
   private readonly valueWriter: JsonValueWriter;

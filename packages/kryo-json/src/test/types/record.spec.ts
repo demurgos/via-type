@@ -1,9 +1,8 @@
 import { CaseStyle } from "kryo";
+import { DateType } from "kryo/lib/date";
+import { IntegerType } from "kryo/lib/integer";
+import { RecordIoType, RecordType } from "kryo/lib/record";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import { DateType } from "kryo/lib/date.js";
-import { IntegerType } from "kryo/lib/integer.js";
-import { RecordIoType } from "kryo/lib/record";
-import { RecordType } from "kryo/lib/record.js";
 
 import { JSON_READER } from "../../lib/json-reader.js";
 import { JSON_WRITER, PRETTY_JSON_WRITER } from "../../lib/json-writer.js";
