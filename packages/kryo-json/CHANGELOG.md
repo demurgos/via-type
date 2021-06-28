@@ -1,3 +1,7 @@
+# 0.12.1 (2021-06-29)
+
+- **[Fix]** Update to `kryo@0.12.1` with support for more `Ord` implementations.
+
 # 0.12.0 (2021-06-28)
 
 - **[Fix]** Update dependencies.
