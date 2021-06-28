@@ -13,23 +13,14 @@ describe("ArrayType", function () {
       {
         value: [],
         valid: true,
-        output: {
-          json: "[]",
-        },
       },
       {
         value: [1],
         valid: true,
-        output: {
-          json: "[1]",
-        },
       },
       {
         value: [2, 3],
         valid: true,
-        output: {
-          json: "[2,3]",
-        },
       },
       {
         value: [4, 5, 6],
@@ -103,23 +94,14 @@ describe("ArrayType", function () {
       {
         value: [0, 1],
         valid: true,
-        output: {
-          json: "[0,1]",
-        },
       },
       {
         value: [0, 1, 2],
         valid: true,
-        output: {
-          json: "[0,1,2]",
-        },
       },
       {
         value: [0, 1, 2, 3],
         valid: true,
-        output: {
-          json: "[0,1,2,3]",
-        },
       },
       {
         value: [0, 1, 2, 3, 4],

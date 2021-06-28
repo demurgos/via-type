@@ -118,6 +118,9 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     if (!(val instanceof Map)) {
       return createInvalidTypeError("Map", val);
     }
+    if (val.size > this.maxSize) {
+      return new incident.Incident("MaxMapSize", {maxSize: this.maxSize, actualSize: val.size}, "Invalid map: max size exceeded");
+    }
     for (const [key, value] of val) {
       const keyError: Error | undefined = testError(this.keyType, key);
       if (keyError !== undefined) {
@@ -133,6 +136,9 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
 
   test(val: unknown): val is Map<K, V> {
     if (!(val instanceof Map)) {
+      return false;
+    }
+    if (val.size > this.maxSize) {
       return false;
     }
     for (const [key, value] of val) {

@@ -50,14 +50,6 @@ describe("kryo | Record", function () {
           },
         },
         valid: true,
-        output: {
-          json: JSON.stringify({
-            dateProp: "1970-01-01T00:00:00.000Z",
-            optIntProp: 50,
-            nestedDoc: {id: 10},
-          }),
-          qs: "dateProp=1970-01-01T00%3A00%3A00.000Z&optIntProp=50&nestedDoc%5Bid%5D=10",
-        },
       },
       {
         value: {
@@ -67,9 +59,6 @@ describe("kryo | Record", function () {
           },
         },
         valid: true,
-        output: {
-          json: JSON.stringify({dateProp: "1970-01-01T00:00:00.000Z", nestedDoc: {id: 10}}),
-        },
       },
 
       {name: "new Date(0)", value: new Date(0), valid: false},
@@ -121,10 +110,6 @@ describe("kryo | Record", function () {
           yMax: 30,
         },
         valid: true,
-        output: {
-          json: JSON.stringify({"xmin": 0, "X_MAX": 10, "__yMin": 20, "y-max": 30}),
-          qs: "xmin=0&X_MAX=10&__yMin=20&y-max=30",
-        },
       },
     ];
 
@@ -153,20 +138,12 @@ describe("kryo | Record", function () {
           bar: "bar",
         },
         valid: true,
-        output: {
-          json: JSON.stringify({"foo": 10}),
-          qs: "foo=10",
-        },
       },
       {
         value: {
           foo: 20,
         },
         valid: true,
-        output: {
-          json: JSON.stringify({"foo": 20}),
-          qs: "foo=20",
-        },
       },
       {
         value: {
@@ -201,20 +178,12 @@ describe("kryo | Record", function () {
           bar: "bar",
         },
         valid: true,
-        output: {
-          json: JSON.stringify({"bar": "bar"}),
-          qs: "bar=bar",
-        },
       },
       {
         value: {
           bar: "hello",
         },
         valid: true,
-        output: {
-          json: JSON.stringify({"bar": "hello"}),
-          qs: "bar=hello",
-        },
       },
       {
         value: {
@@ -258,10 +227,6 @@ describe("kryo | Record", function () {
           baz: true,
         },
         valid: true,
-        output: {
-          json: JSON.stringify({"foo": 10, "bar": "bar", "baz": true}),
-          qs: "foo=10&bar=bar&baz=true",
-        },
       },
       {
         value: {
