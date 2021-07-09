@@ -1,9 +1,9 @@
 import { CaseStyle } from "kryo";
-import { IntegerType } from "kryo/lib/integer";
-import { LiteralType } from "kryo/lib/literal";
-import { RecordType } from "kryo/lib/record";
-import { TaggedUnionType } from "kryo/lib/tagged-union";
-import { TsEnumType } from "kryo/lib/ts-enum";
+import { IntegerType } from "kryo/integer";
+import { LiteralType } from "kryo/literal";
+import { RecordType } from "kryo/record";
+import { TaggedUnionType } from "kryo/tagged-union";
+import { TsEnumType } from "kryo/ts-enum";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { QsReader } from "../../lib/qs-reader.js";

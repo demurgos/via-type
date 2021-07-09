@@ -15,7 +15,14 @@
     "./src/lib/"
   ],
   "exports": {
-    "./lib/*": "./lib/*.js"
+    "./*": "./lib/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./lib/*"
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint \"./src/**/*.ts\"",

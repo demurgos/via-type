@@ -1,4 +1,4 @@
-import { IntegerType } from "kryo/lib/integer";
+import { IntegerType } from "kryo/integer";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { JSON_READER } from "../../lib/json-reader.js";

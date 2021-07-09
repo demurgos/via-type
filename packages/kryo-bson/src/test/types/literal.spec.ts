@@ -1,6 +1,6 @@
-import { LiteralIoType, LiteralType } from "kryo/lib/literal";
-import { TsEnumType } from "kryo/lib/ts-enum";
-import { Ucs2StringType } from "kryo/lib/ucs2-string";
+import { LiteralIoType, LiteralType } from "kryo/literal";
+import { TsEnumType } from "kryo/ts-enum";
+import { Ucs2StringType } from "kryo/ucs2-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { BsonReader } from "../../lib/bson-reader.js";

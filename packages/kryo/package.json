@@ -10,15 +10,20 @@
     "url": "git://github.com/demurgos/kryo.git"
   },
   "type": "module",
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
   "files": [
     "./lib/",
     "./src/lib/"
   ],
   "exports": {
     ".": "./lib/index.js",
-    "./lib/*": "./lib/*.js"
+    "./*": "./lib/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./lib/*"
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint \"./src/**/*.ts\"",

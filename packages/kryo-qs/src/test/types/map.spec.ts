@@ -1,6 +1,6 @@
-import { IntegerType } from "kryo/lib/integer";
-import { MapType } from "kryo/lib/map";
-import { Ucs2StringType } from "kryo/lib/ucs2-string";
+import { IntegerType } from "kryo/integer";
+import { MapType } from "kryo/map";
+import { Ucs2StringType } from "kryo/ucs2-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { QsReader } from "../../lib/qs-reader.js";

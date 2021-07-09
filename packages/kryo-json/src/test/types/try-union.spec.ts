@@ -1,7 +1,7 @@
 import { CaseStyle } from "kryo";
-import { IntegerType } from "kryo/lib/integer";
-import { RecordType } from "kryo/lib/record";
-import { TryUnionType } from "kryo/lib/try-union";
+import { IntegerType } from "kryo/integer";
+import { RecordType } from "kryo/record";
+import { TryUnionType } from "kryo/try-union";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { JSON_READER } from "../../lib/json-reader.js";

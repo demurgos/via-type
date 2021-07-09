@@ -14,10 +14,16 @@
     "./lib/",
     "./src/lib/"
   ],
-  "main": "./lib/index.js",
   "exports": {
     ".": "./lib/index.js",
-    "./lib/*": "./lib/*.js"
+    "./*": "./lib/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./lib/*"
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint \"./src/**/*.ts\"",

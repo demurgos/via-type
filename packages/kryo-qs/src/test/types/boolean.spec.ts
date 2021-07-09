@@ -1,4 +1,4 @@
-import { BooleanType } from "kryo/lib/boolean";
+import { BooleanType } from "kryo/boolean";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { QsReader } from "../../lib/qs-reader.js";
