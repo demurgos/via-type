@@ -1,4 +1,4 @@
-import { $Boolean } from "kryo/lib/boolean";
+import { $Boolean } from "kryo/boolean";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { JSON_READER } from "../../lib/json-reader.js";

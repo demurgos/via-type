@@ -1,4 +1,4 @@
-import { BytesType } from "kryo/lib/bytes";
+import { BytesType } from "kryo/bytes";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { JSON_READER } from "../../lib/json-reader.js";

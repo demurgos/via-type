@@ -1,6 +1,6 @@
-import { ArrayIoType, ArrayType } from "kryo/lib/array";
-import { $Boolean } from "kryo/lib/boolean";
-import { $Uint8, IntegerType } from "kryo/lib/integer";
+import { ArrayIoType, ArrayType } from "kryo/array";
+import { $Boolean } from "kryo/boolean";
+import { $Uint8, IntegerType } from "kryo/integer";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { JSON_READER } from "../../lib/json-reader.js";

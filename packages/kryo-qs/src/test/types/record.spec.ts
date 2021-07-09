@@ -1,7 +1,7 @@
 import { CaseStyle } from "kryo";
-import { DateType } from "kryo/lib/date";
-import { IntegerType } from "kryo/lib/integer";
-import { RecordIoType, RecordType } from "kryo/lib/record";
+import { DateType } from "kryo/date";
+import { IntegerType } from "kryo/integer";
+import { RecordIoType, RecordType } from "kryo/record";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { QsReader } from "../../lib/qs-reader.js";

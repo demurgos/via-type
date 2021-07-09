@@ -4,8 +4,8 @@
 
 import { Binary } from "bson";
 import { Writer } from "kryo";
-import { StructuredWriter } from "kryo/lib/writers/structured";
-import { JsonWriter } from "kryo-json/lib/json-writer";
+import { StructuredWriter } from "kryo/writers/structured";
+import { JsonWriter } from "kryo-json/json-writer";
 
 export class BsonValueWriter extends StructuredWriter {
   constructor() {

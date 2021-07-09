@@ -1,5 +1,5 @@
-import { Ucs2StringType } from "kryo/lib/ucs2-string";
-import { WhiteListType } from "kryo/lib/white-list";
+import { Ucs2StringType } from "kryo/ucs2-string";
+import { WhiteListType } from "kryo/white-list";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { JSON_READER } from "../../lib/json-reader.js";

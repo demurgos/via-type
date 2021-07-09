@@ -4,7 +4,7 @@
 
 import incident from "incident";
 import { Reader, ReadVisitor } from "kryo";
-import { createInvalidTypeError } from "kryo/lib/errors/invalid-type";
+import { createInvalidTypeError } from "kryo/errors/invalid-type";
 
 import { JsonValue } from "./json-value.js";
 

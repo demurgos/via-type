@@ -1,4 +1,4 @@
-import { CodepointStringType } from "kryo/lib/codepoint-string";
+import { CodepointStringType } from "kryo/codepoint-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 import unorm from "unorm";
 

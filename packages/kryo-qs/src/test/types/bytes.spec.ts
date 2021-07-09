@@ -1,4 +1,4 @@
-import { BytesType } from "kryo/lib/bytes";
+import { BytesType } from "kryo/bytes";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
 import { QsReader } from "../../lib/qs-reader.js";
