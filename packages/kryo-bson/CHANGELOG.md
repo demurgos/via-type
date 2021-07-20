@@ -1,3 +1,7 @@
+# 0.13.0 (2021-07-20)
+
+- **[Breaking change]** Drop `lib` prefix from deep imports.
+
 # 0.12.2 (2021-06-29)
 
 - **[Fix]** Update to `kryo@0.12.2` with support for more `Ord` implementations.
