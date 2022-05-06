@@ -209,6 +209,9 @@ export class CodepointStringType implements IoType<string>, VersionedType<string
     try {
       codepointCount = checkedUcs2Decode(value).length;
     } catch (err) {
+      if (!(err instanceof Error)) {
+        throw err;
+      }
       return err;
     }
 

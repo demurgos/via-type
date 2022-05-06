@@ -1,3 +1,7 @@
+# Next
+
+- **[Fix]** Update dependencies.
+
 # 0.13.0 (2021-07-20)
 
 - **[Breaking change]** Drop `lib` prefix from deep imports.

@@ -81,7 +81,10 @@ export const ArrayType: ArrayTypeConstructor = <any> class<T, M extends Type<T> 
             if (invalid === undefined) {
               result.push(item);
             }
-          } catch (err) {
+          } catch (err: unknown) {
+            if (!(err instanceof Error)) {
+              throw err;
+            }
             if (invalid === undefined) {
               invalid = new Map();
             }

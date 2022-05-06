@@ -19,7 +19,10 @@ export class AnyType<T = any> implements IoType<T> {
     try {
       JSON.parse(JSON.stringify(value));
       return undefined;
-    } catch (err) {
+    } catch (err: unknown) {
+      if (!(err instanceof Error)) {
+        throw err;
+      }
       return err;
     }
   }

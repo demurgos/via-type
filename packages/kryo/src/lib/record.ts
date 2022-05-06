@@ -155,7 +155,7 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
 
   getOutKey(key: keyof T): string {
     if (typeof key !== "string") {
-      throw new Error(`NonStringKey: ${key}`);
+      throw new Error(`NonStringKey: ${String(key)}`);
     }
     const descriptor: PropertyDescriptor<any> = this.properties[key];
     if (descriptor.rename !== undefined) {
@@ -210,7 +210,10 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
           }
           try {
             result[key] = descriptor.type.read!(valueReader, rawValue);
-          } catch (err) {
+          } catch (err: unknown) {
+            if (!(err instanceof Error)) {
+              throw err;
+            }
             invalid.set(key as string, err);
           }
         }
@@ -510,7 +513,7 @@ export const RecordType: RecordTypeConstructor = <any> class<T> implements IoTyp
   }
 };
 
-export function renameKeys<T>(obj: T, renameAll?: CaseStyle): Map<keyof T, string> {
+export function renameKeys<T extends {}>(obj: T, renameAll?: CaseStyle): Map<keyof T, string> {
   const keys: string[] = Object.keys(obj);
   const result: Map<keyof T, string> = new Map();
   const outKeys: Set<string> = new Set();
