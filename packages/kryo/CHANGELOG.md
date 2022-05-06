@@ -1,5 +1,6 @@
 # Next
 
+- **[Breaking change]** Compile to `.mjs`.
 - **[Fix]** Update dependencies.
 
 # 0.13.0 (2021-07-20)

@@ -5,7 +5,7 @@
     "outDir": "../../test"
   },
   "include": [
-    "**/*.ts"
+    "**/*.mts"
   ],
   "exclude": [],
   "references": [

@@ -9,29 +9,13 @@
     "type": "git",
     "url": "git://github.com/demurgos/kryo.git"
   },
-  "type": "module",
-  "files": [
-    "./lib/",
-    "./src/lib/"
-  ],
-  "exports": {
-    ".": "./lib/index.js",
-    "./*": "./lib/*.js"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./lib/*"
-      ]
-    }
-  },
   "scripts": {
-    "lint": "eslint \"./src/**/*.ts\"",
-    "format": "eslint --fix \"./src/**/*.ts\"",
+    "lint": "eslint \"./src/**/*.mts\"",
+    "format": "eslint --fix \"./src/**/*.mts\"",
     "build": "tsc --build src/lib/tsconfig.json",
     "prepack": "yarn run build",
     "test:build": "tsc --build src/test/tsconfig.json",
-    "test": "yarn run test:build && mocha \"test/**/*.spec.js\""
+    "test": "yarn run test:build && mocha \"test/**/*.spec.mjs\""
   },
   "engines": {
     "node": ">=14.13.1"
@@ -51,5 +35,14 @@
     "mocha": "^10.0.0",
     "typescript": "=4.7.0-beta",
     "unorm": "^1.6.0"
-  }
+  },
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./*": "./lib/*.mjs"
+  },
+  "files": [
+    "./lib/**/*.(mjs|map|mts)",
+    "./src/lib/"
+  ]
 }

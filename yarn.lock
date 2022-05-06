@@ -1727,6 +1727,7 @@ __metadata:
     "@types/bson": "npm:^4.2.0"
     "@types/chai": "npm:^4.3.1"
     "@types/mocha": "npm:^9.1.1"
+    "@types/node": "npm:^17.0.31"
     bson: "npm:^4.6.3"
     chai: "npm:^4.3.6"
     incident: "npm:^3.2.1"

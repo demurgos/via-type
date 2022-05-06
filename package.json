@@ -3,10 +3,10 @@
   "private": true,
   "scripts": {
     "clean": "rimraf \"packages/*/@(lib|main|test)\"",
-    "lint": "eslint \"packages/*/src/**/*.ts\"",
-    "format": "eslint --fix \"packages/*/src/**/*.ts\"",
+    "lint": "eslint \"packages/*/src/**/*.mts\"",
+    "format": "eslint --fix \"packages/*/src/**/*.mts\"",
     "test:build": "tsc --build test.tsconfig.json",
-    "test": "yarn run test:build && mocha \"packages/*/test/**/*.spec.js\""
+    "test": "yarn run test:build && mocha \"packages/*/test/**/*.spec.mjs\""
   },
   "engines": {
     "node": ">=14.13.1"

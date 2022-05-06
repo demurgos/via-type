@@ -16,6 +16,10 @@
 /typedoc/
 /.nyc_output/
 /coverage/
+/packages/*/lib/
+/packages/*/main/
+/packages/*/target/
+/packages/*/test/
 
 ###############################################################################
 # Dependencies                                                                #
