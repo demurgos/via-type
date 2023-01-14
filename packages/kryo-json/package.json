@@ -15,7 +15,7 @@
     "./src/lib/"
   ],
   "exports": {
-    "./lib/": "./lib/"
+    "./lib/*": "./lib/*"
   },
   "scripts": {
     "build": "tsc --build src/lib/tsconfig.json",
