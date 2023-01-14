@@ -1,4 +1,4 @@
-# **BUGFIX** Next
+# **BUGFIX** 0.11.3 (2023-01-14)
 
 - **[Fix]** Remove deprecated folder mapping syntax, fix support for Node 18+.
 
