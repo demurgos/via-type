@@ -35,7 +35,7 @@
     "chai": "^4.3.6",
     "kryo-testing": "workspace:^",
     "mocha": "^10.0.0",
-    "typescript": "=4.7.0-beta"
+    "typescript": "^5.2.2"
   },
   "type": "module",
   "exports": {
