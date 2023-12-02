@@ -1,5 +1,3 @@
-import incident from "incident";
-
 import { lazyProperties } from "./_helpers/lazy-properties.mjs";
 import { testError } from "./_helpers/test-error.mjs";
 import { createInvalidTypeError } from "./errors/invalid-type.mjs";
@@ -7,6 +5,7 @@ import { createLazyOptionsError } from "./errors/lazy-options.mjs";
 import { createNotImplementedError } from "./errors/not-implemented.mjs";
 import { IoType, Lazy, Reader, VersionedType, Writer } from "./index.mjs";
 import { readVisitor } from "./readers/read-visitor.mjs";
+import {Incident} from "incident";
 
 export type Name = "map";
 export const name: Name = "map";
@@ -101,13 +100,13 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
       entries.length,
       <KW,>(index: number, keyWriter: Writer<KW>): KW => {
         if (this.keyType.write === undefined) {
-          throw new incident.Incident("NotWritable", {type: this.keyType});
+          throw new Error("BUG: MapType#write is not supported because `keyType` does not implement `Writable<K>`");
         }
         return this.keyType.write(keyWriter, entries[index][0]);
       },
       <VW,>(index: number, valueWriter: Writer<VW>): VW => {
         if (this.valueType.write === undefined) {
-          throw new incident.Incident("NotWritable", {type: this.valueType});
+          throw new Error("BUG: MapType#write is not supported because `valueType` does not implement `Writable<V>`");
         }
         return this.valueType.write(valueWriter, entries[index][1]);
       },
@@ -119,16 +118,16 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
       return createInvalidTypeError("Map", val);
     }
     if (val.size > this.maxSize) {
-      return new incident.Incident("MaxMapSize", {maxSize: this.maxSize, actualSize: val.size}, "Invalid map: max size exceeded");
+      return new Incident("MaxMapSize", {maxSize: this.maxSize, actualSize: val.size}, "Invalid map: max size exceeded");
     }
     for (const [key, value] of val) {
       const keyError: Error | undefined = testError(this.keyType, key);
       if (keyError !== undefined) {
-        return new incident.Incident("InvalidMapKey", {key, value}, "Invalid map entry: invalid key");
+        return new Incident("InvalidMapKey", {key, value}, "Invalid map entry: invalid key");
       }
       const valueError: Error | undefined = testError(this.valueType, value);
       if (valueError !== undefined) {
-        return new incident.Incident("InvalidMapValue", {key, value}, "Invalid map entry: invalid value");
+        return new Incident("InvalidMapValue", {key, value}, "Invalid map entry: invalid value");
       }
     }
     return undefined;

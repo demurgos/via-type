@@ -180,10 +180,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/object-inspect@npm:^1.4.0, @types/object-inspect@npm:^1.8.1":
+"@types/object-inspect@npm:^1.4.0":
   version: 1.8.1
   resolution: "@types/object-inspect@npm:1.8.1"
   checksum: 1fd2e7d25edd875a9a7263a179ab475ca8ec5502016128020dc802ee1d30186424081a88332a7072f2a7b071f28a7a7dc6cb9407df172e9b2c03c98103cf88c2
+  languageName: node
+  linkType: hard
+
+"@types/object-inspect@npm:^1.8.1":
+  version: 1.8.4
+  resolution: "@types/object-inspect@npm:1.8.4"
+  checksum: 06e1993607285603c619e6f8402effb8d3a7a797fc857a96f9d8200eb31e0e2017d26efc82b0a5e40ae82f6da5caa824edc4dff798afb63dbfaa8a029cd3b4ad
   languageName: node
   linkType: hard
 
@@ -2048,7 +2055,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-inspect@npm:^1.12.0, object-inspect@npm:^1.6.0, object-inspect@npm:^1.9.0":
+"object-inspect@npm:^1.12.0":
+  version: 1.13.1
+  resolution: "object-inspect@npm:1.13.1"
+  checksum: 92f4989ed83422d56431bc39656d4c780348eb15d397ce352ade6b7fec08f973b53744bd41b94af021901e61acaf78fcc19e65bf464ecc0df958586a672700f0
+  languageName: node
+  linkType: hard
+
+"object-inspect@npm:^1.6.0, object-inspect@npm:^1.9.0":
   version: 1.12.3
   resolution: "object-inspect@npm:1.12.3"
   checksum: 532b0036f0472f561180fac0d04fe328ee01f57637624c83fb054f81b5bfe966cdf4200612a499ed391a7ca3c46b20a0bc3a55fc8241d944abe687c556a32b39
