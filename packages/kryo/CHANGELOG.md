@@ -1,6 +1,7 @@
-# Next
+# 0.14.1 (2023-12-09)
 
 - **[Feature]** Allow inheriting from `RecordType`.
+- **[Fix]** Update dependencies
 
 # 0.14.0 (2022-05-07)
 
