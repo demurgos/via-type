@@ -1,7 +1,7 @@
 import { $Boolean } from "../../lib/boolean.mjs";
 import { DateType } from "../../lib/date.mjs";
 import { CaseStyle } from "../../lib/index.mjs";
-import { $Uint32, IntegerType } from "../../lib/integer.mjs";
+import {$Uint16, $Uint32, IntegerType} from "../../lib/integer.mjs";
 import { RecordType } from "../../lib/record.mjs";
 import { $Ucs2String } from "../../lib/ucs2-string.mjs";
 import { runTests, TypedValue } from "../helpers/test.mjs";
@@ -238,5 +238,38 @@ describe("kryo | Record", function () {
     ];
 
     runTests($Ext, items);
+  });
+
+  describe("Record: inherit", function() {
+    interface Rectangle {
+      width: number,
+      height: number,
+    }
+
+    class RectangleType extends RecordType<Rectangle> {
+      constructor() {
+        super({
+          properties: {
+            width: {type: $Uint16},
+            height: {type: $Uint16},
+          },
+        });
+      }
+    }
+
+    const $Rectangle = new RectangleType();
+
+    const items: TypedValue[] = [
+      {
+        value: {
+          width: 10,
+          height: 20,
+        },
+        valid: true,
+      },
+    ];
+
+    runTests($Rectangle, items);
+
   });
 });
