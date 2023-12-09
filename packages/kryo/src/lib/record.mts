@@ -80,8 +80,6 @@ export interface ExtendRecordIoTypeOptions<E> extends ExtendRecordTypeOptions<E>
 }
 
 export interface RecordTypeConstructor {
-  new<T>(options: Lazy<RecordIoTypeOptions<T>>): RecordIoType<T>;
-
   /**
    * Create a new record type checking for objects with the supplied properties.
    *
@@ -90,7 +88,7 @@ export interface RecordTypeConstructor {
    * @param options Options describing this record type.
    * @return The record type corresponding to the provided options
    */
-  new<T>(options: Lazy<RecordTypeOptions<T>>): RecordType<T>;
+  new<T, Opts extends RecordTypeOptions<T> = RecordTypeOptions<T>>(options: Lazy<Opts>): Opts extends RecordIoTypeOptions<T> ? RecordIoType<T>: RecordType<T>;
 }
 
 export interface RecordType<T> extends Type<T>, VersionedType<T, Diff<T>>, RecordTypeOptions<T> {

@@ -1,3 +1,7 @@
+# Next
+
+- **[Feature]** Allow inheriting from `RecordType`.
+
 # 0.14.0 (2022-05-07)
 
 - **[Breaking change]** Compile to `.mjs`.
