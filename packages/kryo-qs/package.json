@@ -1,6 +1,6 @@
 {
   "name": "kryo-qs",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "Querystring serializer for Kryo types",
   "license": "MIT",
   "keywords": [],

@@ -1,6 +1,6 @@
 {
   "name": "kryo-testing",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "Helpers to test Kryo types and serializers",
   "license": "MIT",
   "keywords": [],

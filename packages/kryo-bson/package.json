@@ -1,6 +1,6 @@
 {
   "name": "kryo-bson",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "BSON serializer for Kryo types",
   "license": "MIT",
   "keywords": [],

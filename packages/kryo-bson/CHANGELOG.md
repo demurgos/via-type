@@ -1,4 +1,4 @@
-# Next
+# 0.14.2 (2023-12-10)
 
 - **[Fix]** Update dependencies
 

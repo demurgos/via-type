@@ -81,9 +81,7 @@ export interface ExtendRecordIoTypeOptions<E> extends ExtendRecordTypeOptions<E>
 
 export interface RecordTypeConstructor {
   new<T>(options: Lazy<RecordIoTypeOptions<T>>): RecordIoType<T>;
-}
 
-export interface RecordIoTypeConstructor {
   /**
    * Create a new record type checking for objects with the supplied properties.
    *

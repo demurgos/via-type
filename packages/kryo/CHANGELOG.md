@@ -1,4 +1,4 @@
-# Next
+# 0.14.2 (2023-12-10)
 
 - **[Fix]** Revert support for inheriting from `RecordType`, it will need more work and an API change.
 - **[Fix]** Update dependencies
