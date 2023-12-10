@@ -1,3 +1,7 @@
+# Next
+
+- **[Fix]** Update dependencies
+
 # 0.14.1 (2023-12-09)
 
 - **[Fix]** Update dependencies

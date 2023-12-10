@@ -1,3 +1,8 @@
+# Next
+
+- **[Fix]** Revert support for inheriting from `RecordType`, it will need more work and an API change.
+- **[Fix]** Update dependencies
+
 # 0.14.1 (2023-12-09)
 
 - **[Feature]** Allow inheriting from `RecordType`.
