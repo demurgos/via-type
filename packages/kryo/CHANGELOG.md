@@ -1,4 +1,4 @@
-# Next
+# 0.15.0 (2024-01-22)
 
 - Drop `unorm`, `incident`, `object-inspect` errors
 - `CodePointString` renamed to `UsvString`
