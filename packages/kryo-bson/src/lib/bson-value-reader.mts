@@ -50,8 +50,7 @@ export class BsonValueReader implements Reader<unknown> {
     if (!isBinary(input)) {
       return writeError(cx, {check: CheckKind.BaseType, expected: ["Bytes"]} satisfies BaseTypeCheck);
     }
-    // TODO: Fix BSON type definitions
-    const inputBytes: Uint8Array = input.value(true) as Buffer;
+    const inputBytes: Uint8Array = input.value();
     return visitor.fromBytes(inputBytes);
   }
 

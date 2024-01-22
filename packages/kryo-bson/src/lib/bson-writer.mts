@@ -7,7 +7,7 @@ import { Writer } from "kryo";
 
 import { BsonValueWriter } from "./bson-value-writer.mjs";
 
-export class BsonWriter implements Writer<Buffer> {
+export class BsonWriter implements Writer<Uint8Array> {
   private readonly valueWriter: BsonValueWriter;
   private readonly primitiveWrapper: string;
 
@@ -16,34 +16,34 @@ export class BsonWriter implements Writer<Buffer> {
     this.valueWriter = new BsonValueWriter();
   }
 
-  writeAny(value: number): Buffer {
+  writeAny(value: number): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeAny(value)});
   }
 
-  writeBoolean(value: boolean): Buffer {
+  writeBoolean(value: boolean): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeBoolean(value)});
   }
 
-  writeBytes(value: Uint8Array): Buffer {
+  writeBytes(value: Uint8Array): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeBytes(value)});
   }
 
-  writeDate(value: Date): Buffer {
+  writeDate(value: Date): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeDate(value)});
   }
 
   writeRecord<K extends string>(
     keys: Iterable<K>,
     handler: (key: K, fieldWriter: Writer<any>) => any,
-  ): Buffer {
+  ): Uint8Array {
     return bsonSerialize(this.valueWriter.writeRecord(keys, handler));
   }
 
-  writeFloat64(value: number): Buffer {
+  writeFloat64(value: number): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeFloat64(value)});
   }
 
-  writeList(size: number, handler: (index: number, itemWriter: Writer<any>) => any): Buffer {
+  writeList(size: number, handler: (index: number, itemWriter: Writer<any>) => any): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeList(size, handler)});
   }
 
@@ -51,15 +51,15 @@ export class BsonWriter implements Writer<Buffer> {
     size: number,
     keyHandler: <KW>(index: number, mapKeyWriter: Writer<KW>) => KW,
     valueHandler: <VW>(index: number, mapValueWriter: Writer<VW>) => VW,
-  ): any {
+  ): Uint8Array {
     return bsonSerialize(this.valueWriter.writeMap(size, keyHandler, valueHandler));
   }
 
-  writeNull(): Buffer {
+  writeNull(): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeNull()});
   }
 
-  writeString(value: string): Buffer {
+  writeString(value: string): Uint8Array {
     return bsonSerialize({[this.primitiveWrapper]: this.valueWriter.writeString(value)});
   }
 }

@@ -1,3 +1,7 @@
+# Next
+
+- Fix support for `bson@6`.
+
 # 0.15.0 (2024-01-22)
 
 - Drop `unorm`, `incident`, `object-inspect` errors
