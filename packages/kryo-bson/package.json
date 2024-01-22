@@ -21,7 +21,6 @@
     "node": ">=14.13.1"
   },
   "dependencies": {
-    "@types/bson": "^4.2.0",
     "bson": "^6.2.0",
     "kryo": "workspace:^",
     "kryo-json": "workspace:^"
