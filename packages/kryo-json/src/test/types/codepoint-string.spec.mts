@@ -1,12 +1,11 @@
-import { CodepointStringType } from "kryo/codepoint-string";
+import { UsvStringType } from "kryo/usv-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import unorm from "unorm";
 
 import { JSON_READER } from "../../lib/json-reader.mjs";
 import { JSON_WRITER } from "../../lib/json-writer.mjs";
 
 describe("kryo-json | CodepointString", function () {
-  const type: CodepointStringType = new CodepointStringType({maxCodepoints: 500, unorm});
+  const type: UsvStringType = new UsvStringType({maxCodepoints: 500});
 
   const items: TestItem[] = [
     {

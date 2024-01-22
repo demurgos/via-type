@@ -1,12 +1,12 @@
-import { Ucs2StringType } from "../../lib/ucs2-string.mjs";
-import { WhiteListType } from "../../lib/white-list.mjs";
-import { runTests, TypedValue } from "../helpers/test.mjs";
+import {LiteralUnionType} from "../../lib/literal-union.mjs";
+import {Ucs2StringType} from "../../lib/ucs2-string.mjs";
+import {runTests, TypedValue} from "../helpers/test.mjs";
 
-describe("WhiteListType", function () {
+describe("LiteralUnionType", function () {
   const $Ucs2String: Ucs2StringType = new Ucs2StringType({maxLength: 10});
   type VarName = "foo" | "bar" | "baz";
-  const $VarName: WhiteListType<VarName> = new WhiteListType<VarName>({
-    itemType: $Ucs2String,
+  const $VarName: LiteralUnionType<VarName> = new LiteralUnionType<VarName>({
+    type: $Ucs2String,
     values: ["foo", "bar", "baz"],
   });
 

@@ -1,16 +1,12 @@
-import incident from "incident";
-
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { testError } from "./_helpers/test-error.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createNotImplementedError } from "./errors/not-implemented.mjs";
-import { IoType, Lazy, Ord, Reader, VersionedType, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Lazy, Ord, Reader, Result,VersionedType, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
 export type Name = "set";
 export const name: Name = "set";
-export type Diff = any;
+export type Diff<T = unknown> = [Set<T>, Set<T>];
 
 export interface SetTypeOptions<T> {
   itemType: VersionedType<T, any> & Ord<T>;
@@ -33,18 +29,33 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
     }
   }
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): Set<T> {
-    return reader.readList(raw, readVisitor({
-      fromList: <RI,>(input: Iterable<RI>, itemReader: Reader<RI>): Set<T> => {
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<Set<T>, CheckId> {
+    const itemType = this.itemType;
+    return reader.readList(cx, raw, readVisitor({
+      fromList: <RI, >(input: Iterable<RI>, itemReader: Reader<RI>): Result<Set<T>, CheckId> => {
         const resultList: T[] = [];
+        let itemErrors: CheckId[] | undefined = undefined;
         for (const rawItem of input) {
-          const item: T = this.itemType.read!(itemReader, rawItem);
-          resultList.push(item);
+          if (itemType.read === undefined) {
+            throw new Error(`read is not supported for Set with non-readable type ${itemType.name}`);
+          }
+          const {ok, value} = itemType.read(cx, itemReader, rawItem);
+          if (ok) {
+            resultList.push(value);
+          } else {
+            if (itemErrors === undefined) {
+              itemErrors = [];
+            }
+            itemErrors.push(value);
+          }
         }
+        if (itemErrors !== undefined) {
+          return writeError(cx, {check: CheckKind.Aggregate, children: itemErrors});
+        }
+
         resultList.sort((left, right): -1 | 0 | 1 => {
-          if (this.itemType.lte(left, right)) {
-            return this.itemType.equals(left, right) ? 0 : -1;
+          if (itemType.lte(left, right)) {
+            return itemType.equals(left, right) ? 0 : -1;
           } else {
             return 1;
           }
@@ -58,16 +69,11 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
             }
           }
         }
-        const error: Error | undefined = this.testError(result);
-        if (error !== undefined) {
-          throw error;
-        }
-        return result;
+        return {ok: true, value: result};
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: Set<T>): W {
     const items: T[] = [...value];
 
@@ -81,44 +87,38 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
 
     return writer.writeList(
       items.length,
-      <IW,>(index: number, itemWriter: Writer<IW>): IW => {
+      <IW, >(index: number, itemWriter: Writer<IW>): IW => {
         if (this.itemType.write === undefined) {
-          throw new incident.Incident("NotWritable", {type: this.itemType});
+          throw new Error(`write is not supported for Set with non-writable type ${this.itemType.name}`);
         }
         return this.itemType.write(itemWriter, items[index]);
       },
     );
   }
 
-  testError(val: unknown): Error | undefined {
-    if (!(val instanceof Set)) {
-      return createInvalidTypeError("Set", val);
+  test(cx: KryoContext, value: unknown): Result<Set<T>, CheckId> {
+    if (!(value instanceof Set)) {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Object"]});
     }
-    if (val.size > this.maxSize) {
-      return new incident.Incident("MaxSetSize", {maxSize: this.maxSize, actualSize: val.size}, "Invalid set: max size exceeded");
+    if (value.size > this.maxSize) {
+      return writeError(cx, {check: CheckKind.Size, min: 0, max: this.maxSize, actual: value.size});
     }
-    for (const item of val) {
-      const itemError: Error | undefined = testError(this.itemType, item);
-      if (itemError !== undefined) {
-        return new incident.Incident("InvalidSetItem", {item}, "Invalid set item");
+    let itemErrors: CheckId[] | undefined = undefined;
+    let i: number = 0;
+    for (const item of value) {
+      const {ok, value: actual} = cx.enter(i, () => this.itemType.test(cx, item));
+      i++;
+      if (!ok) {
+        if (itemErrors === undefined) {
+          itemErrors = [];
+        }
+        itemErrors.push(actual);
       }
     }
-    return undefined;
-  }
-
-  test(val: unknown): val is Set<T> {
-    if (!(val instanceof Set)) {
-      return false;
+    if (itemErrors !== undefined) {
+      return writeError(cx, {check: CheckKind.Aggregate, children: itemErrors});
     }
-    if (val.size > this.maxSize) {
-      return false;
-    }
-    for (const item of val) {
-      if (!this.itemType.test(item)) {
-        return false;
-      }
-    }
-    return true;
+    return {ok: true, value};
   }
 
   equals(left: Set<T>, right: Set<T>): boolean {
@@ -184,25 +184,25 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
     return result;
   }
 
-  diff(_oldVal: Set<T>, _newVal: Set<T>): Diff | undefined {
-    throw createNotImplementedError("SetType#diff");
+  diff(oldVal: Set<T>, newVal: Set<T>): Diff<T> | undefined {
+    return this.equals(oldVal, newVal) ? undefined : [oldVal, newVal];
   }
 
-  patch(_oldVal: Set<T>, _diff: Diff | undefined): Set<T> {
-    throw createNotImplementedError("SetType#patch");
+  patch(oldVal: Set<T>, diff: Diff<T> | undefined): Set<T> {
+    return diff !== undefined ? diff[1] : oldVal;
   }
 
-  reverseDiff(_diff: Diff | undefined): Diff | undefined {
-    throw createNotImplementedError("SetType#reverseDiff");
+  reverseDiff(diff: Diff<T> | undefined): Diff<T> | undefined {
+    return diff !== undefined ? [diff[1], diff[0]] : undefined;
   }
 
-  squash(_diff1: Diff | undefined, _diff2: Diff | undefined): Diff | undefined {
-    throw createNotImplementedError("SetType#squash");
+  squash(diff1: Diff<T> | undefined, diff2: Diff<T> | undefined): Diff<T> | undefined {
+    return diff1 !== undefined && diff2 !== undefined ? [diff1[0], diff2[1]] : undefined;
   }
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: SetTypeOptions<T> = typeof this._options === "function" ? this._options() : this._options;
 

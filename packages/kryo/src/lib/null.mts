@@ -1,6 +1,7 @@
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { IoType, Reader, VersionedType, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Reader, Result,VersionedType, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
 export type Name = "null";
 export const name: Name = "null";
@@ -8,26 +9,21 @@ export const name: Name = "null";
 export class NullType implements IoType<null>, VersionedType<null, undefined> {
   readonly name: Name = name;
 
-  read<R>(reader: Reader<R>, raw: R): null {
-    return reader.readNull(raw, readVisitor({
-      fromNull: () => null,
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<null, CheckId> {
+    return reader.readNull(cx, raw, readVisitor({
+      fromNull: () => ({ok: true, value: null}),
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, _: null): W {
     return writer.writeNull();
   }
 
-  testError(val: unknown): Error | undefined {
-    if (val !== null) {
-      return createInvalidTypeError("null", val);
+  test(cx: KryoContext | null, value: unknown): Result<null, CheckId> {
+    if (value !== null) {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Null"]});
     }
-    return undefined;
-  }
-
-  test(val: unknown): val is null {
-    return val === null;
+    return {ok: true, value};
   }
 
   equals(left: null, right: null): boolean {

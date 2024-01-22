@@ -4,6 +4,7 @@
 
 import { serialize as bsonSerialize } from "bson";
 import { Writer } from "kryo";
+
 import { BsonValueWriter } from "./bson-value-writer.mjs";
 
 export class BsonWriter implements Writer<Buffer> {

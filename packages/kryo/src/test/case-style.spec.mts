@@ -1,4 +1,4 @@
-import chai from "chai";
+import { assert as chaiAssert } from "chai";
 
 import { detectCaseStyle, join, rename, split } from "../lib/_helpers/case-style.mjs";
 import { CaseStyle } from "../lib/index.mjs";
@@ -46,7 +46,7 @@ describe("rename", function () {
 
     for (const item of items) {
       it(`detectCaseStyle for ${item.identifier} should return ${item.expected}`, function () {
-        chai.assert.deepEqual(detectCaseStyle(item.identifier), item.expected);
+        chaiAssert.deepEqual(detectCaseStyle(item.identifier), item.expected);
       });
     }
   });
@@ -95,7 +95,7 @@ describe("rename", function () {
     describe("split", function () {
       for (const {caseStyle, identifier, parts} of items) {
         it(`split for ${caseStyle}, ${identifier} should return ${JSON.stringify(parts)}`, function () {
-          chai.assert.deepEqual(split(caseStyle, identifier), parts);
+          chaiAssert.deepEqual(split(caseStyle, identifier), parts);
         });
       }
     });
@@ -103,7 +103,7 @@ describe("rename", function () {
     describe("join", function () {
       for (const {caseStyle, identifier, parts} of items) {
         it(`join for ${caseStyle}, ${JSON.stringify(parts)} should return ${identifier}`, function () {
-          chai.assert.deepEqual(join(caseStyle, parts), identifier);
+          chaiAssert.deepEqual(join(caseStyle, parts), identifier);
         });
       }
     });
@@ -127,7 +127,7 @@ describe("rename", function () {
 
     for (const {identifier, to, expected} of items) {
       it(`rename ${identifier} to ${to} should return ${expected}`, function () {
-        chai.assert.deepEqual(rename(identifier, to), expected);
+        chaiAssert.deepEqual(rename(identifier, to), expected);
       });
     }
   });

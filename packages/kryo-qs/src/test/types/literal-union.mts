@@ -1,16 +1,19 @@
+import { LiteralUnionType } from "kryo/literal-union";
 import { Ucs2StringType } from "kryo/ucs2-string";
-import { WhiteListType } from "kryo/white-list";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
 
-import { JSON_READER } from "../../lib/json-reader.mjs";
-import { JSON_WRITER } from "../../lib/json-writer.mjs";
+import { QsReader } from "../../lib/qs-reader.mjs";
+import { QsWriter } from "../../lib/qs-writer.mjs";
 
-describe("kryo-json | WhiteList", function () {
+describe("kryo-qs | LiteralUnion", function () {
+  const QS_READER: QsReader = new QsReader();
+  const QS_WRITER: QsWriter = new QsWriter();
+
   describe("\"foo\" | \"bar\" | \"baz\"", function () {
     const $Ucs2String: Ucs2StringType = new Ucs2StringType({maxLength: 10});
     type VarName = "foo" | "bar" | "baz";
-    const $VarName: WhiteListType<VarName> = new WhiteListType<VarName>({
-      itemType: $Ucs2String,
+    const $VarName: LiteralUnionType<VarName> = new LiteralUnionType<VarName>({
+      type: $Ucs2String,
       values: ["foo", "bar", "baz"],
     });
 
@@ -18,19 +21,19 @@ describe("kryo-json | WhiteList", function () {
       {
         value: "foo",
         io: [
-          {writer: JSON_WRITER, reader: JSON_READER, raw: "\"foo\""},
+          {writer: QS_WRITER, reader: QS_READER, raw: "_=foo"},
         ],
       },
       {
         value: "bar",
         io: [
-          {writer: JSON_WRITER, reader: JSON_READER, raw: "\"bar\""},
+          {writer: QS_WRITER, reader: QS_READER, raw: "_=bar"},
         ],
       },
       {
         value: "baz",
         io: [
-          {writer: JSON_WRITER, reader: JSON_READER, raw: "\"baz\""},
+          {writer: QS_WRITER, reader: QS_READER, raw: "_=baz"},
         ],
       },
     ];
@@ -69,7 +72,7 @@ describe("kryo-json | WhiteList", function () {
         "{}",
         "\"1970-01-01T00:00:00.000Z\"",
       ];
-      registerErrMochaTests(JSON_READER, $VarName, invalids);
+      registerErrMochaTests(QS_READER, $VarName, invalids);
     });
   });
 });

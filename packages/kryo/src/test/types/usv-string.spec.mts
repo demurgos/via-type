@@ -1,12 +1,12 @@
-import chai from "chai";
-import unorm from "unorm";
+import { assert as chaiAssert } from "chai";
 
-import { CodepointStringType } from "../../lib/codepoint-string.mjs";
+import {NOOP_CONTEXT} from "../../lib/index.mjs";
+import { UsvStringType } from "../../lib/usv-string.mjs";
 import { runTests, TypedValue } from "../helpers/test.mjs";
 
-describe("CodepointStringType", function () {
+describe("UsvStringType", function () {
   describe("basic support", function () {
-    const type: CodepointStringType = new CodepointStringType({maxCodepoints: 500, unorm});
+    const type: UsvStringType = new UsvStringType({maxCodepoints: 500});
 
     const items: TypedValue[] = [
       // Valid items
@@ -36,32 +36,32 @@ describe("CodepointStringType", function () {
 
   describe("Ensure valid codepoints with Javascript (UCS2) strings", function () {
     it("should accept the empty string, when requiring length exactly 0", function () {
-      chai.assert.isTrue(new CodepointStringType({minCodepoints: 0, maxCodepoints: 0, unorm}).test(""));
+      chaiAssert.isTrue(new UsvStringType({minCodepoints: 0, maxCodepoints: 0}).test(NOOP_CONTEXT, "").ok);
     });
     it("should accept the string \"a\" (ASCII codepoint), when requiring length exactly 1", function () {
-      chai.assert.isTrue(new CodepointStringType({minCodepoints: 1, maxCodepoints: 1, unorm}).test("a"));
+      chaiAssert.isTrue(new UsvStringType({minCodepoints: 1, maxCodepoints: 1}).test(NOOP_CONTEXT, "a").ok);
     });
     it("should accept the string \"∑\" (BMP codepoint), when requiring length exactly 1", function () {
-      chai.assert.isTrue(new CodepointStringType({minCodepoints: 1, maxCodepoints: 1, unorm}).test("∑"));
+      chaiAssert.isTrue(new UsvStringType({minCodepoints: 1, maxCodepoints: 1}).test(NOOP_CONTEXT, "∑").ok);
     });
     it("should reject the string \"𝄞\" (non-BMP codepoint), when requiring length exactly 2", function () {
-      chai.assert.isFalse(new CodepointStringType({minCodepoints: 2, maxCodepoints: 2, unorm}).test("𝄞"));
+      chaiAssert.isFalse(new UsvStringType({minCodepoints: 2, maxCodepoints: 2}).test(NOOP_CONTEXT, "𝄞").ok);
     });
     it("should accept the string \"𝄞\" (non-BMP codepoint), when requiring length exactly 1", function () {
-      chai.assert.isTrue(new CodepointStringType({minCodepoints: 1, maxCodepoints: 1, unorm}).test("𝄞"));
+      chaiAssert.isTrue(new UsvStringType({minCodepoints: 1, maxCodepoints: 1}).test(NOOP_CONTEXT, "𝄞").ok);
     });
     describe("should reject unmatched surrogate halves", function () {
       // 𝄞 corresponds to the surrogate pair (0xd834, 0xdd1e)
-      const type: CodepointStringType = new CodepointStringType({maxCodepoints: 500, unorm});
+      const type: UsvStringType = new UsvStringType({maxCodepoints: 500});
       const items: string[] = ["\ud834", "a\ud834", "\ud834b", "a\ud834b", "\udd1e", "a\udd1e", "\udd1eb", "a\udd1eb"];
       for (const item of items) {
         it(JSON.stringify(item), function () {
-          chai.assert.isFalse(type.test(item));
+          chaiAssert.isFalse(type.test(NOOP_CONTEXT, item).ok);
         });
       }
     });
     it("should reject reversed (invalid) surrogate pairs", function () {
-      chai.assert.isFalse(new CodepointStringType({maxCodepoints: 500, unorm}).test("\udd1e\ud834"));
+      chaiAssert.isFalse(new UsvStringType({maxCodepoints: 500}).test(NOOP_CONTEXT, "\udd1e\ud834").ok);
     });
   });
 });

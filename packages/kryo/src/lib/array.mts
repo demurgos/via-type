@@ -1,14 +1,8 @@
-import incident from "incident";
-
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { testError } from "./_helpers/test-error.mjs";
-import { createInvalidArrayItemsError } from "./errors/invalid-array-items.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createMaxArrayLengthError } from "./errors/max-array-length.mjs";
-import { createMinArrayLengthError } from "./errors/min-array-length.mjs";
-import { IoType, Lazy, Reader, Type, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Lazy, Reader, Result, Type, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
 export type Name = "array";
 export const name: Name = "array";
@@ -61,96 +55,78 @@ export const ArrayType: ArrayTypeConstructor = class<T, M extends Type<T> = Type
     }
   }
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): T[] {
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T[], CheckId> {
     const itemType: M = this.itemType;
     const minLength: number | undefined = this.minLength;
-    const maxLength: number | undefined = this.maxLength;
+    const maxLength: number = this.maxLength;
 
-    return reader.readList(raw, readVisitor({
-      fromList<RI>(input: Iterable<RI>, itemReader: Reader<RI>): T[] {
-        let invalid: undefined | Map<number, Error> = undefined;
+    return reader.readList(cx, raw, readVisitor({
+      fromList<RI>(input: Iterable<RI>, itemReader: Reader<RI>): Result<T[], CheckId> {
+        let failedChecks: undefined | Set<CheckId> = undefined;
         const result: T[] = [];
         let i: number = 0;
         for (const rawItem of input) {
-          if (maxLength !== undefined && i === maxLength) {
-            throw createMaxArrayLengthError([...input], maxLength);
+          if (i >= maxLength) {
+            return writeError(cx, {check: CheckKind.Size as const, min: minLength ?? 0, max: maxLength});
           }
-          try {
-            const item: T = itemType.read!(itemReader, rawItem);
-            if (invalid === undefined) {
+          if (itemType.read === undefined) {
+            throw new Error(`read is not supported for Array with non-readable type ${itemType.name}`);
+          }
+          const {ok, value: item} = itemType.read!(cx, itemReader, rawItem);
+          if (ok) {
+            if (failedChecks === undefined) {
+              // Happy path: push to the result
+              // (otherwise skip, we'll return an error anyway)
               result.push(item);
             }
-          } catch (err: unknown) {
-            if (!(err instanceof Error)) {
-              throw err;
+          } else {
+            if (failedChecks === undefined) {
+              failedChecks = new Set();
             }
-            if (invalid === undefined) {
-              invalid = new Map();
-            }
-            invalid.set(i, err);
+            failedChecks.add(item);
           }
           i++;
         }
-        if (invalid !== undefined) {
-          throw createInvalidArrayItemsError(invalid);
+        if (failedChecks !== undefined) {
+          return writeError(cx, {check: CheckKind.Aggregate as const, children: [...failedChecks]});
         }
         if (minLength !== undefined && i < minLength) {
-          throw createMinArrayLengthError([...input], minLength);
+          return writeError(cx, {check: CheckKind.Size as const, min: minLength ?? 0, max: maxLength, actual: i});
         }
-        return result;
+        return {ok: true, value: result};
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: T[]): W {
     return writer.writeList(value.length, <IW,>(index: number, itemWriter: Writer<IW>): IW => {
       if (this.itemType.write === undefined) {
-        throw new incident.Incident("NotWritable", {type: this.itemType});
+        throw new Error(`write is not supported for Array with non-writable type ${this.itemType.name}`);
       }
       return this.itemType.write(itemWriter, value[index]);
     });
   }
 
-  testError(value: unknown): Error | undefined {
+  test(cx: KryoContext, value: unknown): Result<T[], CheckId> {
     if (!Array.isArray(value)) {
-      return createInvalidTypeError("array", value);
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Array"]});
     }
-    if (this.maxLength !== undefined && value.length > this.maxLength) {
-      return createMaxArrayLengthError(value, this.maxLength);
+    if (value.length > this.maxLength || (this.minLength !== undefined && value.length < this.minLength)) {
+      return writeError(cx, {check: CheckKind.Size, min: this.minLength ?? 0, max: this.maxLength, actual: value.length});
     }
-    if (this.minLength !== undefined && value.length < this.minLength) {
-      return createMinArrayLengthError(value, this.minLength);
-    }
-    const invalid: Map<number, Error> = new Map();
     const itemCount: number = value.length;
+    let errors: CheckId[] | undefined = undefined;
     for (let i: number = 0; i < itemCount; i++) {
-      const error: Error | undefined = testError(this.itemType, value[i]);
-      if (error !== undefined) {
-        invalid.set(i, error);
+      const {ok, value: itemValue} = cx.enter(i, () => this.itemType.test(cx, value[i]));
+      if (!ok) {
+        errors ??= [];
+        errors.push(itemValue);
       }
     }
-    if (invalid.size !== 0) {
-      return createInvalidArrayItemsError(invalid);
+    if (errors !== undefined) {
+      return writeError(cx, {check: CheckKind.Aggregate, children: errors});
     }
-    return undefined;
-  }
-
-  test(val: unknown): val is T[] {
-    if (
-      !Array.isArray(val)
-      || (this.maxLength !== undefined && val.length > this.maxLength)
-      || (this.minLength !== undefined && val.length < this.minLength)
-    ) {
-      return false;
-    }
-    for (const item of val) {
-      if (!this.itemType.test(item)) {
-        return false;
-      }
-    }
-    return true;
+    return {ok: true, value};
   }
 
   equals(left: T[], right: T[]): boolean {
@@ -183,7 +159,7 @@ export const ArrayType: ArrayTypeConstructor = class<T, M extends Type<T> = Type
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: ArrayTypeOptions<T, M> = typeof this._options === "function" ? this._options() : this._options;
 

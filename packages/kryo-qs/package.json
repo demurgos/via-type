@@ -18,25 +18,21 @@
     "test": "yarn run test:build && mocha \"test/**/*.spec.mjs\""
   },
   "engines": {
-    "node": ">=14.13.1"
+    "node": ">=18.13.0"
   },
   "dependencies": {
-    "@types/qs": "^6.9.7",
-    "incident": "^3.2.1",
+    "@types/qs": "^6.9.11",
     "kryo": "workspace:^",
     "kryo-json": "workspace:^",
-    "qs": "^6.10.3",
-    "tslib": "^2.4.0"
+    "qs": "^6.11.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "@types/unorm": "^1.3.28",
-    "chai": "^4.3.6",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "chai": "^5.0.0",
     "kryo-testing": "workspace:^",
-    "mocha": "^10.0.0",
-    "typescript": "^5.3.3",
-    "unorm": "^1.6.0"
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3"
   },
   "type": "module",
   "exports": {

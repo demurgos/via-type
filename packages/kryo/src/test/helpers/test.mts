@@ -1,6 +1,6 @@
-import chai from "chai";
+import { assert as chaiAssert } from "chai";
 
-import { Type } from "../../lib/index.mjs";
+import {NOOP_CONTEXT, Type} from "../../lib/index.mjs";
 
 export interface NamedValue {
   name?: string;
@@ -39,32 +39,14 @@ function getName(namedValue: NamedValue) {
 }
 
 export function testInvalidValue(type: Type<any>, item: InvalidTypedValue) {
-  if (type.testError !== undefined) {
-    it("Should return an Error for .testError", function () {
-      chai.assert.instanceOf(type.testError!(item.value), Error);
-    });
-  }
-
-  it("Should return `false` for .test", function () {
-    chai.assert.isFalse(type.test(item.value));
+  it("Should return `ResultErr` for .test", function () {
+    chaiAssert.isFalse(type.test(NOOP_CONTEXT, item.value).ok);
   });
 }
 
 export function testValidValue(type: Type<any>, item: ValidTypedValue) {
-  if (type.testError !== undefined) {
-    it("Should return `undefined` for .testError", function () {
-      if (type.testError === undefined) {
-        console.log("undef");
-      }
-      const error: Error | undefined = type.testError!(item.value);
-      if (error !== undefined) {
-        chai.assert.fail(error, undefined, String(error));
-      }
-    });
-  }
-
-  it("Should return `true` for .test", function () {
-    chai.assert.isTrue(type.test(item.value));
+  it("Should return `ResultOk` for .test", function () {
+    chaiAssert.isTrue(type.test(NOOP_CONTEXT, item.value).ok);
   });
 }
 

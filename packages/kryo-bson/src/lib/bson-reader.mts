@@ -2,10 +2,10 @@
  * @module kryo/readers/bson
  */
 
-import { deserialize as bsonDeserialize } from "bson";
-import { Reader, ReadVisitor } from "kryo";
+import {deserialize as bsonDeserialize} from "bson";
+import {CheckId, KryoContext,Reader, ReadVisitor, Result} from "kryo";
 
-import { BsonValueReader } from "./bson-value-reader.mjs";
+import {BsonValueReader} from "./bson-value-reader.mjs";
 
 export class BsonReader implements Reader<Buffer> {
   trustInput?: boolean | undefined;
@@ -20,44 +20,44 @@ export class BsonReader implements Reader<Buffer> {
     this.valueReader = new BsonValueReader(trust);
   }
 
-  readAny<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readAny(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readAny<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readAny(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readBoolean<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readBoolean(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readBoolean<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readBoolean(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readBytes<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readBytes(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readBytes<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readBytes(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readDate<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readDate(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readDate<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readDate(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readRecord<R>(raw: any, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readRecord(bsonDeserialize(raw), visitor);
+  readRecord<T>(cx: KryoContext, raw: any, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readRecord(cx, bsonDeserialize(raw), visitor);
   }
 
-  readFloat64<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readFloat64(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readFloat64<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readFloat64(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readList<R>(raw: any, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readList(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readList<T>(cx: KryoContext, raw: any, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readList(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readMap<R>(raw: any, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readMap(bsonDeserialize(raw), visitor);
+  readMap<T>(cx: KryoContext, raw: any, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readMap(cx, bsonDeserialize(raw), visitor);
   }
 
-  readNull<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readNull(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readNull<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readNull(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 
-  readString<R>(raw: Buffer, visitor: ReadVisitor<R>): R {
-    return this.valueReader.readString(bsonDeserialize(raw)[this.primitiveWrapper], visitor);
+  readString<T>(cx: KryoContext, raw: Buffer, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    return this.valueReader.readString(cx, bsonDeserialize(raw)[this.primitiveWrapper], visitor);
   }
 }
 

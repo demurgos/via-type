@@ -1,15 +1,16 @@
-import incident from "incident";
-
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createLowerCaseError } from "./errors/lower-case.mjs";
-import { createMaxUcs2StringLengthError } from "./errors/max-ucs2-string-length.mjs";
-import { createMinUcs2StringLengthError } from "./errors/min-ucs2-string-length.mjs";
-import { createNotTrimmedError } from "./errors/not-trimmed.mjs";
-import { createPatternNotMatchedError } from "./errors/pattern-not-matched.mjs";
-import { IoType, Lazy, Reader, VersionedType, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {
+  CheckId,
+  IoType,
+  KryoContext,
+  Lazy,
+  Reader,
+  Result,
+  VersionedType,
+  Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
 export type Name = "ucs2-string";
 export const name: Name = "ucs2-string";
@@ -165,61 +166,38 @@ export class Ucs2StringType implements IoType<string>, VersionedType<string, Dif
     return jsonType;
   }
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): string {
-    return reader.readString(raw, readVisitor({
-      fromString: (input: string): string => {
-        const error: Error | undefined = this.testError(input);
-        if (error !== undefined) {
-          throw error;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<string, CheckId> {
+    return reader.readString(cx, raw, readVisitor({
+      fromString: (input: string): Result<string, CheckId> => {
+        if (reader.trustInput) {
+          return {ok: true, value: input};
         }
-        return input;
+        return this.test(cx, input);
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: string): W {
     return writer.writeString(value);
   }
 
-  testError(val: unknown): Error | undefined {
-    if (typeof val !== "string") {
-      return createInvalidTypeError("string", val);
+  test(cx: KryoContext | null, value: unknown): Result<string, CheckId> {
+    if (typeof value !== "string") {
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Ucs2String"]});
     }
-    if (this.lowerCase && val.toLowerCase() !== val) {
-      return createLowerCaseError(val);
+    if (value.length > this.maxLength || value.length < (this.minLength ?? 0)) {
+      return writeError(cx,{check: CheckKind.Size, min: this.minLength ?? 0, max: this.maxLength, actual: value.length});
     }
-    if (this.trimmed && val.trim() !== val) {
-      return createNotTrimmedError(val);
+    if (this.trimmed && value.trim() !== value) {
+      return writeError(cx,{check: CheckKind.Trimmed});
     }
-    const strLen: number = val.length;
-    const minLength: number | undefined = this.minLength;
-    if (minLength !== undefined && strLen < minLength) {
-      return createMinUcs2StringLengthError(val, minLength);
+    if (this.lowerCase && value.toLowerCase() !== value) {
+      return writeError(cx,{check: CheckKind.LowerCase});
     }
-    if (strLen > this.maxLength) {
-      return createMaxUcs2StringLengthError(val, this.maxLength);
+    if ((this.pattern instanceof RegExp) && !this.pattern.test(value)) {
+      return writeError(cx,{check: CheckKind.StringPattern});
     }
-
-    if (this.pattern instanceof RegExp) {
-      if (this.pattern.unicode && !this.allowUnicodeRegExp) {
-        throw new incident.Incident(
-          "UnicodeRegExp",
-          "Disallowed unicode RegExp, use `allowUnicodeRegExp` or `CodepointStringType`",
-        );
-      }
-
-      if (!this.pattern.test(val)) {
-        return createPatternNotMatchedError(this.pattern, val);
-      }
-    }
-
-    return undefined;
-  }
-
-  test(val: unknown): val is string {
-    return this.testError(val) === undefined;
+    return {ok: true, value};
   }
 
   equals(left: string, right: string): boolean {
@@ -265,7 +243,7 @@ export class Ucs2StringType implements IoType<string>, VersionedType<string, Dif
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: Ucs2StringTypeOptions = typeof this._options === "function" ? this._options() : this._options;
 
@@ -275,6 +253,12 @@ export class Ucs2StringType implements IoType<string>, VersionedType<string, Dif
     const trimmed: boolean = options.trimmed !== undefined ? options.trimmed : false;
     const minLength: number | undefined = options.minLength;
     const maxLength: number = options.maxLength;
+
+    if (pattern !== undefined && pattern.unicode && !allowUnicodeRegExp) {
+      throw new Error(
+        "unicode pattern requires explicit opt-in with `allowUnicodeRegExp`",
+      );
+    }
 
     Object.assign(this, {allowUnicodeRegExp, pattern, lowerCase, trimmed, minLength, maxLength});
   }

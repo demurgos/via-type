@@ -1,43 +1,29 @@
-import { IoType, Reader, Writer } from "./index.mjs";
+import {CheckId, IoType, KryoContext, Reader, Result,Writer} from "./index.mjs";
 
 export type Diff = any;
 
+/**
+ * Type representing an opaque value.
+ */
 export class AnyType<T = any> implements IoType<T> {
-  constructor() {
+  read<R>(_cx: KryoContext, _reader: Reader<R>, raw: R): Result<T, CheckId> {
+    return {ok: true, value: raw as unknown as T};
   }
 
-  read<R>(_reader: Reader<R>, raw: R): T {
-    return raw as unknown as T;
-  }
-
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: T): W {
     return writer.writeAny(value);
   }
 
-  testError(value: unknown): Error | undefined {
-    try {
-      JSON.parse(JSON.stringify(value));
-      return undefined;
-    } catch (err: unknown) {
-      if (!(err instanceof Error)) {
-        throw err;
-      }
-      return err;
-    }
-  }
-
-  test(_value: unknown): _value is T {
-    return true;
+  test(_cx: KryoContext, value: unknown): Result<T, never> {
+    return {ok: true, value: value as unknown as T};
   }
 
   equals(val1: T, val2: T): boolean {
-    // TODO: From arg
     return val1 === val2;
   }
 
-  clone(val: T): T {
-    return JSON.parse(JSON.stringify(val));
+  clone(value: T): T {
+    return value;
   }
 }
 

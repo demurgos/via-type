@@ -1,5 +1,5 @@
-import chai from "chai";
-import { IoType, Reader, Writer } from "kryo";
+import { assert as chaiAssert } from "chai";
+import {IoType, NOOP_CONTEXT,Reader, readOrThrow, Writer} from "kryo";
 import util from "util";
 
 export interface TestItem<T = unknown> {
@@ -36,10 +36,10 @@ export function registerErrMochaTests<T = unknown>(
   for (const raw of raws) {
     it(`rejects: ${util.inspect(raw)}`, function () {
       try {
-        const actualValue: T = ioType.read(reader, raw);
-        chai.assert.fail(`expected reader to throw, value: ${util.inspect(actualValue)}`);
+        const actualValue: T = readOrThrow(ioType, reader, raw);
+        chaiAssert.fail(`expected reader to throw, value: ${util.inspect(actualValue)}`);
       } catch (err) {
-        chai.assert.isDefined(err);
+        chaiAssert.isDefined(err);
       }
     });
   }
@@ -83,7 +83,7 @@ export function registerMochaWriteTest<T = unknown>(
 ): void {
   it(testName, function () {
     const actualRaw: typeof testItem.raw = ioType.write(testItem.writer, inputValue);
-    chai.assert.deepEqual(actualRaw, testItem.raw);
+    chaiAssert.deepEqual(actualRaw, testItem.raw);
   });
 }
 
@@ -94,9 +94,9 @@ export function registerMochaReadTest<T = unknown>(
   testItem: ReadTestItem,
 ): void {
   it(testName, function () {
-    const actualValue: T = ioType.read(testItem.reader, testItem.raw);
-    chai.assert.isTrue(ioType.test(actualValue));
-    chai.assert.isTrue(ioType.equals(actualValue, expectedValue));
+    const actualValue: T = readOrThrow(ioType, testItem.reader, testItem.raw);
+    chaiAssert.isTrue(ioType.test(NOOP_CONTEXT, actualValue).ok);
+    chaiAssert.isTrue(ioType.equals(actualValue, expectedValue));
   });
 }
 

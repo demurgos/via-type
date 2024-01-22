@@ -1,17 +1,25 @@
 import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createInvalidFloat64Error } from "./errors/invalid-float64.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { IoType, Lazy, Ord, Reader, VersionedType, Writer } from "./index.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {
+  CheckId,   IoType,
+  KryoContext,
+  Lazy,
+  Ord,
+  Reader,
+  Result,
+  VersionedType,
+  Writer} from "./index.mjs";
 import { readVisitor } from "./readers/read-visitor.mjs";
 
-export type Name = "float64";
-export const name: Name = "float64";
+export type Name = "Float64";
+export const name: Name = "Float64";
 export namespace json {
   export interface Type {
     readonly name: Name;
     readonly allowNaN: boolean;
     readonly allowInfinity: boolean;
+    readonly allowNegativeZero: boolean;
   }
 }
 
@@ -21,7 +29,8 @@ export namespace json {
 export interface Float64TypeOptions {
   /**
    * Accept `NaN` values.
-   * If you enable this option, the `test` method will treat two `NaN` values as equal.
+   *
+   * `NaN` values are normalized and compared equal. This is different from IEEE-754 behavior.
    *
    * @default `false`
    */
@@ -34,13 +43,19 @@ export interface Float64TypeOptions {
    */
   readonly allowInfinity?: boolean;
 
-  // TODO: Add `unifyZeros` (defaults to `true`) to handle `+0` and `-0`
+  /**
+   * Accept `-0`
+   *
+   * `-0` and `+0` compare as different. This is different from IEEE-754 behavior.
+   */
+  readonly allowNegativeZero?: boolean;
 }
 
 export class Float64Type implements IoType<number>, VersionedType<number, [number, number]>, Ord<number> {
   readonly name: Name = name;
   readonly allowNaN!: boolean;
   readonly allowInfinity!: boolean;
+  readonly allowNegativeZero!: boolean;
 
   private _options: Lazy<Float64TypeOptions>;
 
@@ -49,7 +64,7 @@ export class Float64Type implements IoType<number>, VersionedType<number, [numbe
     if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(this, this._applyOptions, ["allowNaN", "allowInfinity"]);
+      lazyProperties(this, this._applyOptions, ["allowNaN", "allowInfinity", "allowNegativeZero"]);
     }
   }
 
@@ -62,42 +77,37 @@ export class Float64Type implements IoType<number>, VersionedType<number, [numbe
       name,
       allowNaN: this.allowNaN,
       allowInfinity: this.allowInfinity,
+      allowNegativeZero: this.allowNegativeZero,
     };
   }
 
-  read<R>(reader: Reader<R>, raw: R): number {
-    return reader.readFloat64(raw, readVisitor({
-      fromFloat64: (input: number): number => {
-        const error: Error | undefined = reader.trustInput ? undefined : this.testError(input);
-        if (error !== undefined) {
-          throw error;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<number, CheckId> {
+    return reader.readFloat64(cx, raw, readVisitor({
+      fromFloat64: (input: number): Result<number, CheckId> => {
+        if (reader.trustInput) {
+          return {ok: true, value: input};
         }
-        return input;
+        return this.test(cx, input);
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: number): W {
     return writer.writeFloat64(value);
   }
 
-  testError(val: unknown): Error | undefined {
-    if (typeof val !== "number") {
-      return createInvalidTypeError("number", val);
+  test(cx: KryoContext | null, value: unknown): Result<number, CheckId> {
+    if (typeof value !== "number") {
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Float64"]});
     }
-    if (isNaN(val) && !this.allowNaN) {
-      return createInvalidFloat64Error(val);
-    } else if (Math.abs(val) === Infinity && !this.allowInfinity) {
-      return createInvalidFloat64Error(val);
+    if (
+      (!this.allowNaN && isNaN(value))
+      || (!this.allowInfinity && Math.abs(value) === Infinity)
+      || (!this.allowNegativeZero && Object.is(value, -0))
+    ) {
+      return writeError(cx, {check: CheckKind.Float64, allowNaN: this.allowNaN, allowInfinity: this.allowInfinity, allowNegativeZero: this.allowNegativeZero});
     }
-    return undefined;
-  }
-
-  test(value: unknown): value is number {
-    return typeof value === "number"
-      && (this.allowNaN || !isNaN(value))
-      && (this.allowInfinity || Math.abs(value) !== Infinity);
+    return {ok: true, value};
   }
 
   /**
@@ -113,7 +123,7 @@ export class Float64Type implements IoType<number>, VersionedType<number, [numbe
   /**
    * Compares two valid float64 values.
    *
-   * The values are ordered as follow:
+   * The values are ordered as follows:
    * - `-Infinity`
    * - Negative non-zero finite values
    * - `-0`
@@ -166,13 +176,14 @@ export class Float64Type implements IoType<number>, VersionedType<number, [numbe
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: Float64TypeOptions = typeof this._options === "function" ? this._options() : this._options;
     const allowNaN: boolean = options.allowNaN !== undefined ? options.allowNaN : false;
     const allowInfinity: boolean = options.allowInfinity !== undefined ? options.allowInfinity : false;
+    const allowNegativeZero: boolean = options.allowNegativeZero !== undefined ? options.allowNegativeZero : false;
 
-    Object.assign(this, {allowNaN, allowInfinity});
+    Object.assign(this, {allowNaN, allowInfinity, allowNegativeZero});
   }
 }
 

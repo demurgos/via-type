@@ -1,13 +1,24 @@
-import incident from "incident";
-
 import { rename } from "./_helpers/case-style.mjs";
 import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createInvalidRecordError } from "./errors/invalid-record.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createNotImplementedError } from "./errors/not-implemented.mjs";
-import { CaseStyle, IoType, Lazy, Reader, Type, VersionedType, Writer } from "./index.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {AggregateCheck} from "./checks/aggregate.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {PropertyKeyCheck} from "./checks/property-key.mjs";
+import {PropertyValueCheck} from "./checks/property-value.mjs";
+import {
+  CaseStyle,
+  CheckId,
+  IoType,
+  KryoContext,
+  Lazy,
+  Reader,
+  Result,
+  Type,
+  VersionedType,
+  Writer
+} from "./index.mjs";
 import { readVisitor } from "./readers/read-visitor.mjs";
+import {AnyKey} from "./ts-enum.mjs";
 
 export type Name = "record";
 export const name: Name = "record";
@@ -107,7 +118,7 @@ export interface RecordType<T> extends Type<T>, VersionedType<T, Diff<T>>, Recor
 export interface RecordIoType<T> extends IoType<T>, VersionedType<T, Diff<T>>, RecordIoTypeOptions<T> {
   getOutKey(key: keyof T): string;
 
-  read<R>(reader: Reader<R>, raw: R): T;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId>;
 
   write<W>(writer: Writer<W>, value: T): W;
 
@@ -171,10 +182,9 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
     return key;
   }
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): T {
-    return reader.readRecord(raw, readVisitor({
-      fromMap: <RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): T => {
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId> {
+    return reader.readRecord(cx, raw, readVisitor({
+      fromMap: <RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): Result<T, CheckId> => {
         const extra: Set<string> = new Set();
         const missing: Set<string> = new Set();
         for (const key in this.properties) {
@@ -183,14 +193,18 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
             missing.add(key);
           }
         }
-        const invalid: Map<string, Error> = new Map();
-        const result: Partial<T> = {}; // Object.create(null);
+        const invalid: Map<AnyKey, CheckId> = new Map();
+        const result: Partial<T> = Object.create(null);
 
         for (const [rawKey, rawValue] of input) {
-          const outKey: string = keyReader.readString(
+          const {ok: okOutKey, value: outKey} =  keyReader.readString(
+            cx,
             rawKey,
-            readVisitor({fromString: (input: string): string  => input}),
+            readVisitor({fromString: (value: string): Result<string, CheckId> => ({ok: true, value})}),
           );
+          if (!okOutKey) {
+            return writeError(cx, {check: CheckKind.PropertyKey} satisfies PropertyKeyCheck);
+          }
           const key: keyof T | undefined = this.outKeys.get(outKey);
           if (key === undefined) {
             // Extra key
@@ -208,20 +222,22 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
             }
             continue;
           }
-          try {
-            result[key] = descriptor.type.read!(valueReader, rawValue);
-          } catch (err: unknown) {
-            if (!(err instanceof Error)) {
-              throw err;
-            }
-            invalid.set(key as string, err);
+          const {ok, value} = cx.enter(key, () => descriptor.type.read!(cx, valueReader, rawValue));
+          if (!ok) {
+            invalid.set(key, value);
+          } else {
+            result[key] = value;
           }
         }
 
-        if (this.noExtraKeys && extra.size > 0 || missing.size > 0 || invalid.size > 0) {
-          throw createInvalidRecordError({extra, missing, invalid});
+        if (this.noExtraKeys && extra.size > 0 || missing.size > 0) {
+          return writeError(cx, {check: CheckKind.PropertyKey} satisfies PropertyKeyCheck);
+          // throw createInvalidRecordError({extra, missing, invalid});
         }
-        return result as T;
+        if (invalid.size > 0) {
+          return writeError(cx, {check: CheckKind.Aggregate, children: [...invalid.values()]} satisfies AggregateCheck);
+        }
+        return {ok: true, value: result as T};
       },
     }));
   }
@@ -240,70 +256,42 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
       const jsKey: keyof T = this.outKeys.get(outKey)!;
       const descriptor: PropertyDescriptor<any> = this.properties[jsKey];
       if (descriptor.type.write === undefined) {
-        throw new incident.Incident("NotWritable", {type: descriptor.type});
+        throw new Error(`write is not supported for Record with non-readable key ${String(jsKey)} with type ${descriptor.type.name}`);
       }
       return descriptor.type.write(fieldWriter, value[jsKey]);
     });
   }
 
-  testError(val: unknown): Error | undefined {
-    if (typeof val !== "object" || val === null) {
-      return createInvalidTypeError("object", val);
+  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+    if (typeof value !== "object" || value === null) {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Record"]});
     }
 
-    const extra: Set<string> | undefined = this.noExtraKeys ? new Set(Object.keys(val)) : undefined;
-    const missing: Set<string> = new Set();
-    const invalid: Map<string, Error> = new Map();
+    const extra: Set<string> | undefined = this.noExtraKeys ? new Set(Object.keys(value)) : undefined;
 
     for (const key in this.properties) {
       if (extra !== undefined) {
         extra.delete(key);
       }
       const descriptor: PropertyDescriptor<any> = this.properties[key];
-      const propertyValue: unknown = Reflect.get(val, key);
+      const propertyValue: unknown = Reflect.get(value, key);
       if (propertyValue === undefined) {
         if (!descriptor.optional) {
-          missing.add(key);
+          return writeError(cx, {check: CheckKind.PropertyKey} satisfies PropertyKeyCheck);
+          // return false;
         }
-        continue;
-      }
-      if (descriptor.type.testError === undefined) {
-        throw new incident.Incident("MissingTestError", {key});
-      }
-      const error: Error | undefined = descriptor.type.testError(propertyValue);
-      if (error !== undefined) {
-        invalid.set(key as string, error);
-      }
-    }
-
-    if (extra !== undefined && extra.size > 0 || missing.size > 0 || invalid.size > 0) {
-      return createInvalidRecordError({extra, missing, invalid});
-    }
-    return undefined;
-  }
-
-  test(val: unknown): val is T {
-    if (typeof val !== "object" || val === null) {
-      return false;
-    }
-
-    const extra: Set<string> | undefined = this.noExtraKeys ? new Set(Object.keys(val)) : undefined;
-
-    for (const key in this.properties) {
-      if (extra !== undefined) {
-        extra.delete(key);
-      }
-      const descriptor: PropertyDescriptor<any> = this.properties[key];
-      const propertyValue: unknown = Reflect.get(val, key);
-      if (propertyValue === undefined) {
-        if (!descriptor.optional) {
-          return false;
+      } else {
+        const {ok: okProp, value: propValue} = descriptor.type.test(cx, propertyValue);
+        if (!okProp) {
+          return writeError(cx, {check: CheckKind.PropertyValue, children: [propValue]} satisfies PropertyValueCheck);
         }
-      } else if (!descriptor.type.test(propertyValue)) {
-        return false;
       }
     }
-    return extra === undefined || extra.size === 0;
+    const isOk = extra === undefined || extra.size === 0;
+    if (!isOk) {
+      return writeError(cx, {check: CheckKind.PropertyKey} satisfies PropertyKeyCheck);
+    }
+    return {ok: true, value: value as T};
   }
 
   equals(val1: T, val2: T): boolean {
@@ -398,13 +386,80 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
     return result;
   }
 
-  squash(_diff1: Diff<T> | undefined, _diff2: Diff<T> | undefined): Diff<T> | undefined {
-    throw createNotImplementedError("RecordType#squash");
+  squash(prev: Diff<T> | undefined, next: Diff<T> | undefined): Diff<T> | undefined {
+    if (prev === undefined) {
+      return next;
+    } else if (next === undefined) {
+      return prev;
+    }
+    const diff: Diff<T> = {set: {}, update: {}, unset: {}};
+    const handled: Set<AnyKey> = new Set();
+    for (const [key, nextSet] of Object.entries<T>(next.set)) {
+      const descriptor = Reflect.get(this.properties, key);
+      if (descriptor === undefined) {
+        throw new Error(`unknown key ${key} in record diff`);
+      }
+      if (Reflect.has(prev.unset, key)) {
+        const prevUnset = Reflect.get(prev.unset, key);
+        const diff = descriptor.type.diff(prevUnset, nextSet);
+        Reflect.set(diff.update, key, diff);
+      } else {
+        Reflect.set(diff.set, key, nextSet);
+      }
+      handled.add(key);
+    }
+    for (const [key, nextUnset] of Object.entries<T>(next.unset)) {
+      const descriptor = Reflect.get(this.properties, key);
+      if (descriptor === undefined) {
+        throw new Error(`unknown key ${key} in record diff`);
+      }
+      if (!Reflect.has(prev.set, key)) {
+        Reflect.set(diff.unset, key, nextUnset);
+      }
+      handled.add(key);
+    }
+    for (const [key, nextUpdate] of Object.entries<T>(next.update)) {
+      const descriptor = Reflect.get(this.properties, key);
+      if (descriptor === undefined) {
+        throw new Error(`unknown key ${key} in record diff`);
+      }
+      if (Reflect.has(prev.set, key)) {
+        const prevSet = Reflect.get(prev.set, key);
+        const nextSet = descriptor.type.apply(prevSet, nextUpdate);
+        Reflect.set(diff.set, key, nextSet);
+      } else if (Reflect.has(prev.update, key)) {
+        const prevUpdate = Reflect.get(prev.update, key);
+        const diff = descriptor.type.squash(prevUpdate, nextUpdate);
+        Reflect.set(diff.update, key, diff);
+      } else {
+        Reflect.set(diff.update, key, diff);
+      }
+      handled.add(key);
+    }
+    for (const [key, prevSet] of Object.entries(prev.set)) {
+      if (!handled.has(key)) {
+        Reflect.set(diff.set, key, prevSet);
+      }
+    }
+    for (const [key, prevUpdate] of Object.entries(prev.update)) {
+      if (!handled.has(key)) {
+        Reflect.set(diff.update, key, prevUpdate);
+      }
+    }
+    for (const [key, prevUnet] of Object.entries(prev.unset)) {
+      if (!handled.has(key)) {
+        Reflect.set(diff.unset, key, prevUnet);
+      }
+    }
+    if (Object.keys(diff.set).length === 0 && Object.keys(diff.unset).length === 0 && Object.keys(diff.update).length === 0) {
+      return undefined;
+    }
+    return diff;
   }
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: RecordTypeOptions<T> = typeof this._options === "function" ?
       this._options() :
@@ -476,7 +531,7 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
       const properties = {...parentOptions.properties};
       for (const key in extensionOptions.properties) {
         if (Reflect.has(parentOptions.properties, key)) {
-          throw new incident.Incident("RecordExtensionPropertyConflict", {key});
+          throw new Error(`RecordExtensionPropertyConflict for key=${key}`);
         }
         Reflect.set(properties, key, extensionOptions.properties[key]);
       }
@@ -496,7 +551,7 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
           rename = {...parentOptions.rename} as ResultRename;
           for (const key in extensionOptions.rename) {
             if (Reflect.has(parentOptions.rename, key)) {
-              throw new incident.Incident("RecordExtensionRenameConflict", {key});
+              throw new Error(`RecordExtensionRenameConflict for key=${key}`);
             }
             Reflect.set(properties, key, extensionOptions.properties[key]);
           }
@@ -521,7 +576,7 @@ export function renameKeys<T extends {}>(obj: T, renameAll?: CaseStyle): Map<key
     const renamed: string = renameAll === undefined ? key : rename(key, renameAll);
     result.set(key as keyof T, renamed);
     if (outKeys.has(renamed)) {
-      throw new incident.Incident("NonBijectiveKeyRename", "Some keys are the same after renaming");
+      throw new Error("NonBijectiveKeyRename: Some keys are the same after renaming");
     }
     outKeys.add(renamed);
   }

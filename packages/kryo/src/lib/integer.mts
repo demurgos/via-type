@@ -1,14 +1,11 @@
-import incident from "incident";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Lazy, Ord, Reader, Result, VersionedType, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createInvalidIntegerError } from "./errors/invalid-integer.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { IoType, Lazy, Ord, Reader, VersionedType, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
-
-export type Name = "integer";
-export const name: Name = "integer";
+export type Name = "Integer";
+export const name: Name = "Integer";
 export namespace json {
   export interface Type {
     name: Name;
@@ -75,38 +72,31 @@ export class IntegerType implements IoType<number>, VersionedType<number, Diff>,
     return {name, min: this.min, max: this.max};
   }
 
-  read<R>(reader: Reader<R>, raw: R): number {
-    return reader.readFloat64(raw, readVisitor({
-      fromFloat64: (input: number): number => {
-        const error: Error | undefined = reader.trustInput ? undefined : this.testError(input);
-        if (error !== undefined) {
-          throw error;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<number, CheckId> {
+    return reader.readFloat64(cx, raw, readVisitor({
+      fromFloat64: (input: number): Result<number, CheckId> => {
+        if (reader.trustInput) {
+          return {ok: true, value: input};
         }
-        return input;
+        return this.test(cx, input);
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: number): W {
     return writer.writeFloat64(value);
   }
 
-  testError(val: unknown): Error | undefined {
-    if (typeof val !== "number") {
-      return createInvalidTypeError("number", val);
+  test(cx: KryoContext | null, value: unknown): Result<number, CheckId> {
+    if (typeof value !== "number" || Math.round(value) !== value) {
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Sint53"]});
     }
-    if (Math.round(val) !== val) {
-      return createInvalidIntegerError(val);
+    if (
+      !(this.min <= value && value <= this.max)
+    ) {
+      return writeError(cx, {check: CheckKind.Range, min: this.min, max: this.max, actual: value});
     }
-    if (val < this.min || val > this.max) {
-      return new incident.Incident("Range", {value: val, min: this.min, max: this.max}, "Integer not in range");
-    }
-    return undefined;
-  }
-
-  test(value: unknown): value is number {
-    return typeof value === "number" && value >= this.min && value <= this.max && Math.round(value) === value;
+    return {ok: true, value};
   }
 
   equals(left: number, right: number): boolean {
@@ -145,7 +135,7 @@ export class IntegerType implements IoType<number>, VersionedType<number, Diff>,
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: IntegerTypeOptions = typeof this._options === "function" ? this._options() : this._options;
 

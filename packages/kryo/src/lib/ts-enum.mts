@@ -1,11 +1,9 @@
-import incident from "incident";
-
-import { rename } from "./_helpers/case-style.mjs";
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createNotImplementedError } from "./errors/not-implemented.mjs";
-import { CaseStyle, IoType, Lazy, Reader, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
+import {rename} from "./_helpers/case-style.mjs";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CaseStyle, CheckId, IoType, KryoContext, Lazy, Reader, Result, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
 /**
  * Represents an enum value defined in `EnumConstructor`
@@ -16,12 +14,12 @@ export type Name = "ts-enum";
 export const name: Name = "ts-enum";
 export type Diff = number;
 
-export type EnumObject<EO, E extends number | string> = Record<keyof EO, E>;
+export type EnumObject<EO, E extends AnyKey> = Record<keyof EO, E>;
 
 /**
  * Builds a map from a TS enum by removing reverse-lookup keys.
  */
-function tsEnumToMap<K extends string, E extends string | number>(tsEnum: Record<K, E>): Map<K, E> {
+function tsEnumToMap<K extends string, E extends AnyKey>(tsEnum: Record<K, E>): Map<K, E> {
   const result: Map<K, E> = new Map();
   for (const key in tsEnum) {
     if (!isValidEnumMember(key)) {
@@ -45,7 +43,7 @@ function isValidEnumMember(key: string): boolean {
  * Converts a TS enum and rename options to two maps: from out names to values and from
  * values to out names.
  */
-function getEnumMaps<K extends string, E extends string | number>(
+function getEnumMaps<K extends string, E extends AnyKey>(
   tsEnum: Record<K, E>,
   changeCase: CaseStyle | undefined,
   renameAll?: { [P in K]?: string },
@@ -67,11 +65,14 @@ function getEnumMaps<K extends string, E extends string | number>(
   return [jsToOut, outToJs];
 }
 
-export interface TsEnumTypeOptions<E extends string | number, EO extends {} = {}> {
+export interface TsEnumTypeOptions<E extends AnyKey, EO extends {} = {}> {
   enum: EnumObject<EO, E>;
   changeCase?: CaseStyle;
   rename?: { [P in keyof EO]?: string };
 }
+
+// alias for `keyof any`
+export type AnyKey = string | number | symbol;
 
 /**
  * Represents a TS-style enum value.
@@ -80,7 +81,7 @@ export interface TsEnumTypeOptions<E extends string | number, EO extends {} = {}
  * non-numeric strings to strings or numbers and "reversed" properties from numeric strings to
  * keys of forward properties with constant numeric values.
  */
-export class TsEnumType<E extends string | number, EO extends {} = {}>
+export class TsEnumType<E extends AnyKey = AnyKey, EO extends {} = {}>
 implements IoType<E>, TsEnumTypeOptions<E, EO> {
   readonly name: Name = name;
   readonly enum!: Record<keyof EO, E>;
@@ -101,10 +102,6 @@ implements IoType<E>, TsEnumTypeOptions<E, EO> {
     }
   }
 
-  static fromJSON(): TsEnumType<any> {
-    throw createNotImplementedError("TsEnumType.fromJSON");
-  }
-
   private get jsToOut(): Map<E, string> {
     if (this._jsToOut === undefined) {
       [this._jsToOut, this._outToJs] = getEnumMaps(this.enum, this.changeCase, this.rename);
@@ -119,13 +116,14 @@ implements IoType<E>, TsEnumTypeOptions<E, EO> {
     return this._outToJs;
   }
 
-  read<R>(reader: Reader<R>, raw: R): E {
-    return reader.readString(raw, readVisitor({
-      fromString: (input: string): E => {
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<E, CheckId> {
+    return reader.readString(cx, raw, readVisitor({
+      fromString: (input: string): Result<E, CheckId> => {
         if (!reader.trustInput && !this.outToJs.has(input)) {
-          throw incident.Incident("Unknown enum variant name", input);
+          return writeError(cx, {check: CheckKind.LiteralValue});
         }
-        return this.outToJs.get(input)!;
+        const jsValue = this.outToJs.get(input)!;
+        return {ok: true, value: jsValue};
       },
     }));
   }
@@ -134,15 +132,12 @@ implements IoType<E>, TsEnumTypeOptions<E, EO> {
     return writer.writeString(this.jsToOut.get(value)!);
   }
 
-  testError(value: unknown): Error | undefined {
-    if (!this.jsToOut.has(value as any)) {
-      return incident.Incident("UnknownVariantError", {value}, "Unknown enum variant value");
+  test(cx: KryoContext, value: unknown): Result<E, CheckId> {
+    if ((this.jsToOut as Map<unknown, unknown>).has(value)) {
+      return {ok: true, value: value as E};
+    } else {
+      return writeError(cx, {check: CheckKind.LiteralValue});
     }
-    return undefined;
-  }
-
-  test(value: unknown): value is E {
-    return this.jsToOut.has(value as any);
   }
 
   equals(val1: E, val2: E): boolean {
@@ -155,7 +150,7 @@ implements IoType<E>, TsEnumTypeOptions<E, EO> {
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: TsEnumTypeOptions<E> = typeof this._options === "function" ? this._options() : this._options;
 

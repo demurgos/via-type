@@ -1,4 +1,4 @@
-import chai from "chai";
+import { assert as chaiAssert } from "chai";
 
 import { BooleanType } from "../../lib/boolean.mjs";
 import { runTests, TypedValue } from "../helpers/test.mjs";
@@ -51,7 +51,7 @@ describe("BooleanType", function () {
 
     for (const {left, right, expected} of testItems) {
       it(`.lte(${left}, ${right}) should return ${expected}`, function () {
-        chai.assert.strictEqual($Boolean.lte(left, right), expected);
+        chaiAssert.strictEqual($Boolean.lte(left, right), expected);
       });
     }
   });

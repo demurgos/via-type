@@ -1,15 +1,12 @@
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { testError } from "./_helpers/test-error.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createNotImplementedError } from "./errors/not-implemented.mjs";
-import { IoType, Lazy, Reader, VersionedType, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
-import {Incident} from "incident";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Lazy, Reader, Result, VersionedType, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
 export type Name = "map";
 export const name: Name = "map";
-export type Diff = any;
+export type Diff<K, V> = [Map<K, V>, Map<K, V>];
 
 export interface MapTypeOptions<K, V> {
   keyType: VersionedType<K, any>;
@@ -18,7 +15,7 @@ export interface MapTypeOptions<K, V> {
   assumeStringKey?: boolean;
 }
 
-export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>, Diff> {
+export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>, Diff<K, V>> {
   readonly name: Name = name;
   readonly keyType!: VersionedType<K, any>;
   readonly valueType!: VersionedType<V, any>;
@@ -36,54 +33,79 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     }
   }
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): Map<K, V> {
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<Map<K, V>, CheckId> {
     if (this.assumeStringKey) {
-      return reader.readRecord(raw, readVisitor({
-        fromMap: <RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): Map<K, V> => {
+      return reader.readRecord(cx, raw, readVisitor({
+        fromMap: <RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): Result<Map<K, V>, CheckId> => {
           const result: Map<K, V> = new Map();
-
+          let errors: CheckId[] | undefined = undefined;
           for (const [rawKey, rawValue] of input) {
-            const uncheckedKey: string = keyReader.readString(
+            const {ok: okUnecheckedKey, value: uncheckedKey} = keyReader.readString(
+              cx,
               rawKey,
-              readVisitor({fromString: (input: string): string => input}),
+              readVisitor({fromString: (value: string): Result<string, CheckId> => ({ok: true, value})}),
             );
-            const keyErr: Error | undefined = this.keyType.testError!(uncheckedKey as any);
-            if (keyErr !== undefined) {
-              throw keyErr;
+            if (!okUnecheckedKey) {
+              errors ??= [];
+              errors.push(uncheckedKey);
+              continue;
             }
-            const key: K = uncheckedKey as any;
-            const value: V = this.valueType.read!(valueReader, rawValue);
+
+            const {ok: okKey, value: key} = this.keyType.test(cx, uncheckedKey);
+            if (!okKey) {
+              errors ??= [];
+              errors.push(key);
+              continue;
+            }
+            const {ok, value} = this.valueType.read!(cx, valueReader, rawValue);
+            if (!ok) {
+              errors ??= [];
+              errors.push(value);
+              continue;
+            }
             result.set(key, value);
           }
-
-          const error: Error | undefined = this.testError(result);
-          if (error !== undefined) {
-            throw error;
+          if (result.size > this.maxSize) {
+            return writeError(cx,{check: CheckKind.Size, min: 0, max: this.maxSize, actual: result.size});
           }
-          return result;
+          if (errors !== undefined) {
+            writeError(cx, {check: CheckKind.Aggregate, children: errors});
+          }
+          return {ok: true, value: result};
+        },
+      }));
+    } else {
+      return reader.readMap(cx, raw, readVisitor({
+        fromMap: <RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): Result<Map<K, V>, CheckId> => {
+          const result: Map<K, V> = new Map();
+          let errors: CheckId[] | undefined = undefined;
+          for (const [rawKey, rawValue] of input) {
+            const {ok: okKey, value: key} = this.keyType.read!(cx, keyReader, rawKey);
+            if (!okKey) {
+              errors ??= [];
+              errors.push(key);
+              continue;
+            }
+            const {ok: okValue, value} = this.valueType.read!(cx, valueReader, rawValue);
+            if (!okValue) {
+              errors ??= [];
+              errors.push(value);
+              continue;
+            }
+            result.set(key, value);
+          }
+          if (result.size > this.maxSize) {
+            return writeError(cx,{check: CheckKind.Size, min: 0, max: this.maxSize, actual: result.size});
+          }
+          if (errors !== undefined) {
+            writeError(cx, {check: CheckKind.Aggregate, children: errors});
+          }
+          return {ok: true, value: result};
         },
       }));
     }
-
-    return reader.readMap(raw, readVisitor({
-      fromMap: <RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): Map<K, V> => {
-        const result: Map<K, V> = new Map();
-        for (const [rawKey, rawValue] of input) {
-          const key: K = this.keyType.read!(keyReader, rawKey);
-          const value: V = this.valueType.read!(valueReader, rawValue);
-          result.set(key, value);
-        }
-        const error: Error | undefined = this.testError(result);
-        if (error !== undefined) {
-          throw error;
-        }
-        return result;
-      },
-    }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: Map<K, V>): W {
     if (this.assumeStringKey) {
       return writer.writeRecord(
@@ -113,39 +135,32 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     );
   }
 
-  testError(val: unknown): Error | undefined {
-    if (!(val instanceof Map)) {
-      return createInvalidTypeError("Map", val);
+  test(cx: KryoContext, value: unknown): Result<Map<K, V>, CheckId> {
+    if (!(value instanceof Map)) {
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Object"]});
     }
-    if (val.size > this.maxSize) {
-      return new Incident("MaxMapSize", {maxSize: this.maxSize, actualSize: val.size}, "Invalid map: max size exceeded");
+    if (value.size > this.maxSize) {
+      return writeError(cx,{check: CheckKind.Size, min: 0, max: this.maxSize, actual: value.size});
     }
-    for (const [key, value] of val) {
-      const keyError: Error | undefined = testError(this.keyType, key);
-      if (keyError !== undefined) {
-        return new Incident("InvalidMapKey", {key, value}, "Invalid map entry: invalid key");
-      }
-      const valueError: Error | undefined = testError(this.valueType, value);
-      if (valueError !== undefined) {
-        return new Incident("InvalidMapValue", {key, value}, "Invalid map entry: invalid value");
-      }
-    }
-    return undefined;
-  }
-
-  test(val: unknown): val is Map<K, V> {
-    if (!(val instanceof Map)) {
-      return false;
-    }
-    if (val.size > this.maxSize) {
-      return false;
-    }
-    for (const [key, value] of val) {
-      if (!this.keyType.test(key) || !this.valueType.test(value)) {
-        return false;
+    const i = 0;
+    let errors: CheckId[] | undefined = undefined;
+    for (const [rawKey, rawValue] of value) {
+      const {ok, value} = cx.enter(i, (): Result<unknown, CheckId> => {
+        const {ok: okKey, value: key} = cx.enter(0, () => this.keyType.test(cx, rawKey));
+        if (!okKey) {
+          return {ok: false, value: key};
+        }
+        return cx.enter(1, () => this.valueType.test(cx, rawValue));
+      });
+      if (!ok) {
+        errors ??= [];
+        errors.push(value);
       }
     }
-    return true;
+    if (errors !== undefined ) {
+      writeError(cx, {check: CheckKind.Aggregate, children: errors});
+    }
+    return {ok: true, value};
   }
 
   equals(val1: Map<K, V>, val2: Map<K, V>): boolean {
@@ -177,25 +192,25 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     return result;
   }
 
-  diff(_oldVal: Map<K, V>, _newVal: Map<K, V>): Diff | undefined {
-    throw createNotImplementedError("MapType#diff");
+  diff(oldVal: Map<K, V>, newVal: Map<K, V>): Diff<K, V> | undefined {
+    return this.equals(oldVal, newVal) ? undefined : [oldVal, newVal];
   }
 
-  patch(_oldVal: Map<K, V>, _diff: Diff | undefined): Map<K, V> {
-    throw createNotImplementedError("MapType#patch");
+  patch(oldVal: Map<K, V>, diff: Diff<K, V> | undefined): Map<K, V> {
+    return diff !== undefined ? diff[1] : oldVal;
   }
 
-  reverseDiff(_diff: Diff | undefined): Diff | undefined {
-    throw createNotImplementedError("MapType#reverseDiff");
+  reverseDiff(diff: Diff<K, V> | undefined): Diff<K, V> | undefined {
+    return diff !== undefined ? [diff[1], diff[0]] : undefined;
   }
 
-  squash(_diff1: Diff | undefined, _diff2: Diff | undefined): Diff | undefined {
-    throw createNotImplementedError("MapType#squash");
+  squash(diff1: Diff<K, V> | undefined, diff2: Diff<K, V> | undefined): Diff<K, V> | undefined {
+    return diff1 !== undefined && diff2 !== undefined ? [diff1[0], diff2[1]] : undefined;
   }
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: MapTypeOptions<K, V> = typeof this._options === "function" ? this._options() : this._options;
 
