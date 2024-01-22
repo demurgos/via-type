@@ -4,12 +4,133 @@
  * @module kryo/core
  */
 
+import {Check, format} from "./checks/index.mjs";
+import {AnyKey} from "./ts-enum.mjs";
+
+export {writeError} from "./_helpers/write-error.mjs";
+export {Check, format as formatCheck};
+
 /**
  * Represents a lazy value of type `T`.
  * You can retrieve it with `const val = typeof lazy === "function" ? lazy() : lazy;`.
  * This library guarantees that it will be only called once but you should still ensure that it is idempotent.
  */
 export type Lazy<T> = T | (() => T);
+
+export interface ResultOk<T> {
+  ok: true,
+  value: T,
+}
+
+export interface ResultErr<E> {
+  ok: false,
+  value: E,
+}
+
+export type Result<T, E> = ResultOk<T> | ResultErr<E>;
+
+export interface TypedValue<T, $T extends Type<T>> {
+  value: T;
+  type: $T;
+}
+
+
+export type CheckId = number;
+
+export interface KryoContext {
+  /**
+   * Report a new diagnostic
+   *
+   * @param diagnostic Diagnostic to report for the current value.
+   * @return Diagnoctic id for this context. This can be used to reference error chains.
+   */
+  write(diagnostic: Check): CheckId;
+
+  /**
+   * Run a function with a child context
+   *
+   * @param key Collection key to enter
+   * @param cb Callback to execute in the child context
+   */
+  enter<R>(key: AnyKey, cb: () => R): R;
+}
+
+export const NOOP_CONTEXT: KryoContext = {
+  write(): number {
+    return 0;
+  },
+  enter<R>(_key: string | number, cb: () => R): R {
+    return cb();
+  },
+};
+
+export class ReporterContext {
+  #path: AnyKey[];
+  #checks: { path: AnyKey[], check: Check }[];
+
+  constructor() {
+    this.#path = [];
+    this.#checks = [];
+  }
+
+  write(check: Check): CheckId {
+    const id: CheckId = this.#checks.length;
+    this.#checks.push({path: [...this.#path], check});
+    return id;
+  }
+
+  enter<R>(key: string | number, cb: () => R): R {
+    const oldLen = this.#path.length;
+    this.#path.push(key);
+    try {
+      return cb();
+    } finally {
+      this.#path.length = oldLen;
+    }
+  }
+
+  /**
+   * Close the context and throw an error
+   */
+  throw(id: CheckId): never {
+    throw new Error(this.report(id) ?? "(empty `kryo` report)");
+  }
+
+  /**
+   * Close the context and report it as a string
+   */
+  report(id: CheckId): string | null {
+    const lines: string[] = [];
+    const written: Set<CheckId> = new Set();
+    const pending: CheckId[] = [id];
+    while (pending.length > 0) {
+      const cur: CheckId = pending.pop()!;
+      if (written.has(cur)) {
+        continue;
+      }
+      if ((cur | 0) === cur && cur >= 0 && cur < this.#checks.length) {
+        const {path, check} = this.#checks[cur];
+        const pathStr = path.map((k: AnyKey): string => {
+          if (typeof k === "string" || typeof k === "number") {
+            return String(k);
+          } else {
+            return `Symbol(${String(k)})`;
+          }
+        }).join(".");
+        const msg = format(check);
+        lines.push(`${pathStr}#${cur}: ${msg}`);
+        for (const child of (check.children ?? [])) {
+          pending.push(child);
+        }
+      }
+    }
+    if (lines.length === 0) {
+      return null;
+    } else {
+      return lines.join("\n");
+    }
+  }
+}
 
 /**
  * Simple type interface.
@@ -26,10 +147,11 @@ export interface Type<T> {
   /**
    * Tests if this type matches `value`.
    *
+   * @param cx Test context to collect diagnostics.
    * @param value The value to test against this type.
    * @return Boolean indicating if this type matches `value`.
    */
-  test(value: unknown): value is T;
+  test(cx: KryoContext | null, value: unknown): Result<T, CheckId>;
 
   /**
    * Tests if `left` is equal to `value`.
@@ -60,15 +182,6 @@ export interface Type<T> {
   clone(value: T): T;
 
   /**
-   * Tests if this type matches `value`, describes the error if not.
-   *
-   * @param value The value to test against this type.
-   * @return If this type matches `value` then `undefined`; otherwise an error describing why this
-   *         type does not match `value`.
-   */
-  testError?(value: unknown): Error | undefined;
-
-  /**
    * Compares two valid values.
    *
    * @param left Left operand, a valid value.
@@ -89,11 +202,12 @@ export interface Type<T> {
   /**
    * Deserializes a value of this type.
    *
+   * @param cx Read context, to collect diagnostics.
    * @param reader Reader to drive during the deserialization.
-   * @param input Reader input.
+   * @param raw Reader input.
    * @return Valid value.
    */
-  read?<R>(reader: Reader<R>, input: R): T;
+  read?<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId>;
 }
 
 export interface Ord<T> {
@@ -105,7 +219,7 @@ export interface Writable<T> {
 }
 
 export interface Readable<T> {
-  read<R>(reader: Reader<R>, raw: R): T;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId>;
 }
 
 /**
@@ -115,7 +229,7 @@ export interface Readable<T> {
 export interface IoType<T> extends Type<T>, Readable<T>, Writable<T> {
   write<W>(writer: Writer<W>, value: T): W;
 
-  read<R>(reader: Reader<R>, raw: R): T;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId>;
 }
 
 /**
@@ -151,21 +265,21 @@ export interface Writer<W> {
  * T: Return type of the read-visitor. This is the type of the value you actually want to create.
  */
 export interface ReadVisitor<T> {
-  fromBoolean(input: boolean): T;
+  fromBoolean(input: boolean): Result<T, CheckId>;
 
-  fromBytes(input: Uint8Array): T;
+  fromBytes(input: Uint8Array): Result<T, CheckId>;
 
-  fromDate(input: Date): T;
+  fromDate(input: Date): Result<T, CheckId>;
 
-  fromFloat64(input: number): T;
+  fromFloat64(input: number): Result<T, CheckId>;
 
-  fromList<RI>(input: Iterable<RI>, itemReader: Reader<RI>): T;
+  fromList<RI>(input: Iterable<RI>, itemReader: Reader<RI>): Result<T, CheckId>;
 
-  fromMap<RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): T;
+  fromMap<RK, RV>(input: Map<RK, RV>, keyReader: Reader<RK>, valueReader: Reader<RV>): Result<T, CheckId>;
 
-  fromNull(): T;
+  fromNull(): Result<T, CheckId>;
 
-  fromString(input: string): T;
+  fromString(input: string): Result<T, CheckId>;
 }
 
 /**
@@ -177,25 +291,25 @@ export interface Reader<R> {
    */
   trustInput?: boolean;
 
-  readAny<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readAny<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readBoolean<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readBoolean<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readBytes<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readBytes<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readDate<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readDate<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readRecord<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readRecord<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readFloat64<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readFloat64<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readList<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readList<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readMap<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readMap<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readNull<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readNull<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 
-  readString<T>(raw: R, visitor: ReadVisitor<T>): T;
+  readString<T>(cx: KryoContext, raw: R, visitor: ReadVisitor<T>): Result<T, CheckId>;
 }
 
 export interface VersionedType<T, Diff> extends Type<T> {
@@ -238,7 +352,7 @@ export enum CaseStyle {
   PascalCase = "PascalCase",
 
   /**
-   * Make every component lowercase, then join them using `_`.
+   * Make every component lowerCase, then join them using `_`.
    *
    * e.g. `snake_case`
    */
@@ -252,9 +366,26 @@ export enum CaseStyle {
   ScreamingSnakeCase = "SCREAMING_SNAKE_CASE",
 
   /**
-   * Make every component lowercase, then join them using `-`.
+   * Make every component lowerCase, then join them using `-`.
    *
    * e.g. `kebab-case`
    */
   KebabCase = "kebab-case",
+}
+
+export function testOrThrow<T>(type: Type<T>, raw: unknown): asserts raw is T {
+  const {ok} = type.test(null, raw);
+  if (!ok) {
+    throw new Error("invalid type");
+  }
+}
+
+export function readOrThrow<T, R>(type: IoType<T>, reader: Reader<R>, raw: R): T {
+  const cx = new ReporterContext();
+  const {ok, value} = type.read(cx, reader, raw);
+  if (ok) {
+    return value;
+  } else {
+    return cx.throw(value);
+  }
 }

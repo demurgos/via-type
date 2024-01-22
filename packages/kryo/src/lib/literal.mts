@@ -1,19 +1,18 @@
-import incident from "incident";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {LiteralTypeCheck} from "./checks/literal-type.mjs";
+import {CheckId, IoType, KryoContext, Lazy, Reader, Result, Type, Writer} from "./index.mjs";
 
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { testError } from "./_helpers/test-error.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { IoType, Lazy, Reader, Type, Writer } from "./index.mjs";
-
-export type Name = "literal";
-export const name: Name = "literal";
+export type Name = "Literal";
+export const name: Name = "Literal";
 export type Diff = any;
 
 /**
  * T: Typescript type
  * K: Kryo type
  */
-export interface LiteralTypeOptions<T, K extends Type<any> = Type<any>> {
+export interface LiteralTypeOptions<T, K extends Type<T> = Type<T>> {
   type: K;
   value: T;
 }
@@ -28,7 +27,7 @@ export interface LiteralType<T, K extends Type<any> = Type<any>> extends Type<T>
 }
 
 export interface LiteralIoType<T, K extends IoType<any> = IoType<any>> extends IoType<T>, LiteralType<T, K> {
-  read<R>(reader: Reader<R>, raw: R): T;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId>;
 
   write<W>(writer: Writer<W>, value: T): W;
 }
@@ -57,33 +56,29 @@ export const LiteralType: LiteralTypeConstructor = class<T, K extends Type<any> 
     }
   }
 
-  read<R>(reader: Reader<R>, raw: R): T {
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId> {
     if (this.type.read === undefined) {
-      throw new incident.Incident("NotReadable", {type: this});
+      throw new Error(`read is not supported for Literal with non-readable type ${this.type.name}`);
     }
-    return reader.trustInput ? this.clone(this.value) : this.type.read(reader, raw);
+    return this.type.read(cx, reader, raw);
   }
 
   write<W>(writer: Writer<W>, value: T): W {
     if (this.type.write === undefined) {
-      throw new incident.Incident("NotWritable", {type: this});
+      throw new Error(`write is not supported for Literal with non-writable type ${this.type.name}`);
     }
     return this.type.write(writer, value);
   }
 
-  testError(val: unknown): Error | undefined {
-    const error: Error | undefined = testError(this.type, val);
-    if (error !== undefined) {
-      return error;
+  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+    const {ok, value: actual} = this.type.test(cx, value);
+    if (!ok) {
+      return writeError(cx, {check: CheckKind.LiteralType, children: [actual]} satisfies LiteralTypeCheck);
     }
-    if (!this.type.equals(val, this.value)) {
-      return incident.Incident("InvalidLiteral", "Invalid literal value");
+    if (!this.type.equals(actual, this.value)) {
+      return writeError(cx, {check: CheckKind.LiteralValue});
     }
-    return undefined;
-  }
-
-  test(value: unknown): value is T {
-    return this.type.test(value) && this.type.equals(value, this.value);
+    return {ok: true, value: actual};
   }
 
   equals(left: T, right: T): boolean {
@@ -116,7 +111,7 @@ export const LiteralType: LiteralTypeConstructor = class<T, K extends Type<any> 
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: LiteralTypeOptions<T, K> = typeof this._options === "function"
       ? this._options()

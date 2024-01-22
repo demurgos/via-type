@@ -1,9 +1,21 @@
-import incident from "incident";
-
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { testError } from "./_helpers/test-error.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { IoType, Lazy, Reader, Type, VersionedType, Writer } from "./index.mjs";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {AggregateCheck} from "./checks/aggregate.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {UnionMatchCheck} from "./checks/union-match.mjs";
+import {
+  CheckId,
+  IoType,
+  KryoContext,
+  Lazy,
+  NOOP_CONTEXT,
+  Reader,
+  Result,
+  Type,
+  TypedValue,
+  VersionedType,
+  Writer
+} from "./index.mjs";
 
 export type Name = "union";
 export const name: Name = "union";
@@ -11,11 +23,6 @@ export type Diff = any;
 
 export interface TryUnionTypeOptions<T, M extends Type<T> = Type<T>> {
   variants: M[];
-}
-
-export interface VariantValue<T, K> {
-  variant: K;
-  value: T;
 }
 
 export type TestWithVariantResult<T> =
@@ -41,76 +48,90 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
     }
   }
 
-  match(value: unknown): M | undefined {
+  match(cx: KryoContext, value: unknown): Result<TypedValue<T, M>, CheckId> {
+    const variantChecks: CheckId[] = [];
     for (const variant of this.variants) {
-      if (variant.test(value)) {
-        return variant;
+      const {ok, value: actual} = variant.test(cx, value);
+      if (ok) {
+        return {ok: true, value: {type: variant, value: actual}};
+      } else {
+        variantChecks.push(actual satisfies CheckId);
       }
     }
-    return undefined;
+    const source: CheckId = cx.write({
+      check: CheckKind.Aggregate,
+      children: variantChecks,
+    } satisfies AggregateCheck);
+    return writeError(cx, {check: CheckKind.UnionMatch, children: [source]} satisfies UnionMatchCheck);
   }
 
-  matchTrusted(value: T): M {
-    return this.match(value)!;
+  matchTrusted(value: T): TypedValue<T, M> {
+    const {ok, value: actual} = this.match(NOOP_CONTEXT, value);
+    if (ok) {
+      return actual;
+    }
+    throw new Error("no matching variant found for `TryUnion` value");
   }
 
   write<W>(writer: Writer<W>, value: T): W {
-    const variant: M | undefined = this.match(value);
-    if (variant === undefined) {
-      throw new incident.Incident("UnknownUnionVariant", "Unknown union variant");
-    }
+    const variant: M = this.matchTrusted(value).type;
     if (variant.write === undefined) {
-      throw new incident.Incident("NotWritable", {type: variant});
+      throw new Error(`write is not supported for TryUnion with non-writable variant ${variant.name}`);
     }
     return variant.write(writer, value);
   }
 
-  read<R>(reader: Reader<R>, raw: R): T {
-    return this.variantRead(reader, raw).value;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<T, CheckId> {
+    const {ok, value} = this.variantRead(cx, reader, raw);
+    if (ok) {
+      return {ok: true, value: value.value};
+    } else {
+      return {ok: false, value};
+    }
   }
 
-  variantRead<R>(reader: Reader<R>, raw: R): VariantValue<T, M> {
+  variantRead<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<TypedValue<T, M>, CheckId> {
+    const variantChecks: CheckId[] = [];
     for (const variant of this.variants) {
-      try {
-        const value: T = variant.read!(reader, raw);
-        return {value, variant};
-      } catch (err) {
-        // TODO: Do not swallow all errors
+      if (variant.read === undefined) {
+        throw new Error(`read is not supported for TryUnion with non-readable variant ${variant.name}`);
+      }
+      const {ok, value: actual} = variant.read(cx, reader, raw);
+      if (ok) {
+        return {ok: true, value: {type: variant, value: actual}};
+      } else {
+        variantChecks.push(actual satisfies CheckId);
       }
     }
-    throw new incident.Incident("InputVariantNotFound", {union: this, raw});
+    const source: CheckId = cx.write({
+      check: CheckKind.Aggregate,
+      children: variantChecks,
+    } satisfies AggregateCheck);
+    return writeError(cx, {check: CheckKind.UnionMatch, children: [source]} satisfies UnionMatchCheck);
   }
 
-  testError(value: unknown): Error | undefined {
-    const variant: M | undefined = this.match(value);
-    if (variant === undefined) {
-      return new incident.Incident("UnknownUnionVariant", "Unknown union variant");
+  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+    const {ok, value: actual} = this.match(cx, value);
+    if (ok) {
+      return {ok: true, value: actual.value};
+    } else {
+      return {ok: false, value: actual};
     }
-    return testError(variant, value);
   }
 
-  test(val: unknown): val is T {
-    const type: M | undefined = this.match(val);
-    if (type === undefined) {
-      return false;
-    }
-    return type.test(val);
-  }
-
-  // TODO: Always return true?
   equals(val1: T, val2: T): boolean {
-    const type1: M = this.matchTrusted(val1);
-    const type2: M = this.matchTrusted(val2);
-    return type1 === type2 && type1.equals(val1, val2);
+    const match1: TypedValue<T, M> = this.matchTrusted(val1);
+    const match2: TypedValue<T, M> = this.matchTrusted(val2);
+    return match1.type === match2.type && match1.type.equals(match1.value, match2.value);
   }
 
   clone(val: T): T {
-    return this.matchTrusted(val).clone(val);
+    return this.matchTrusted(val).type.clone(val);
   }
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: TryUnionTypeOptions<T, M> = typeof this._options === "function"
       ? this._options()

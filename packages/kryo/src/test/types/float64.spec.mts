@@ -1,4 +1,4 @@
-import chai from "chai";
+import { assert as chaiAssert } from "chai";
 
 import { Float64Type } from "../../lib/float64.mjs";
 import { runTests, TypedValue } from "../helpers/test.mjs";
@@ -59,7 +59,7 @@ describe("Float64Type", function () {
     runTests($Float64WithNan, items);
 
     it("Should treat two `NaN` values as equal", function () {
-      chai.assert.isTrue($Float64WithNan.equals(NaN, NaN));
+      chaiAssert.isTrue($Float64WithNan.equals(NaN, NaN));
     });
   });
 
@@ -81,19 +81,19 @@ describe("Float64Type", function () {
     runTests($Float64WithInfinity, items);
 
     it("should return `true` for `.equals(Infinity, Infinity)`", function () {
-      chai.assert.isTrue($Float64WithInfinity.equals(Infinity, Infinity));
+      chaiAssert.isTrue($Float64WithInfinity.equals(Infinity, Infinity));
     });
 
     it("should return `true` for `.equals(-Infinity, -Infinity)`", function () {
-      chai.assert.isTrue($Float64WithInfinity.equals(-Infinity, -Infinity));
+      chaiAssert.isTrue($Float64WithInfinity.equals(-Infinity, -Infinity));
     });
 
     it("should return `false` for `.equals(-Infinity, Infinity)`", function () {
-      chai.assert.isFalse($Float64WithInfinity.equals(-Infinity, Infinity));
+      chaiAssert.isFalse($Float64WithInfinity.equals(-Infinity, Infinity));
     });
 
     it("should return `false` for `.equals(Infinity, -Infinity)`", function () {
-      chai.assert.isFalse($Float64WithInfinity.equals(Infinity, -Infinity));
+      chaiAssert.isFalse($Float64WithInfinity.equals(Infinity, -Infinity));
     });
   });
 
@@ -116,7 +116,7 @@ describe("Float64Type", function () {
 
     for (const {left, right, expected} of testItems) {
       it(`.lte(${left}, ${right}) should return ${expected}`, function () {
-        chai.assert.strictEqual($Float64.lte(left, right), expected);
+        chaiAssert.strictEqual($Float64.lte(left, right), expected);
       });
     }
   });

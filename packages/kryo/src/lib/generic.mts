@@ -1,5 +1,4 @@
 import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
 import { IoType, Lazy, Type } from "./index.mjs";
 
 export type Name = "generic";
@@ -53,7 +52,7 @@ export const GenericType: GenericTypeConstructor = (class<Fn extends (...args: a
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: GenericTypeOptions<Fn> = typeof this._options === "function" ?
       this._options() :

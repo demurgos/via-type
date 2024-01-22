@@ -1,18 +1,26 @@
-import incident from "incident";
-import { Reader, Writer } from "kryo";
-import { CustomType } from "kryo/custom";
-import { createInvalidTypeError } from "kryo/errors/invalid-type";
-import { readVisitor } from "kryo/readers/read-visitor";
-import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
+import {CheckId, KryoContext, Reader, Result, writeError,Writer} from "kryo";
+import {CheckKind} from "kryo/checks/check-kind";
+import {CustomType} from "kryo/custom";
+import {readVisitor} from "kryo/readers/read-visitor";
+import {registerErrMochaTests, registerMochaSuites, TestItem} from "kryo-testing";
 
-import { QsReader } from "../../lib/qs-reader.mjs";
-import { QsWriter } from "../../lib/qs-writer.mjs";
+import {QsReader} from "../../lib/qs-reader.mjs";
+import {QsWriter} from "../../lib/qs-writer.mjs";
 
 describe("kryo-qs | Custom", function () {
   const QS_READER: QsReader = new QsReader();
   const QS_WRITER: QsWriter = new QsWriter();
 
   describe("ComplexNumber", function () {
+    class ComplexParseError extends Error {
+      public input: string;
+
+      public constructor(input: string) {
+        super(`invalid input format for \`Complex\`: ${JSON.stringify(input)}`);
+        this.input = input;
+      }
+    }
+
     /**
      * Represents a complex number.
      * It only deals with complex number with small unsigned integer cartesian components for
@@ -32,7 +40,7 @@ describe("kryo-qs | Custom", function () {
         const realMatch: RegExpExecArray | null = /^(\d+)(?:\s*\+\s*\d+j)?$/.exec(input);
         const imaginaryMatch: RegExpExecArray | null = /^(?:\d+\s*\+\s*)?(\d+)j$/.exec(input);
         if (realMatch === null && imaginaryMatch === null) {
-          throw new incident.Incident("InvalidInput", {input});
+          throw new ComplexParseError(input);
         }
         const real: number = realMatch !== null ? parseInt(realMatch[1], 10) : 0;
         const imaginary: number = imaginaryMatch !== null ? parseInt(imaginaryMatch[1], 10) : 0;
@@ -53,24 +61,34 @@ describe("kryo-qs | Custom", function () {
     }
 
     const $Complex: CustomType<Complex> = new CustomType({
-      read<R>(reader: Reader<R>, raw: R): Complex {
-        return reader.readString(raw, readVisitor({
-          fromString: (input: string): Complex => {
-            return Complex.fromString(input);
+      read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<Complex, CheckId> {
+        return reader.readString(cx, raw, readVisitor({
+          fromString: (input: string): Result<Complex, CheckId> => {
+            try {
+              const value = Complex.fromString(input);
+              return {ok: true, value};
+            } catch (e) {
+              if (e instanceof ComplexParseError) {
+                return writeError(cx, {check: CheckKind.BaseType, expected: ["Object"]});
+              } else {
+                throw e;
+              }
+            }
           },
-          fromFloat64: (input: number): Complex => {
-            return new Complex(input, 0);
+          fromFloat64: (input: number): Result<Complex, CheckId> => {
+            const value = new Complex(input, 0);
+            return {ok: true, value};
           },
         }));
       },
       write<W>(writer: Writer<W>, value: Complex): W {
         return writer.writeString(value.toString());
       },
-      testError(value: unknown): Error | undefined {
+      test(cx: KryoContext, value: unknown): Result<Complex, CheckId> {
         if (!(value instanceof Complex)) {
-          return createInvalidTypeError("Complex", value);
+          return writeError(cx, {check: CheckKind.BaseType, expected: ["Object"]});
         }
-        return undefined;
+        return {ok: true, value};
       },
       equals(value1: Complex, value2: Complex): boolean {
         return value1.real === value2.real && value1.imaginary === value2.imaginary;

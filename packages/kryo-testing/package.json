@@ -16,17 +16,16 @@
     "prepack": "yarn run build"
   },
   "engines": {
-    "node": ">=14.13.1"
+    "node": ">=18.13.0"
   },
   "dependencies": {
     "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "chai": "^4.3.6",
-    "kryo": "workspace:^",
-    "tslib": "^2.4.0"
+    "@types/mocha": "^10.0.6",
+    "chai": "^5.0.0",
+    "kryo": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "^17.0.31",
+    "@types/node": "^20.11.5",
     "typescript": "^5.3.3"
   },
   "type": "module",

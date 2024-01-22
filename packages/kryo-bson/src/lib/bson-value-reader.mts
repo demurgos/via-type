@@ -2,24 +2,26 @@
  * @module kryo/readers/bson-value
  */
 
-import { Binary } from "bson";
-import incident from "incident";
-import { Reader, ReadVisitor } from "kryo";
-import { createInvalidTypeError } from "kryo/errors/invalid-type";
-import { JsonReader } from "kryo-json/json-reader";
+import {Binary} from "bson";
+import {CheckId, KryoContext, Reader, ReadVisitor, Result, writeError} from "kryo";
+import {BaseTypeCheck} from "kryo/checks/base-type";
+import {CheckKind} from "kryo/checks/check-kind";
+import {InstanceOfCheck} from "kryo/checks/instance-of";
+import {PropertyKeyCheck} from "kryo/checks/property-key";
+import {JsonReader} from "kryo-json/json-reader";
 
-function isBinary(val: any): val is Binary {
-  return val._bsontype === "Binary";
+function isBinary(val: unknown): val is Binary {
+  return val !== null && typeof val === "object" && Reflect.get(val, "_bsontype") === "Binary";
 }
 
-export class BsonValueReader implements Reader<any> {
+export class BsonValueReader implements Reader<unknown> {
   trustInput?: boolean | undefined;
 
   constructor(trust?: boolean) {
     this.trustInput = trust;
   }
 
-  readAny<R>(input: any, visitor: ReadVisitor<R>): R {
+  readAny<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
     switch (typeof input) {
       case "boolean":
         return visitor.fromBoolean(input);
@@ -28,73 +30,82 @@ export class BsonValueReader implements Reader<any> {
       case "object":
         return input === null
           ? visitor.fromNull()
-          : visitor.fromMap(new Map(Object.keys(input).map(k => [k, input[k]] as [string, any])), this, this);
+          : visitor.fromMap(new Map(Object.keys(input).map(k => [k, Reflect.get(input, k)] as [string, unknown])), this, this);
       default:
-        throw createInvalidTypeError("boolean | null | object | string", input);
+        return writeError(cx, {
+          check: CheckKind.BaseType,
+          expected: ["Array", "Boolean", "Bytes", "Null", "Object", "UsvString", "Ucs2String"]
+        } satisfies BaseTypeCheck);
     }
   }
 
-  readBoolean<R>(input: any, visitor: ReadVisitor<R>): R {
+  readBoolean<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
     if (typeof input !== "boolean") {
-      throw createInvalidTypeError("boolean", input);
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Boolean"]} satisfies BaseTypeCheck);
     }
     return visitor.fromBoolean(input);
   }
 
-  readBytes<R>(raw: any, visitor: ReadVisitor<R>): R {
-    let input: Uint8Array;
-    if (isBinary(raw)) {
-      // TODO: Fix BSON type definitions
-      input = (raw as {value(asRaw: true): Buffer}).value(true);
-    } else {
-      // TODO: typecheck
-      input = raw;
+  readBytes<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    if (!isBinary(input)) {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Bytes"]} satisfies BaseTypeCheck);
     }
-    return visitor.fromBytes(input);
+    // TODO: Fix BSON type definitions
+    const inputBytes: Uint8Array = input.value(true) as Buffer;
+    return visitor.fromBytes(inputBytes);
   }
 
-  readDate<R>(raw: any, visitor: ReadVisitor<R>): R {
-    if (!(raw instanceof Date)) {
-      throw createInvalidTypeError("Date", raw);
+  readDate<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    if (!(input instanceof Date)) {
+      return writeError(cx, {check: CheckKind.InstanceOf, class: "Date"} satisfies InstanceOfCheck);
     }
-    return visitor.fromDate(new Date(raw.getTime()));
+    return visitor.fromDate(new Date(input.getTime()));
   }
 
-  readRecord<R>(raw: any, visitor: ReadVisitor<R>): R {
-    if (typeof raw !== "object" || raw === null) {
-      throw createInvalidTypeError("object", raw);
+  readRecord<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    if (typeof input !== "object" || input === null) {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Record"]} satisfies BaseTypeCheck);
     }
-    const input: Map<string, any> = new Map();
-    for (const key in raw) {
-      input.set(key, raw[key]);
+    const inputMap: Map<string, unknown> = new Map();
+    for (const key in input) {
+      inputMap.set(key, Reflect.get(input, key));
     }
-    return visitor.fromMap(input, this, this);
+    return visitor.fromMap(inputMap, this, this);
   }
 
-  readFloat64<R>(input: any, visitor: ReadVisitor<R>): R {
-    const specialValues: Map<string, number> = new Map([["NaN", NaN], ["Infinity", Infinity], ["-Infinity", Infinity]]);
+  readFloat64<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    const specialValues: Map<unknown, number> = new Map([
+      ["-0", -0],
+      ["NaN", NaN],
+      ["Infinity", Infinity],
+      ["+Infinity", Infinity],
+      ["-Infinity", -Infinity],
+    ]);
     const special: number | undefined = specialValues.get(input);
-    if (special === undefined && typeof input !== "number") {
-      throw new incident.Incident("InvalidInput", {input, expected: "float64"});
+    if (special !== undefined) {
+      return visitor.fromFloat64(special);
+    } else if (typeof input === "number") {
+      return visitor.fromFloat64(input);
+    } else {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Float64"]} satisfies BaseTypeCheck);
     }
-    return visitor.fromFloat64(special !== undefined ? special : input);
   }
 
-  readList<R>(input: any, visitor: ReadVisitor<R>): R {
+  readList<T>(cx: KryoContext, input: any, visitor: ReadVisitor<T>): Result<T, CheckId> {
     if (!Array.isArray(input)) {
-      throw createInvalidTypeError("array", input);
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Array"]} satisfies BaseTypeCheck);
     }
     return visitor.fromList(input, this);
   }
 
-  readMap<R>(raw: any, visitor: ReadVisitor<R>): R {
-    if (typeof raw !== "object" || raw === null) {
-      throw createInvalidTypeError("object", raw);
+  readMap<T>(cx: KryoContext, input: unknown, visitor: ReadVisitor<T>): Result<T, CheckId> {
+    if (typeof input !== "object" || input === null) {
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Record"]} satisfies BaseTypeCheck);
     }
     const jsonReader: JsonReader = new JsonReader();
 
-    const input: Map<any, any> = new Map();
-    for (const rawKey in raw) {
+    const inputMap: Map<any, any> = new Map();
+    for (const rawKey in input) {
       let key: any;
       try {
         key = JSON.parse(rawKey);
@@ -103,26 +114,26 @@ export class BsonValueReader implements Reader<any> {
         if (!(err instanceof Error)) {
           throw err;
         }
-        throw new incident.Incident(err, "InvalidMapKey", {rawKey});
+        return writeError(cx, {check: CheckKind.PropertyKey} satisfies PropertyKeyCheck);
       }
-      input.set(key, raw[rawKey]);
+      inputMap.set(key, Reflect.get(input, rawKey));
     }
-    return visitor.fromMap(input, jsonReader, this);
+    return visitor.fromMap(inputMap, jsonReader, this);
   }
 
-  readNull<R>(input: any, visitor: ReadVisitor<R>): R {
+  readNull<T>(cx: KryoContext, input: any, visitor: ReadVisitor<T>): Result<T, CheckId> {
     if (this.trustInput) {
       return visitor.fromNull();
     }
     if (input !== null) {
-      throw createInvalidTypeError("null", input);
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Null"]});
     }
     return visitor.fromNull();
   }
 
-  readString<R>(input: any, visitor: ReadVisitor<R>): R {
+  readString<T>(cx: KryoContext, input: any, visitor: ReadVisitor<T>): Result<T, CheckId> {
     if (typeof input !== "string") {
-      throw createInvalidTypeError("string", input);
+      return writeError(cx, {check: CheckKind.BaseType, expected: ["Ucs2String", "UsvString"]});
     }
     return visitor.fromString(input);
   }

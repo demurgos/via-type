@@ -1,12 +1,10 @@
-import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { createMaxArrayLengthError } from "./errors/max-array-length.mjs";
-import { createNotImplementedError } from "./errors/not-implemented.mjs";
-import { IoType, Lazy, Ord, Reader, VersionedType, Writer } from "./index.mjs";
-import { readVisitor } from "./readers/read-visitor.mjs";
+import {lazyProperties} from "./_helpers/lazy-properties.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Lazy, Ord, Reader, Result, VersionedType, Writer} from "./index.mjs";
+import {readVisitor} from "./readers/read-visitor.mjs";
 
-export type Diff = any;
+export type Diff = [Uint8Array, Uint8Array];
 
 export interface BytesTypeOptions {
   maxLength: number;
@@ -26,36 +24,26 @@ export class BytesType implements IoType<Uint8Array>, VersionedType<Uint8Array, 
     }
   }
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): Uint8Array {
-    return reader.readBytes(raw, readVisitor({
-      fromBytes: (input: Uint8Array): Uint8Array => {
-        const err: Error | undefined = this.testError(input);
-        if (err !== undefined) {
-          throw err;
-        }
-        return input;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<Uint8Array, CheckId> {
+    return reader.readBytes(cx, raw, readVisitor({
+      fromBytes: (input: Uint8Array): Result<Uint8Array, CheckId> => {
+        return this.test(cx, input);
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: Uint8Array): W {
     return writer.writeBytes(value);
   }
 
-  testError(val: unknown): Error | undefined {
-    if (!(val instanceof Uint8Array)) {
-      return createInvalidTypeError("Uint8Array", val);
+  test(cx: KryoContext | null, value: unknown): Result<Uint8Array, CheckId> {
+    if (!(value instanceof Uint8Array)) {
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Bytes"]});
     }
-    if (this.maxLength !== undefined && val.length > this.maxLength) {
-      return createMaxArrayLengthError(val, this.maxLength);
+    if (value.length > this.maxLength) {
+      return writeError(cx,{check: CheckKind.Size, min: 0, max: this.maxLength, actual: value.length});
     }
-    return undefined;
-  }
-
-  test(value: unknown): value is Uint8Array {
-    return this.testError(value) === undefined;
+    return {ok: true, value};
   }
 
   equals(left: Uint8Array, right: Uint8Array): boolean {
@@ -85,29 +73,29 @@ export class BytesType implements IoType<Uint8Array>, VersionedType<Uint8Array, 
   }
 
   /**
-   * @param _oldVal
-   * @param _newVal
+   * @param oldVal
+   * @param newVal
    * @returns `true` if there is a difference, `undefined` otherwise
    */
-  diff(_oldVal: Uint8Array, _newVal: Uint8Array): Diff | undefined {
-    throw createNotImplementedError("BufferType#diff");
+  diff(oldVal: Uint8Array, newVal: Uint8Array): Diff | undefined {
+    return this.equals(oldVal, newVal) ? undefined : [oldVal, newVal];
   }
 
-  patch(_oldVal: Uint8Array, _diff: Diff | undefined): Uint8Array {
-    throw createNotImplementedError("BufferType#patch");
+  patch(oldVal: Uint8Array, diff: Diff | undefined): Uint8Array {
+    return diff !== undefined ? diff[1] : oldVal;
   }
 
-  reverseDiff(_diff: Diff | undefined): Diff | undefined {
-    throw createNotImplementedError("BufferType#reverseDiff");
+  reverseDiff(diff: Diff | undefined): Diff | undefined {
+    return diff !== undefined ? [diff[1], diff[0]] : undefined;
   }
 
-  squash(_diff1: Diff | undefined, _diff2: Diff | undefined): Diff | undefined {
-    throw createNotImplementedError("BufferType#squash");
+  squash(diff1: Diff | undefined, diff2: Diff | undefined): Diff | undefined {
+    return diff1 !== undefined && diff2 !== undefined ? [diff1[0], diff2[1]] : undefined;
   }
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: BytesTypeOptions = typeof this._options === "function" ? this._options() : this._options;
 

@@ -4,8 +4,6 @@
  * @module kryo/case-style
  */
 
-import incident from "incident";
-
 import { CaseStyle } from "../index.mjs";
 
 export function detectCaseStyle(identifier: string): CaseStyle {
@@ -35,7 +33,7 @@ export function split(caseStyle: CaseStyle, identifier: string): string[] {
     case CaseStyle.PascalCase:
       return identifier.split(/(?=[A-Z])/).map((part: string): string => part.toLowerCase());
     default:
-      throw new incident.Incident(`IncompleteSwitch: Received unexpected variant for caseStyle: ${caseStyle as string}`);
+      throw new Error(`IncompleteSwitch: Received unexpected variant for caseStyle: ${caseStyle as string}`);
   }
 }
 
@@ -50,14 +48,14 @@ export function join(caseStyle: CaseStyle, parts: string[]): string {
     case CaseStyle.CamelCase:
       return parts.map((part: string, index: number): string => {
         const upperLength: number = index === 0 ? 0 : 1;
-        return part.substr(0, upperLength).toUpperCase() + part.substring(upperLength).toLowerCase();
+        return part.substring(0, upperLength).toUpperCase() + part.substring(upperLength).toLowerCase();
       }).join("");
     case CaseStyle.PascalCase:
       return parts.map((part: string): string => {
-        return part.substr(0, 1).toUpperCase() + part.substring(1).toLowerCase();
+        return part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase();
       }).join("");
     default:
-      throw new incident.Incident(`IncompleteSwitch: Received unexpected variant for caseStyle: ${caseStyle as string}`);
+      throw new Error(`IncompleteSwitch: Received unexpected variant for caseStyle: ${caseStyle as string}`);
   }
 }
 
@@ -79,7 +77,7 @@ export function renameMap<K extends string>(keys: Iterable<K>, to?: CaseStyle): 
     const renamed: string = to === undefined ? key : rename(key, to);
     result.set(renamed, key);
     if (outKeys.has(renamed)) {
-      throw new incident.Incident("NonBijectiveKeyRename", "Some keys are the same after renaming");
+      throw new Error("NonBijectiveKeyRename: Some keys are the same after renaming");
     }
     outKeys.add(renamed);
   }

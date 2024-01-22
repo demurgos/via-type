@@ -1,6 +1,5 @@
-import { CodepointStringType } from "kryo/codepoint-string";
+import { UsvStringType } from "kryo/usv-string";
 import { registerErrMochaTests, registerMochaSuites, TestItem } from "kryo-testing";
-import unorm from "unorm";
 
 import { QsReader } from "../../lib/qs-reader.mjs";
 import { QsWriter } from "../../lib/qs-writer.mjs";
@@ -9,7 +8,7 @@ describe("kryo-qs | CodepointString", function () {
   const QS_READER: QsReader = new QsReader();
   const QS_WRITER: QsWriter = new QsWriter();
 
-  const type: CodepointStringType = new CodepointStringType({maxCodepoints: 500, unorm});
+  const type: UsvStringType = new UsvStringType({maxCodepoints: 500});
 
   const items: TestItem[] = [
     {

@@ -1,3 +1,11 @@
+# Next
+
+- Drop `unorm`, `incident`, `object-inspect` errors
+- `CodePointString` renamed to `UsvString`
+  - `enforceUnicodeRegExp` for opt-out replaced by `allowUcs2String` for opt-in
+  - `normalization` defaults to `null` (instead of `NFC`)
+- `WhiteListType` renamed to `LiteralUnion`
+
 # 0.14.2 (2023-12-10)
 
 - **[Fix]** Revert support for inheriting from `RecordType`, it will need more work and an API change.

@@ -1,6 +1,14 @@
-import { createInvalidTimestampError } from "./errors/invalid-timestamp.mjs";
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { IoType, Ord, Reader, VersionedType, Writer } from "./index.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {
+  CheckId,
+  IoType,
+  KryoContext,
+  Ord,
+  Reader,
+  Result,
+  VersionedType,
+  Writer} from "./index.mjs";
 import { readVisitor } from "./readers/read-visitor.mjs";
 
 export type Name = "date";
@@ -10,38 +18,31 @@ export type Diff = number;
 export class DateType implements IoType<Date>, VersionedType<Date, Diff>, Ord<Date> {
   readonly name: Name = name;
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): Date {
-    return reader.readDate(raw, readVisitor({
-      fromDate: (input: Date): Date => {
-        const error: Error | undefined = this.testError(input);
-        if (error !== undefined) {
-          throw error;
-        }
-        return input;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<Date, CheckId> {
+    return reader.readDate(cx, raw, readVisitor({
+      fromDate: (input: Date): Result<Date, CheckId> => {
+        return this.test(cx, input);
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: Date): W {
     return writer.writeDate(value);
   }
 
-  testError(value: unknown): Error | undefined {
+  test(cx: KryoContext | null, value: unknown): Result<Date, CheckId> {
     if (!(value instanceof Date)) {
-      return createInvalidTypeError("Date", value);
+      if (value !== null && typeof value === "object") {
+        return writeError(cx,{check: CheckKind.InstanceOf, class: "Date"});
+      } else {
+        return writeError(cx,{check: CheckKind.BaseType, expected: ["Object"]});
+      }
     }
     const time: number = value.getTime();
     if (isNaN(time) || time > Number.MAX_SAFE_INTEGER || time < Number.MIN_SAFE_INTEGER) {
-      return createInvalidTimestampError(value);
+      return writeError(cx,{check: CheckKind.UnixTimestamp});
     }
-
-    return undefined;
-  }
-
-  test(value: unknown): value is Date {
-    return this.testError(value) === undefined;
+    return {ok: true, value};
   }
 
   equals(left: Date, right: Date): boolean {

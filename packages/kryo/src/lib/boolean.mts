@@ -1,38 +1,33 @@
-import { createInvalidTypeError } from "./errors/invalid-type.mjs";
-import { IoType, Ord, Reader, VersionedType, Writer } from "./index.mjs";
+import {writeError} from "./_helpers/write-error.mjs";
+import {CheckKind} from "./checks/check-kind.mjs";
+import {CheckId, IoType, KryoContext, Ord, Reader, Result,VersionedType, Writer} from "./index.mjs";
 import { readVisitor } from "./readers/read-visitor.mjs";
 
-export type Name = "boolean";
-export const name: Name = "boolean";
+export type Name = "Boolean";
+export const name: Name = "Boolean";
 
 export type Diff = boolean;
 
 export class BooleanType implements IoType<boolean>, VersionedType<boolean, Diff>, Ord<boolean> {
   readonly name: Name = name;
 
-  // TODO: Dynamically add with prototype?
-  read<R>(reader: Reader<R>, raw: R): boolean {
-    return reader.readBoolean(raw, readVisitor({
-      fromBoolean(input: boolean): boolean {
-        return input;
+  read<R>(cx: KryoContext, reader: Reader<R>, raw: R): Result<boolean, CheckId> {
+    return reader.readBoolean(cx, raw, readVisitor({
+      fromBoolean(input: boolean): Result<boolean, never> {
+        return {ok: true, value: input};
       },
     }));
   }
 
-  // TODO: Dynamically add with prototype?
   write<W>(writer: Writer<W>, value: boolean): W {
     return writer.writeBoolean(value);
   }
 
-  testError(val: unknown): Error | undefined {
-    if (typeof val !== "boolean") {
-      return createInvalidTypeError("boolean", val);
+  test(cx: KryoContext | null, value: unknown): Result<boolean, CheckId> {
+    if (typeof value !== "boolean") {
+      return writeError(cx,{check: CheckKind.BaseType, expected: ["Boolean"]});
     }
-    return undefined;
-  }
-
-  test(value: unknown): value is boolean {
-    return typeof value === "boolean";
+    return {ok: true, value};
   }
 
   equals(left: boolean, right: boolean): boolean {

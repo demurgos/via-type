@@ -14,7 +14,7 @@
     "esModuleInterop": false,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
+    "importHelpers": false,
     "inlineSourceMap": false,
     "inlineSources": false,
     "isolatedModules": false,

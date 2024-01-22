@@ -1,20 +1,19 @@
 import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import { createLazyOptionsError } from "./errors/lazy-options.mjs";
-import { Lazy, Reader, Type, Writer } from "./index.mjs";
+import {CheckId, KryoContext, Lazy, Reader, Result,Type, Writer} from "./index.mjs";
 
 export type Name = "custom";
 export const name: Name = "custom";
 
-export type Read<T> = <R>(reader: Reader<R>, raw: R) => T;
+export type Read<T> = <R>(cx: KryoContext, reader: Reader<R>, raw: R) => Result<T, CheckId>;
 export type Write<T> = <W>(writer: Writer<W>, value: T) => W;
-export type TestError = (val: unknown) => Error | undefined;
+export type Test<T> = (cx: KryoContext, value: unknown) => Result<T, CheckId>;
 export type Equals<T> = (val1: T, val2: T) => boolean;
 export type Clone<T> = (val: T) => T;
 
 export interface CustomTypeOptions<T> {
   read: Read<T>;
   write: Write<T>;
-  testError: TestError;
+  test: Test<T>;
   equals: Equals<T>;
   clone: Clone<T>;
 }
@@ -23,7 +22,7 @@ export class CustomType<T> implements Type<T> {
   readonly name: Name = name;
   readonly read!: Read<T>;
   readonly write!: Write<T>;
-  readonly testError!: TestError;
+  readonly test!: Test<T>;
   readonly equals!: Equals<T>;
   readonly clone!: Clone<T>;
 
@@ -34,17 +33,13 @@ export class CustomType<T> implements Type<T> {
     if (typeof options !== "function") {
       this._applyOptions();
     } else {
-      lazyProperties(this, this._applyOptions, ["read", "write", "testError", "equals", "clone"]);
+      lazyProperties(this, this._applyOptions, ["read", "write", "test", "equals", "clone"]);
     }
-  }
-
-  test(value: unknown): value is T {
-    return this.testError(value) === undefined;
   }
 
   private _applyOptions(): void {
     if (this._options === undefined) {
-      throw createLazyOptionsError(this);
+      throw new Error("missing `_options` for lazy initialization");
     }
     const options: CustomTypeOptions<T> = typeof this._options === "function" ? this._options() : this._options;
     Object.assign(
@@ -52,7 +47,7 @@ export class CustomType<T> implements Type<T> {
       {
         read: options.read,
         write: options.write,
-        testError: options.testError,
+        test: options.test,
         equals: options.equals,
         clone: options.clone,
       },

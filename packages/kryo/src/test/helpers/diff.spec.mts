@@ -1,4 +1,4 @@
-import chai from "chai";
+import { assert as chaiAssert } from "chai";
 
 import { DiffAction, diffSync } from "../../lib/_helpers/diff.mjs";
 
@@ -17,6 +17,6 @@ describe("Diff", function () {
       {type: "match", value: 1},   // d    d
       {type: "source", value: 1},  // e
     ];
-    chai.assert.deepEqual(actual, expected);
+    chaiAssert.deepEqual(actual, expected);
   });
 });
