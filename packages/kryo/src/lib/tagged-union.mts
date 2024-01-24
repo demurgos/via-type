@@ -128,7 +128,7 @@ implements IoType<T>,
             readVisitor({fromString: (value: string): Result<string, CheckId> => ({ok: true, value})}),
           );
           if (!okUnecheckedKey) {
-            return writeError(cx, {check: CheckKind.PropertyKey});
+            return writeError(cx, {check: CheckKind.PropertyKeyFormat, children: [outKey]});
           }
           if (outKey !== outTag) {
             continue;

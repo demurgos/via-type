@@ -1,7 +1,7 @@
 {
-  "name": "kryo-qs",
+  "name": "kryo-search-params",
   "version": "0.15.0",
-  "description": "Querystring serializer for Kryo types, using `qs`",
+  "description": "Querystring serializer for Kryo types, using URLSearchParams",
   "license": "MIT",
   "keywords": [],
   "homepage": "https://demurgos.github.io/kryo",
@@ -21,14 +21,13 @@
     "node": ">=18.13.0"
   },
   "dependencies": {
-    "@types/qs": "^6.9.11",
     "kryo": "workspace:^",
-    "kryo-json": "workspace:^",
-    "qs": "^6.11.2"
+    "kryo-json": "workspace:^"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.5",
     "chai": "^5.0.0",
     "kryo-testing": "workspace:^",
     "mocha": "^10.2.0",

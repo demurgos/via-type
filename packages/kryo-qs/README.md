@@ -1,3 +1,3 @@
 # kryo-qs
 
-Querystring serialization support for Kryo types.
+Querystring serialization support for Kryo types, through `qs`.

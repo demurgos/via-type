@@ -6,5 +6,5 @@ export interface PropertyKeyCheck {
 }
 
 export function formatPropertyKeyCheck(): string {
-  return "record property key must be present";
+  return `record property key must be valid`;
 }
