@@ -1,6 +1,6 @@
-# Next
+# 0.15.1 (2024-01-24)
 
-- Fix support for `bson@6`.
+- **[Fix]** Fix support for `bson@6`.
 
 # 0.15.0 (2024-01-22)
 

@@ -1,3 +1,7 @@
+# 0.15.1 (2024-01-24)
+
+- **[Fix]** Update dependencies
+
 # 0.15.0 (2024-01-22)
 
 - Drop `unorm`, `incident`, `object-inspect` errors
