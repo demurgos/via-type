@@ -9,6 +9,7 @@ export enum CheckKind {
   LiteralValue,
   LowerCase,
   PropertyKey,
+  PropertyKeyFormat,
   PropertyValue,
   Range,
   StringPattern,

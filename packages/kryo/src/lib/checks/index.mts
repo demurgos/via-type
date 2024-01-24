@@ -18,6 +18,7 @@ import {formatUnionMatchCheck, UnionMatchCheck} from "./union-match.mjs";
 import {formatUnionTagPresentCheck, UnionTagPresentCheck} from "./union-tag-present.mjs";
 import {formatUnionTagValueCheck, UnionTagValueCheck} from "./union-tag-value.mjs";
 import {formatUnixTimestampCheck, UnixTimestampCheck} from "./unix-timestamp.mjs";
+import {formatPropertyKeyFormatCheck, PropertyKeyFormatCheck} from "./property-key-format.mjs";
 
 export type Check =
   AggregateCheck
@@ -29,6 +30,7 @@ export type Check =
   | LiteralValueCheck
   | LowerCaseCheck
   | PropertyKeyCheck
+  | PropertyKeyFormatCheck
   | PropertyValueCheck
   | RangeCheck
   | SizeCheck
@@ -52,6 +54,7 @@ export function format(check: Check) {
     case CheckKind.LiteralValue: return formatLiteralValueCheck();
     case CheckKind.LowerCase: return formatLowerCaseCheck();
     case CheckKind.PropertyKey: return formatPropertyKeyCheck();
+    case CheckKind.PropertyKeyFormat: return formatPropertyKeyFormatCheck();
     case CheckKind.PropertyValue: return formatPropertyValueCheck();
     case CheckKind.Range: return formatRangeCheck(check);
     case CheckKind.Size: return formatSizeCheck(check);

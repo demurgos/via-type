@@ -16,6 +16,9 @@
     },
     {
       "path": "./packages/kryo-qs/src/test"
+    },
+    {
+      "path": "./packages/kryo-search-params/src/test"
     }
   ]
 }
