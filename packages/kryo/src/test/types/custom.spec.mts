@@ -1,13 +1,13 @@
-import {writeError} from "../../lib/_helpers/write-error.mjs";
 import {CheckKind} from "../../lib/checks/check-kind.mjs";
-import { CustomType } from "../../lib/custom.mjs";
-import {CheckId, KryoContext, Reader, Result, Writer} from "../../lib/index.mjs";
-import { readVisitor } from "../../lib/readers/read-visitor.mjs";
-import { runTests, TypedValue } from "../helpers/test.mjs";
+import {CustomType} from "../../lib/custom.mjs";
+import {CheckId, KryoContext, Reader, Result, writeError, Writer} from "../../lib/index.mjs";
+import {readVisitor} from "../../lib/readers/read-visitor.mjs";
+import {runTests, TypedValue} from "../helpers/test.mjs";
 
 describe("Custom", function () {
   class ComplexParseError extends Error {
     public input: string;
+
     public constructor(input: string) {
       super(`invalid input format for \`Complex\`: ${JSON.stringify(input)}`);
       this.input = input;
@@ -77,7 +77,7 @@ describe("Custom", function () {
     write<W>(writer: Writer<W>, value: Complex): W {
       return writer.writeString(value.toString());
     },
-    test(cx: KryoContext, value: unknown): Result<Complex, CheckId> {
+    test(cx: KryoContext | null, value: unknown): Result<Complex, CheckId> {
       if (!(value instanceof Complex)) {
         return writeError(cx, {check: CheckKind.BaseType, expected: ["Object"]});
       }

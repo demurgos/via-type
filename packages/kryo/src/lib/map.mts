@@ -1,5 +1,5 @@
+import {enter, writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {CheckId, IoType, KryoContext, Lazy, Reader, Result, VersionedType, Writer} from "./index.mjs";
 import {readVisitor} from "./readers/read-visitor.mjs";
@@ -135,7 +135,7 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     );
   }
 
-  test(cx: KryoContext, value: unknown): Result<Map<K, V>, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<Map<K, V>, CheckId> {
     if (!(value instanceof Map)) {
       return writeError(cx,{check: CheckKind.BaseType, expected: ["Object"]});
     }
@@ -145,12 +145,12 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
     const i = 0;
     let errors: CheckId[] | undefined = undefined;
     for (const [rawKey, rawValue] of value) {
-      const {ok, value} = cx.enter(i, (): Result<unknown, CheckId> => {
-        const {ok: okKey, value: key} = cx.enter(0, () => this.keyType.test(cx, rawKey));
+      const {ok, value} = enter(cx, i, (): Result<unknown, CheckId> => {
+        const {ok: okKey, value: key} = enter(cx, 0, () => this.keyType.test(cx, rawKey));
         if (!okKey) {
           return {ok: false, value: key};
         }
-        return cx.enter(1, () => this.valueType.test(cx, rawValue));
+        return enter(cx, 1, () => this.valueType.test(cx, rawValue));
       });
       if (!ok) {
         errors ??= [];

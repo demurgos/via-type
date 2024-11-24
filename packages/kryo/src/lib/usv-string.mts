@@ -1,7 +1,7 @@
 // import { checkedUcs2Decode } from "./_helpers/checked-ucs2-decode.mjs";
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
 import {stringIsWellFormed} from "./_helpers/string-is-well-formed.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {CheckId, IoType, KryoContext, Lazy, Reader, Result, VersionedType, Writer} from "./index.mjs";
 import {readVisitor} from "./readers/read-visitor.mjs";

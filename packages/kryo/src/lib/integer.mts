@@ -1,5 +1,5 @@
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {CheckId, IoType, KryoContext, Lazy, Ord, Reader, Result, VersionedType, Writer} from "./index.mjs";
 import {readVisitor} from "./readers/read-visitor.mjs";

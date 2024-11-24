@@ -1,8 +1,8 @@
 import {rename} from "./_helpers/case-style.mjs";
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
-import {CaseStyle, CheckId, IoType, KryoContext, Lazy, Reader, Result, Writer} from "./index.mjs";
+import {AnyKey, CaseStyle, CheckId, IoType, KryoContext, Lazy, Reader, Result, Writer} from "./index.mjs";
 import {readVisitor} from "./readers/read-visitor.mjs";
 
 /**
@@ -71,9 +71,6 @@ export interface TsEnumTypeOptions<E extends AnyKey, EO extends {} = {}> {
   rename?: { [P in keyof EO]?: string };
 }
 
-// alias for `keyof any`
-export type AnyKey = string | number | symbol;
-
 /**
  * Represents a TS-style enum value.
  *
@@ -132,7 +129,7 @@ implements IoType<E>, TsEnumTypeOptions<E, EO> {
     return writer.writeString(this.jsToOut.get(value)!);
   }
 
-  test(cx: KryoContext, value: unknown): Result<E, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<E, CheckId> {
     if ((this.jsToOut as Map<unknown, unknown>).has(value)) {
       return {ok: true, value: value as E};
     } else {

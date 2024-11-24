@@ -1,7 +1,7 @@
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
-import {CheckId, IoType, KryoContext, Lazy, Reader, Result, Type, Writer} from "./index.mjs";
+import {CheckId, IoType, KryoContext, Lazy, NOOP_CONTEXT, Reader, Result, Type, Writer} from "./index.mjs";
 import {readVisitor} from "./readers/read-visitor.mjs";
 
 export type Name = "array";
@@ -107,7 +107,7 @@ export const ArrayType: ArrayTypeConstructor = class<T, M extends Type<T> = Type
     });
   }
 
-  test(cx: KryoContext, value: unknown): Result<T[], CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<T[], CheckId> {
     if (!Array.isArray(value)) {
       return writeError(cx,{check: CheckKind.BaseType, expected: ["Array"]});
     }
@@ -117,7 +117,7 @@ export const ArrayType: ArrayTypeConstructor = class<T, M extends Type<T> = Type
     const itemCount: number = value.length;
     let errors: CheckId[] | undefined = undefined;
     for (let i: number = 0; i < itemCount; i++) {
-      const {ok, value: itemValue} = cx.enter(i, () => this.itemType.test(cx, value[i]));
+      const {ok, value: itemValue} = (cx ?? NOOP_CONTEXT).enter(i, () => this.itemType.test(cx, value[i]));
       if (!ok) {
         errors ??= [];
         errors.push(itemValue);

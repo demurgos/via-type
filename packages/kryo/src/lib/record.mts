@@ -1,11 +1,12 @@
 import { rename } from "./_helpers/case-style.mjs";
+import {enter, writeError} from "./_helpers/context.mjs";
 import { lazyProperties } from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {AggregateCheck} from "./checks/aggregate.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {PropertyKeyCheck} from "./checks/property-key.mjs";
 import {PropertyValueCheck} from "./checks/property-value.mjs";
 import {
+  AnyKey,
   CaseStyle,
   CheckId,
   IoType,
@@ -18,7 +19,6 @@ import {
   Writer
 } from "./index.mjs";
 import { readVisitor } from "./readers/read-visitor.mjs";
-import {AnyKey} from "./ts-enum.mjs";
 
 export type Name = "record";
 export const name: Name = "record";
@@ -262,7 +262,7 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
     });
   }
 
-  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<T, CheckId> {
     if (typeof value !== "object" || value === null) {
       return writeError(cx, {check: CheckKind.BaseType, expected: ["Record"]});
     }
@@ -281,7 +281,7 @@ export const RecordType: RecordTypeConstructor = (class<T> implements IoType<T>,
           // return false;
         }
       } else {
-        const {ok: okProp, value: propValue} = descriptor.type.test(cx, propertyValue);
+        const {ok: okProp, value: propValue} = enter(cx, key, () => descriptor.type.test(cx, propertyValue));
         if (!okProp) {
           return writeError(cx, {check: CheckKind.PropertyValue, children: [propValue]} satisfies PropertyValueCheck);
         }

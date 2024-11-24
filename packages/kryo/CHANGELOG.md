@@ -1,3 +1,7 @@
+# Next
+
+- **[Fix]** Add support for `null` context in `test`.
+
 # 0.15.1 (2024-01-24)
 
 - **[Fix]** Update dependencies

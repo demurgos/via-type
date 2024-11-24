@@ -8,6 +8,7 @@ import {formatLiteralTypeCheck, LiteralTypeCheck} from "./literal-type.mjs";
 import {formatLiteralValueCheck, LiteralValueCheck} from "./literal-value.mjs";
 import {formatLowerCaseCheck, LowerCaseCheck} from "./lower-case.mjs";
 import {formatPropertyKeyCheck, PropertyKeyCheck} from "./property-key.mjs";
+import {formatPropertyKeyFormatCheck, PropertyKeyFormatCheck} from "./property-key-format.mjs";
 import {formatPropertyValueCheck, PropertyValueCheck} from "./property-value.mjs";
 import {formatRangeCheck, RangeCheck} from "./range.mjs";
 import {formatSizeCheck, SizeCheck} from "./size.mjs";
@@ -18,7 +19,6 @@ import {formatUnionMatchCheck, UnionMatchCheck} from "./union-match.mjs";
 import {formatUnionTagPresentCheck, UnionTagPresentCheck} from "./union-tag-present.mjs";
 import {formatUnionTagValueCheck, UnionTagValueCheck} from "./union-tag-value.mjs";
 import {formatUnixTimestampCheck, UnixTimestampCheck} from "./unix-timestamp.mjs";
-import {formatPropertyKeyFormatCheck, PropertyKeyFormatCheck} from "./property-key-format.mjs";
 
 export type Check =
   AggregateCheck
