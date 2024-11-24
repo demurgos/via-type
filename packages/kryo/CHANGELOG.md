@@ -1,3 +1,7 @@
+# Next
+
+- **[Fix]** Return `ResultErr` on invalid `Map` value.
+
 # 0.15.2 (2024-11-24)
 
 - **[Fix]** Add support for `null` context in `test`.

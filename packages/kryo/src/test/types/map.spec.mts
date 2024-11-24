@@ -17,6 +17,11 @@ describe("Map", function () {
       valid: true,
     },
 
+    {
+      name: "new Map([[1, true], [2, false]])",
+      value: new Map([[1, true], [2, false]]),
+      valid: false,
+    },
     {name: "new Date(0)", value: new Date(0), valid: false},
     {name: "0", value: 0, valid: false},
     {name: "1", value: 1, valid: false},

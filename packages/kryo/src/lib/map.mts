@@ -69,7 +69,7 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
             return writeError(cx,{check: CheckKind.Size, min: 0, max: this.maxSize, actual: result.size});
           }
           if (errors !== undefined) {
-            writeError(cx, {check: CheckKind.Aggregate, children: errors});
+            return writeError(cx, {check: CheckKind.Aggregate, children: errors});
           }
           return {ok: true, value: result};
         },
@@ -98,7 +98,7 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
             return writeError(cx,{check: CheckKind.Size, min: 0, max: this.maxSize, actual: result.size});
           }
           if (errors !== undefined) {
-            writeError(cx, {check: CheckKind.Aggregate, children: errors});
+            return writeError(cx, {check: CheckKind.Aggregate, children: errors});
           }
           return {ok: true, value: result};
         },
@@ -158,7 +158,7 @@ export class MapType<K, V> implements IoType<Map<K, V>>, VersionedType<Map<K, V>
       }
     }
     if (errors !== undefined ) {
-      writeError(cx, {check: CheckKind.Aggregate, children: errors});
+      return writeError(cx, {check: CheckKind.Aggregate, children: errors});
     }
     return {ok: true, value};
   }
