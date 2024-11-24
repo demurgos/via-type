@@ -1,5 +1,5 @@
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {UnionMatchCheck} from "./checks/union-match.mjs";
 import {UnionTagValueCheck} from "./checks/union-tag-value.mjs";
@@ -67,7 +67,7 @@ implements IoType<T>,
     }
   }
 
-  match(cx: KryoContext, value: unknown): Result<M, CheckId> {
+  match(cx: KryoContext | null, value: unknown): Result<M, CheckId> {
     if (typeof value !== "object" || value === null) {
       return writeError(cx, {check: CheckKind.BaseType, expected: ["Record"]});
     }
@@ -154,7 +154,7 @@ implements IoType<T>,
     }));
   }
 
-  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<T, CheckId> {
     if (typeof value !== "object" || value === null) {
       return writeError(cx, {check: CheckKind.BaseType, expected: ["Record"]});
     }

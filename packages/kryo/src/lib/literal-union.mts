@@ -1,5 +1,5 @@
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {CheckId, IoType, KryoContext, Lazy, Reader, Result, VersionedType, Writer} from "./index.mjs";
 
@@ -55,7 +55,7 @@ export class LiteralUnionType<T> implements IoType<T>, VersionedType<T, Diff> {
     return this.type.write(writer, value);
   }
 
-  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<T, CheckId> {
     const {ok, value: actual} = this.type.test(cx, value);
     if (!ok) {
       return writeError(cx,{check: CheckKind.LiteralType, children: [actual]});

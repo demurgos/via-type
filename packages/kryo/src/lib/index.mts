@@ -5,9 +5,8 @@
  */
 
 import {Check, format} from "./checks/index.mjs";
-import {AnyKey} from "./ts-enum.mjs";
 
-export {writeError} from "./_helpers/write-error.mjs";
+export {enter, writeCheck, writeError} from "./_helpers/context.mjs";
 export {Check, format as formatCheck};
 
 /**
@@ -36,6 +35,9 @@ export interface TypedValue<T, $T extends Type<T>> {
 
 
 export type CheckId = number;
+
+// alias for `keyof any`
+export type AnyKey = string | number | symbol;
 
 export interface KryoContext {
   /**

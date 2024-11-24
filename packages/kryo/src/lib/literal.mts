@@ -1,5 +1,5 @@
+import {writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {LiteralTypeCheck} from "./checks/literal-type.mjs";
 import {CheckId, IoType, KryoContext, Lazy, Reader, Result, Type, Writer} from "./index.mjs";
@@ -70,7 +70,7 @@ export const LiteralType: LiteralTypeConstructor = class<T, K extends Type<any> 
     return this.type.write(writer, value);
   }
 
-  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<T, CheckId> {
     const {ok, value: actual} = this.type.test(cx, value);
     if (!ok) {
       return writeError(cx, {check: CheckKind.LiteralType, children: [actual]} satisfies LiteralTypeCheck);

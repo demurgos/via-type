@@ -1,5 +1,5 @@
-import {CheckKind} from "./check-kind.mjs";
 import {CheckId} from "../index.mjs";
+import {CheckKind} from "./check-kind.mjs";
 
 export interface PropertyKeyFormatCheck {
   readonly check: CheckKind.PropertyKeyFormat,
@@ -7,5 +7,5 @@ export interface PropertyKeyFormatCheck {
 }
 
 export function formatPropertyKeyFormatCheck(): string {
-  return `record property key must be valid`;
+  return "record property key must be valid";
 }

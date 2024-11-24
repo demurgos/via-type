@@ -1,5 +1,5 @@
+import {writeCheck, writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {AggregateCheck} from "./checks/aggregate.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {UnionMatchCheck} from "./checks/union-match.mjs";
@@ -48,7 +48,7 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
     }
   }
 
-  match(cx: KryoContext, value: unknown): Result<TypedValue<T, M>, CheckId> {
+  match(cx: KryoContext | null, value: unknown): Result<TypedValue<T, M>, CheckId> {
     const variantChecks: CheckId[] = [];
     for (const variant of this.variants) {
       const {ok, value: actual} = variant.test(cx, value);
@@ -58,7 +58,7 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
         variantChecks.push(actual satisfies CheckId);
       }
     }
-    const source: CheckId = cx.write({
+    const source: CheckId = writeCheck(cx, {
       check: CheckKind.Aggregate,
       children: variantChecks,
     } satisfies AggregateCheck);
@@ -110,7 +110,7 @@ export class TryUnionType<T, M extends Type<T> = Type<T>> implements IoType<T>, 
     return writeError(cx, {check: CheckKind.UnionMatch, children: [source]} satisfies UnionMatchCheck);
   }
 
-  test(cx: KryoContext, value: unknown): Result<T, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<T, CheckId> {
     const {ok, value: actual} = this.match(cx, value);
     if (ok) {
       return {ok: true, value: actual.value};

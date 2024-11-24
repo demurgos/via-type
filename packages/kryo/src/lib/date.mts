@@ -1,4 +1,4 @@
-import {writeError} from "./_helpers/write-error.mjs";
+import {writeError} from "./_helpers/context.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {
   CheckId,

@@ -1,5 +1,5 @@
+import {enter, writeError} from "./_helpers/context.mjs";
 import {lazyProperties} from "./_helpers/lazy-properties.mjs";
-import {writeError} from "./_helpers/write-error.mjs";
 import {CheckKind} from "./checks/check-kind.mjs";
 import {CheckId, IoType, KryoContext, Lazy, Ord, Reader, Result,VersionedType, Writer} from "./index.mjs";
 import {readVisitor} from "./readers/read-visitor.mjs";
@@ -96,7 +96,7 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
     );
   }
 
-  test(cx: KryoContext, value: unknown): Result<Set<T>, CheckId> {
+  test(cx: KryoContext | null, value: unknown): Result<Set<T>, CheckId> {
     if (!(value instanceof Set)) {
       return writeError(cx, {check: CheckKind.BaseType, expected: ["Object"]});
     }
@@ -106,7 +106,7 @@ export class SetType<T> implements IoType<Set<T>>, VersionedType<Set<T>, Diff> {
     let itemErrors: CheckId[] | undefined = undefined;
     let i: number = 0;
     for (const item of value) {
-      const {ok, value: actual} = cx.enter(i, () => this.itemType.test(cx, item));
+      const {ok, value: actual} = enter(cx, i, () => this.itemType.test(cx, item));
       i++;
       if (!ok) {
         if (itemErrors === undefined) {
