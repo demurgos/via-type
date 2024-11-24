@@ -1,4 +1,4 @@
-# Next
+# 0.15.3 (2024-11-24)
 
 - **[Fix]** Return `ResultErr` on invalid `Map` value.
 
